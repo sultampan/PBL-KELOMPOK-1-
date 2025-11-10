@@ -1,6 +1,16 @@
 <?php
-// admin/login.php
-if (session_status() === PHP_SESSION_NONE) session_start();
+/*
+ * File: login.php (Versi bersih)
+ */
+
+// PAKSA MUNCULKAN ERROR
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // jika sudah login langsung ke index
 if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
@@ -8,31 +18,44 @@ if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
     exit;
 }
 
+// Panggil koneksi.php
 require_once __DIR__ . '/config/koneksi.php';
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
+    $password = $_POST['password'] ?? ''; // Ini password mentah dari form
 
-    // ambil user berdasarkan username (gunakan pg_query_params untuk keamanan)
-    $res = pg_query_params($koneksi, "SELECT * FROM users WHERE username = $1 LIMIT 1", array($username));
-    if ($res && pg_num_rows($res) > 0) {
-        $user = pg_fetch_assoc($res);
+    try {
+        // 1. Siapkan kueri pakai PDO
+        $sql = "SELECT * FROM users WHERE username = ? LIMIT 1";
+        $stmt = $pdo->prepare($sql);
+        
+        // 2. Eksekusi
+        $stmt->execute([$username]);
+        
+        // 3. Ambil datanya
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // jika kolom salt ada di DB
-        $salt = $user['salt'] ?? '';
-        if ($password === $user['password']) {
-            // sukses login
+        // 4. Cek user ada DAN password-nya cocok
+        if ($user && password_verify($password, $user['password'])) {
+            
+            // Password BENAR
+            session_regenerate_id(true);
             $_SESSION['admin'] = true;
             $_SESSION['username'] = $user['username'];
             $_SESSION['id_admin'] = $user['id'];
             header("Location: index.php");
             exit;
         }
+
+        // 5. Jika user tidak ada ATAU password salah
+        $error = "⚠ Username atau password salah!";
+
+    } catch (PDOException $e) {
+        $error = "Error: " . $e->getMessage();
     }
-    $error = "⚠ Username atau password salah!";
 }
 ?>
 <!doctype html>
@@ -42,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Login - LAB AI Admin</title>
 <style>
-/* minimal styling */
 body{font-family:Segoe UI, Tahoma, sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center}
 .login-container{background:#fff;padding:32px;border-radius:12px;max-width:420px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,0.15)}
 h1{margin-bottom:6px}
@@ -70,7 +92,7 @@ input{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd}
             <label>Password</label>
             <input type="password" name="password" required>
         </div>
-        <button class="btn" type="submit">🚀 Login</button>
+        <button class="btn" type="submit"> Login</button>
     </form>
 </div>
 </body>

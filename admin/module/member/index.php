@@ -5,50 +5,76 @@ if (!isset($_SESSION['admin']) || $_SESSION['admin'] !== true) {
     header("Location: ../../login.php");
     exit;
 }
-require_once __DIR__ . '/../../config/koneksi.php';
+// Panggil koneksi (sudah ada $pdo)
+// require_once __DIR__ . '/../../config/koneksi.php'; 
+// Tidak perlu require_once lagi, karena sudah dipanggil di admin/index.php
 
 // config upload
 $uploadDir = __DIR__ . '/../../uploads/member/';
-$webUploadDir = '../../uploads/member/';
+$webUploadDir = 'uploads/member/';;
 @mkdir($uploadDir, 0755, true);
 $maxFileSize = 2 * 1024 * 1024;
 $allowedExt = ['jpg','jpeg','png','gif','webp'];
+$error = null; // Definisikan variabel error
 
-// DELETE
+// DELETE (Versi PDO)
 if (isset($_GET['delete'])) {
-    $id = (int) $_GET['delete'];
-    $res = pg_query_params($koneksi, "SELECT gambar FROM member WHERE id_member = $1 LIMIT 1", array($id));
-    if ($res && pg_num_rows($res) > 0) {
-        $row = pg_fetch_assoc($res);
-        if (!empty($row['gambar'])) {
+    try {
+        $id = (int) $_GET['delete'];
+        
+        // 1. Ambil nama gambar dulu
+        $stmt = $pdo->prepare("SELECT gambar FROM member WHERE id_member = ? LIMIT 1");
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // 2. Hapus file jika ada
+        if ($row && !empty($row['gambar'])) {
             $file = $uploadDir . $row['gambar'];
             if (is_file($file)) @unlink($file);
         }
+
+        // 3. Hapus data dari DB
+        $stmt = $pdo->prepare("DELETE FROM member WHERE id_member = ?");
+        $stmt->execute([$id]);
+
+    } catch (PDOException $e) {
+        $error = "Gagal menghapus data: " . $e->getMessage();
+        // Sebaiknya jangan langsung redirect agar error terlihat
     }
-    pg_query_params($koneksi, "DELETE FROM member WHERE id_member = $1", array($id));
-    header("Location: ?page=member");
-    exit;
+    
+    // Redirect jika tidak ada error
+    if (!$error) {
+        header("Location: ?page=member");
+        exit;
+    }
 }
 
-// edit
+// EDIT (Versi PDO)
 $editData = null;
 if (isset($_GET['edit'])) {
-    $id = (int) $_GET['edit'];
-    $res = pg_query_params($koneksi, "SELECT * FROM member WHERE id_member = $1 LIMIT 1", array($id));
-    if ($res && pg_num_rows($res) > 0) $editData = pg_fetch_assoc($res);
+    try {
+        $id = (int) $_GET['edit'];
+        $stmt = $pdo->prepare("SELECT * FROM member WHERE id_member = ? LIMIT 1");
+        $stmt->execute([$id]);
+        $editData = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($editData === false) $editData = null; 
+    } catch (PDOException $e) {
+        $error = "Gagal mengambil data edit: " . $e->getMessage();
+    }
 }
 
-// insert/update
+// INSERT/UPDATE (Versi PDO)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama = trim($_POST['nama_member'] ?? '');
     $jabatan = trim($_POST['jabatan'] ?? '');
     $deskripsi = trim($_POST['deskripsi'] ?? '');
     $gs = trim($_POST['google_scholar'] ?? '');
-    $rg = trim($_POST['research_gate'] ?? '');
+    $st = trim($_POST['sinta'] ?? ''); // <-- Ini ada di form Anda
     $orcid = trim($_POST['orcid'] ?? '');
 
-    $filename = $editData['gambar'] ?? '';
+    $filename = $_POST['gambar_lama'] ?? ($editData['gambar'] ?? ''); // Ambil nama file lama
 
+    // Logika upload file (sudah benar, tidak perlu diubah)
     if (!empty($_FILES['gambar']['name']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
         if ($_FILES['gambar']['size'] > $maxFileSize) {
             $error = "File terlalu besar. Maks 2MB.";
@@ -59,31 +85,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ext = strtolower(pathinfo($_FILES['gambar']['name'], PATHINFO_EXTENSION));
                 if (!in_array($ext, $allowedExt)) $error = "Format gambar tidak diperbolehkan.";
                 else {
-                    if (!empty($filename) && is_file($uploadDir . $filename)) @unlink($uploadDir . $filename);
+                    // Hapus file lama jika ada
+                    if (!empty($filename) && is_file($uploadDir . $filename)) {
+                        @unlink($uploadDir . $filename);
+                    }
                     $newName = uniqid('mem_') . '.' . $ext;
-                    if (move_uploaded_file($_FILES['gambar']['tmp_name'], $uploadDir . $newName)) $filename = $newName;
-                    else $error = "Gagal menyimpan file. Cek permission folder upload.";
+                    if (move_uploaded_file($_FILES['gambar']['tmp_name'], $uploadDir . $newName)) {
+                        $filename = $newName; // Gunakan nama file baru
+                    } else {
+                        $error = "Gagal menyimpan file. Cek permission folder upload.";
+                    }
                 }
             }
         }
     }
 
+    // Eksekusi database jika tidak ada error upload
     if (!isset($error)) {
-        if (!empty($_POST['id_member'])) {
-            $id = (int) $_POST['id_member'];
-            pg_query_params($koneksi, "UPDATE member SET nama_member=$1, jabatan=$2, deskripsi=$3, google_scholar=$4, sinta=$5, orcid=$6, created_by=$7, gambar=$8 WHERE id_member=$9",
-                array($nama, $jabatan, $deskripsi, $gs, null, $orcid, null, $filename, $id));
-        } else {
-            pg_query_params($koneksi, "INSERT INTO member (nama_member, jabatan, deskripsi, google_scholar, sinta, orcid, created_by, gambar) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
-                array($nama, $jabatan, $deskripsi, $gs, null, $orcid, null, $filename));
+        try {
+            if (!empty($_POST['id_member'])) {
+                // UPDATE
+                $id = (int) $_POST['id_member'];
+                $sql = "UPDATE member SET 
+                            nama_member = :nama, 
+                            jabatan = :jabatan, 
+                            deskripsi = :deskripsi, 
+                            google_scholar = :gs, 
+                            sinta = :st, 
+                            orcid = :orcid, 
+                            gambar = :gambar 
+                        WHERE id_member = :id";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    ':nama' => $nama,
+                    ':jabatan' => $jabatan,
+                    ':deskripsi' => $deskripsi,
+                    ':gs' => $gs,
+                    ':st' => $st, // <-- Saya perbaiki, data $rg sekarang disimpan
+                    ':orcid' => $orcid,
+                    ':gambar' => $filename,
+                    ':id' => $id
+                ]);
+            } else {
+                // INSERT
+                $sql = "INSERT INTO member (nama_member, jabatan, deskripsi, google_scholar, sinta, orcid, gambar) 
+                        VALUES (:nama, :jabatan, :deskripsi, :gs, :st, :orcid, :gambar)";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    ':nama' => $nama,
+                    ':jabatan' => $jabatan,
+                    ':deskripsi' => $deskripsi,
+                    ':gs' => $gs,
+                    ':st' => $st, // <-- Saya perbaiki, data $st sekarang disimpan
+                    ':orcid' => $orcid,
+                    ':gambar' => $filename
+                ]);
+            }
+            header("Location: ?page=member"); // Redirect setelah sukses
+            exit;
+        } catch (PDOException $e) {
+            $error = "Database error: " . $e->getMessage();
         }
-        header("Location: ?page=member");
-        exit;
     }
 }
 
-// fetch
-$query = pg_query($koneksi, "SELECT * FROM member ORDER BY id_member DESC");
+// FETCH (Versi PDO)
+$stmt_list = null; // Inisialisasi
+try {
+    $query_sql = "SELECT * FROM member ORDER BY id_member DESC";
+    $stmt_list = $pdo->query($query_sql); // $pdo->query() mengembalikan PDOStatement
+} catch (PDOException $e) {
+    // Tampilkan error di dalam card
+    if (!isset($error)) $error = "Gagal mengambil daftar member: " . $e->getMessage();
+}
 ?>
 <!doctype html>
 <html lang="id">
@@ -92,7 +166,7 @@ $query = pg_query($koneksi, "SELECT * FROM member ORDER BY id_member DESC");
 <title>Kelola Member</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-/* same visual style */
+/* ... (CSS Anda sama, tidak perlu diubah) ... */
 .card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.06);margin-bottom:18px}
 label{font-weight:600;color:#2c3e50;margin-bottom:6px;display:block}
 input[type="text"], textarea, input[type="file"]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef6}
@@ -117,12 +191,14 @@ textarea{min-height:90px}
 </head>
 <body>
 <div class="card">
-    <h2>👥 Kelola Member</h2>
+    <h2> Kelola Member</h2>
 
     <?php if (!empty($error)): ?><div class="error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
     <form method="post" enctype="multipart/form-data">
         <input type="hidden" name="id_member" value="<?= htmlspecialchars($editData['id_member'] ?? '') ?>">
+        <input type="hidden" name="gambar_lama" value="<?= htmlspecialchars($editData['gambar'] ?? '') ?>">
+
 
         <div style="margin-bottom:10px">
             <label>Nama Member</label>
@@ -145,8 +221,8 @@ textarea{min-height:90px}
         </div>
 
         <div style="margin-bottom:10px">
-            <label>Research Gate</label>
-            <input type="text" name="research_gate" value="<?= htmlspecialchars($editData['research_gate'] ?? '') ?>">
+            <label>sinta</label>
+            <input type="text" name="sinta" value="<?= htmlspecialchars($editData['SINTA'] ?? '') ?>">
         </div>
 
         <div style="margin-bottom:10px">
@@ -167,7 +243,7 @@ textarea{min-height:90px}
         </div>
 
         <div style="margin-top:8px">
-            <button class="btn" type="submit">💾 Simpan</button>
+            <button class="btn" type="submit"> Simpan</button>
             <?php if ($editData): ?><a class="btn secondary" href="?page=member" style="text-decoration:none;color:#fff;margin-left:8px">Batal</a><?php endif; ?>
         </div>
     </form>
@@ -178,7 +254,11 @@ textarea{min-height:90px}
     <table class="table">
         <thead><tr><th style="width:60px">ID</th><th>Nama</th><th>Jabatan</th><th>Gambar</th><th>Aksi</th></tr></thead>
         <tbody>
-        <?php while ($row = pg_fetch_assoc($query)): ?>
+        <?php 
+        // LOOPING (Versi PDO)
+        if ($stmt_list): // Cek jika $stmt_list berhasil dibuat
+            while ($row = $stmt_list->fetch(PDO::FETCH_ASSOC)): 
+        ?>
             <tr>
                 <td><?= (int)$row['id_member'] ?></td>
                 <td><?= htmlspecialchars($row['nama_member']) ?></td>
@@ -193,12 +273,14 @@ textarea{min-height:90px}
                     <a class="del" href="?page=member&delete=<?= (int)$row['id_member'] ?>" onclick="return confirm('Yakin hapus?')">🗑 Hapus</a>
                 </td>
             </tr>
-        <?php endwhile; ?>
+        <?php 
+            endwhile; 
+        endif; // Akhir dari 'if ($stmt_list)'
+        ?>
         </tbody>
     </table>
 </div>
 
-<!-- Modal -->
 <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-hidden="true">
     <div class="modal-card" role="document">
         <button id="modalClose" class="modal-close" aria-label="Tutup">×</button>
