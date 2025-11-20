@@ -5,7 +5,6 @@ if (!isset($_SESSION['admin']) || $_SESSION['admin'] !== true) {
     header("Location: ../../login.php");
     exit;
 }
-// Tidak perlu 'require_once koneksi.php', $pdo sudah ada dari index.php
 
 // config upload
 $uploadDir = __DIR__ . '/../../../uploads/fasilitas/';
@@ -13,9 +12,9 @@ $webUploadDir = '../../uploads/fasilitas/';
 @mkdir($uploadDir, 0755, true);
 $maxFileSize = 2 * 1024 * 1024;
 $allowedExt = ['jpg','jpeg','png','gif','webp'];
-$error = null; // Definisikan variabel error
+$error = null;
 
-// DELETE (Versi PDO)
+// DELETE
 if (isset($_GET['delete'])) {
     try {
         $id = (int) $_GET['delete'];
@@ -45,7 +44,7 @@ if (isset($_GET['delete'])) {
     }
 }
 
-// EDIT (Versi PDO)
+// EDIT 
 $editData = null;
 if (isset($_GET['edit'])) {
     try {
@@ -59,7 +58,7 @@ if (isset($_GET['edit'])) {
     }
 }
 
-// INSERT/UPDATE (Versi PDO)
+// INSERT/UPDATE 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $judul = trim($_POST['judul'] ?? '');
     $deskripsi = trim($_POST['deskripsi'] ?? '');
@@ -110,8 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// FETCH SEMUA (Versi PDO)
-$stmt_list = null; // Inisialisasi
+// FETCH SEMUA 
+$stmt_list = null;
 try {
     $query_sql = "SELECT * FROM fasilitas ORDER BY id_galery DESC";
     $stmt_list = $pdo->query($query_sql);
@@ -126,7 +125,7 @@ try {
 <title>Kelola Fasilitas</title>
 <meta name="viewport" content="width=device-width,initial-scale-1">
 <style>
-/* ... (CSS Anda sama, tidak perlu diubah) ... */
+    
 .card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.06);margin-bottom:18px}
 label{font-weight:600;color:#2c3e50;margin-bottom:6px;display:block}
 input[type="text"], textarea, input[type="file"]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef6}

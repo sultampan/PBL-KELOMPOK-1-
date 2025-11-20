@@ -1,0 +1,57 @@
+/* ===== LOGIN PAGE STYLE ===== */
+
+body {
+    font-family: Segoe UI, Tahoma, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    background: #fff;
+    padding: 32px;
+    border-radius: 12px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+h1 {
+    margin-bottom: 6px;
+}
+
+.form-group {
+    margin-bottom: 14px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: #667eea;
+    color: #fff;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-login:hover {
+    opacity: 0.9;
+}
+
+.error {
+    background: #fee;
+    color: #900;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}

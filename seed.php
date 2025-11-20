@@ -1,33 +1,19 @@
 <?php
-// seed.php
-// (PENTING: Jalankan file ini HANYA dari terminal, BUKAN browser)
-
-// 1. Panggil koneksi
 require_once __DIR__ . '/config/koneksi.php';
 
-echo "Memulai script seeder...\n"; // \n = baris baru di terminal
+// Data admin
+$username = "admin2";
+$password = "admin2";
 
-try {
-    // 2. Tentukan data admin
-    $admin_user = 'admin3'; // username
-    $admin_pass = 'admin3'; // password
+// Generate salt (32 bytes, aman)
+$salt = bin2hex(random_bytes(32)); 
 
-    // 3. HASH passwordnya (WAJIB)
-    $hashed_pass = password_hash($admin_pass, PASSWORD_DEFAULT);
+// Hash manual
+$hashed = hash_hmac("sha256", $salt . $password, "key-rahasia-opsional");
 
-    // 4. Masukkan ke database (TANPA CEK)
-    $sql = "INSERT INTO users (username, password) VALUES (?, ?)";
-    $stmt = $pdo->prepare($sql);
-    
-    if ($stmt->execute([$admin_user, $hashed_pass])) {
-        echo "SUKSES! Admin baru berhasil dibuat.\n";
-        echo "   Username: $admin_user\n";
-        echo "   Password: $admin_pass (Ganti ini di production!)\n";
-    } else {
-        echo "Gagal memasukkan data ke database.\n";
-    }
+// Insert ke database
+$sql = "INSERT INTO admin (username, password, salt) VALUES (?, ?, ?)";
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$username, $hashed, $salt]);
 
-} catch (PDOException $e) {
-    echo "ERROR DATABASE: " . $e->getMessage() . "\n";
-}
-?>
+echo "Admin berhasil dibuat!";
