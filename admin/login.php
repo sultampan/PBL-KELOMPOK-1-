@@ -2,6 +2,12 @@
 session_start();
 require_once __DIR__ . '/../config/koneksi.php';
 
+$timeout_error = null;
+if (isset($_SESSION['login_error'])) {
+    $timeout_error = $_SESSION['login_error'];
+    unset($_SESSION['login_error']); // Hapus setelah ditampilkan
+}
+
 $error = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -25,6 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION["admin"] = true;
             $_SESSION["username"] = $user["username"];
             $_SESSION["id_admin"] = $user["id"];
+            $_SESSION['last_activity'] = time();
 
             header("Location: index.php");
             exit;
@@ -42,13 +49,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Login - LAB AI Admin</title>
-<link rel="stylesheet" href="assets/login.css">
+<link rel="stylesheet" href="assets/css/login.css">
 </head>
 <body>
 
 <div class="login-container">
-    <h1>LAB AI Admin</h1>
-    <p style="color:#666;margin-bottom:16px">Laboratory of Applied Informatics</p>
+    <h1 style="margin-top: auto";>LAB AI Admin</h1>
+
+    <?php if (!empty($timeout_error)): ?>
+    <div class="alert alert-warning" style="background:#fff3cd; color:#856404; padding:10px; border-radius:5px; margin-bottom:15px; border: 1px solid #ffeeba;">
+        <?= htmlspecialchars($timeout_error) ?>
+    </div>
+<?php endif; ?>
 
     <?php if (!empty($error)): ?>
         <div class="error"><?= htmlspecialchars($error) ?></div>

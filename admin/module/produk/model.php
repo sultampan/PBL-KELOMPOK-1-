@@ -14,7 +14,7 @@ function checkPdo($pdo) {
  */
 function getProdukAll($pdo) {
     checkPdo($pdo);
-    $stmt = $pdo->query("SELECT * FROM produk ORDER BY id_produk DESC");
+    $stmt = $pdo->query("SELECT * FROM produk ORDER BY id_produk ASC");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 

@@ -18,3 +18,16 @@ function previewImage(event) {
         img.style.display = 'none';
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const successAlert = document.querySelector('.alert.success');
+    if (successAlert) {
+        // Setelah 4 detik, hilangkan alert secara perlahan
+        setTimeout(() => {
+            successAlert.style.transition = 'opacity 0.5s ease-out';
+            successAlert.style.opacity = '0';
+            // Hapus elemen setelah transisi selesai
+            setTimeout(() => successAlert.remove(), 500); 
+        }, 4000); 
+    }
+});

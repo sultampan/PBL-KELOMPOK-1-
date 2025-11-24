@@ -1,0 +1,205 @@
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+}
+
+.card h2 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.form-grid div {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-grid label {
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #34495e;
+}
+
+.form-grid input[type="text"],
+.form-grid input[type="file"],
+.form-grid textarea {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.form-grid button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background: #3498db;
+    color: #fff;
+    cursor: pointer;
+}
+
+.form-grid button:hover {
+    background: #2980b9;
+}
+
+.preview img {
+    max-width: 300px;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 6px;
+}
+/* --- Styling untuk Daftar Produk (.table) --- */
+
+.table {
+    width: 100%;
+    border-collapse: collapse; /* Menghilangkan jarak antar border sel */
+    margin-top: 15px; /* Memberi jarak dari header Daftar Produk */
+    font-size: 14px;
+    table-layout: auto; /* Memungkinkan kolom menyesuaikan konten */
+}
+
+/* Header Tabel */
+.table thead th {
+    background-color: #34495e; /* Warna gelap/biru tua */
+    color: #fff;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Baris Data */
+.table tbody tr {
+    border-bottom: 1px solid #ecf0f1; /* Garis pemisah antar baris */
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa; /* Efek hover saat mouse melewati baris */
+}
+
+/* Sel Data */
+.table tbody td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    color: #34495e;
+    max-width: 250px; /* Batasi lebar sel agar tidak terlalu lebar */
+    word-wrap: break-word; /* Memastikan teks panjang pindah baris */
+}
+
+/* Gambar Produk */
+.table tbody td img {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    object-fit: cover;
+    display: block; /* Penting untuk menghilangkan ruang putih di bawah gambar */
+}
+
+.table tbody tr td:nth-child(3) {
+    width: 20%; /* Beri lebar 30% pada kolom deskripsi */
+    max-width: 300px; /* Batas maksimum agar tampilan tidak melebar */
+    word-break: break-word;
+    /* Pastikan padding dan vertikal-align sudah diset oleh .table tbody td */
+}
+
+/* Kolom Aksi (Edit/Hapus) */
+.table tbody td:last-child {
+    white-space: nowrap; /* Memastikan tombol aksi tetap dalam satu baris */
+    width: 1%; /* Agar kolom aksi sekecil mungkin */
+}
+
+.table tbody td a {
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin-right: 5px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+/* Gaya Tombol Edit */
+.table tbody td a:nth-child(1) { /* Tombol Edit */
+    background-color: #f39c12; /* Warna kuning/oranye */
+    color: #fff;
+}
+
+/* Gaya Tombol Hapus */
+.table tbody td a:nth-child(2) { /* Tombol Hapus */
+    background-color: #e74c3c; /* Warna merah */
+    color: #fff;
+}
+
+/* Gaya untuk pesan "Belum ada produk" */
+.table tbody tr td[colspan="5"] {
+    text-align: center !important;
+    font-style: italic;
+    color: #7f8c8d;
+}
+
+/* --- Tambahan untuk Alerts (Pesan Sukses/Error) --- */
+.alert {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.alert.success {
+    background: #e8f7e8; /* Latar hijau muda */
+    color: #1a7d1a;     /* Teks hijau tua */
+    border: 1px solid #c9e8c9;
+}
+
+.alert.error {
+    background: #fdd;   /* Latar merah muda */
+    color: #c00;       /* Teks merah tua */
+    border: 1px solid #c00;
+}
+
+/* --- Tambahan untuk Input File Error (JavaScript) --- */
+#fileError {
+    color: red;
+    margin-bottom: 5px;
+    /* display: none; akan diatur oleh JS */
+}
+
+/* admin/assets/produk.css */
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* --- Gaya untuk semua elemen di dalam button-group --- */
+.button-group button, 
+.button-group a.btn-secondary {
+    font-size: 14px;
+    flex-grow: 1;
+    text-align: center;
+    font-weight: 600;
+    padding: 10px 20px;
+    margin: 0;
+}
+
+/* Gaya tombol Submit (hanya untuk referensi)
+.form-grid button {
+    ... (gaya yang sudah ada) ...
+    Pastikan padding dan font-size di sini di-override oleh .button-group
+}
+
+/* Gaya khusus untuk link 'Batal' */
+.button-group a.btn-secondary {
+    line-height: normal; 
+    box-sizing: border-box;
+    background-color: #95a5a6;
+    text-align: center;
+    color: #fff;
+    border-radius: 5px;
+    text-decoration: none;
+}

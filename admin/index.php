@@ -1,4 +1,5 @@
 <?php
+$start_time = microtime(true);
 require_once __DIR__ . '/../config/koneksi.php';
 
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -8,6 +9,33 @@ if (!isset($_SESSION['admin']) || $_SESSION['admin'] !== true) {
     header("Location: login.php");
     exit;
 }
+// 1. Set waktu timeout 
+$inactive_timeout = 1800; // 30 menit 
+
+// 2. Cek waktu terakhir aktivitas
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $inactive_timeout)) {
+    // Sesi sudah timeout
+    
+    // Simpan pesan timeout ke variabel sementara sebelum sesi dihancurkan
+    $timeout_message = "Sesi Anda telah berakhir karena tidak aktif. Silakan login kembali.";
+
+    // Hapus dan hancurkan sesi lama
+    session_unset(); 
+    session_destroy(); 
+    
+    // Mulai sesi baru untuk menyimpan pesan
+    session_start(); 
+    
+    // SIMPAN PESAN TIMEOUT DI SESSION BARU
+    $_SESSION['login_error'] = $timeout_message; 
+
+    // Redirect ke halaman login
+    header("Location: login.php"); 
+    exit;
+}
+
+// 3. Jika sesi masih aktif, perbarui waktu aktivitas terakhir
+$_SESSION['last_activity'] = time();
 
 // logout
 if (isset($_GET['logout'])) {
@@ -22,8 +50,6 @@ $page = $_GET['page'] ?? 'dashboard';
 // include layout
 include __DIR__ . '/layout/header.php';
 include __DIR__ . '/layout/sidebar.php';
-
-// echo '<div class="main"><div class="content-box">';
 
 switch ($page) {
     case 'dashboard':
@@ -63,8 +89,6 @@ switch ($page) {
         echo "<h3>Halaman tidak ditemukan.</h3>";
         break;
 }
-
-// echo '</div>';
 
 // footer
 include __DIR__ . '/layout/footer.php';

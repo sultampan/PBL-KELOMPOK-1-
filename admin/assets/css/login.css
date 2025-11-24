@@ -11,7 +11,7 @@ body {
 
 .login-container {
     background: #fff;
-    padding: 32px;
+    padding: 25px;
     border-radius: 12px;
     max-width: 420px;
     width: 100%;
@@ -31,6 +31,7 @@ input {
     padding: 10px;
     border-radius: 8px;
     border: 1px solid #ddd;
+    box-sizing: border-box;
 }
 
 .btn-login {
@@ -42,6 +43,7 @@ input {
     color: #fff;
     font-weight: 600;
     transition: 0.2s;
+    box-sizing: border-box;
 }
 
 .btn-login:hover {
