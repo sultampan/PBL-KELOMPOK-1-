@@ -45,10 +45,40 @@ if (isset($_GET['delete'])) {
 $idToEdit = $_GET['edit'] ?? $editIdSession; // Ambil ID dari GET atau dari Session setelah error
 $editData = $idToEdit ? getProdukById($pdo, (int)$idToEdit) : null;
 
-// LIST PRODUK
-$list = getProdukAll($pdo) ?: [];
+// PENGURUTAN (SORTING)
+$currentSortBy = $_GET['sort'] ?? 'id_produk';
+$currentSortOrder = $_GET['order'] ?? 'ASC';
+
+// TANGKAP KATA KUNCI PENCARIAN
+$searchKeyword = $_GET['keyword'] ?? null;
+
+// 1. PENGATURAN PAGINASI
+$limit = 10; // Jumlah item per halaman (BISA DIUBAH)
+$page = (int) ($_GET['p'] ?? 1); // Halaman saat ini, default 1
+$page = max(1, $page); // Pastikan halaman tidak kurang dari 1
+
+// Hitung offset (misal Halaman 2: offset = (2-1)*10 = 10)
+$offset = ($page - 1) * $limit;
+
+// 3. HITUNG TOTAL DATA & PAGINASI
+$totalRecords = getTotalProdukCount($pdo, $searchKeyword); // Gunakan fungsi baru
+$totalPages = ceil($totalRecords / $limit); // Total halaman (dibulatkan ke atas)
+
+// 4. LIST PRODUK (Meneruskan LIMIT dan OFFSET)
+$list = getProdukAll($pdo, $limit, $offset, $searchKeyword, $currentSortBy, $currentSortOrder) ?: [];
+
+// SIMPAN VARIABEL PAGINASI UNTUK DIGUNAKAN DI table.php
+$paginationData = [
+    'currentPage' => $page,
+    'totalPages' => $totalPages,
+    'searchKeyword' => $searchKeyword,
+    'limit' => $limit,
+    'currentSortBy' => $currentSortBy,      
+    'currentSortOrder' => $currentSortOrder,
+];
 
 // TAMPILKAN VIEW & TABLE
 require_once "form.php";
 require_once "table.php";
+
 ?>

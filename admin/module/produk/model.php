@@ -12,10 +12,67 @@ function checkPdo($pdo) {
 /**
  * Ambil semua produk
  */
-function getProdukAll($pdo) {
+function getProdukAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_produk', $sortOrder = 'ASC') { 
     checkPdo($pdo);
-    $stmt = $pdo->query("SELECT * FROM produk ORDER BY id_produk ASC");
+    
+    // Validasi input agar aman dari SQL Injection
+    // Pastikan $sortBy hanya kolom yang diizinkan
+    $allowedColumns = ['id_produk', 'nama', 'deskripsi'];
+    if (!in_array($sortBy, $allowedColumns)) {
+        $sortBy = 'id_produk';
+    }
+
+    // Pastikan $sortOrder hanya ASC atau DESC
+    $sortOrder = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
+
+    $sql = "SELECT * FROM produk ";
+    $params = [];
+    
+    if ($keyword) {
+        $sql .= "WHERE nama ILIKE :keyword OR deskripsi ILIKE :keyword ";
+        $params[':keyword'] = '%' . $keyword . '%'; 
+    }
+    
+    // 🚨 KLAUSA PENGURUTAN DINAMIS
+    $sql .= "ORDER BY " . $sortBy . " " . $sortOrder; 
+    
+    // ... (sisa logika LIMIT/OFFSET) ...
+
+    $sql .= " LIMIT :limit OFFSET :offset";
+
+    $stmt = $pdo->prepare($sql);
+    
+    // Bind parameter LIMIT/OFFSET (harus integer)
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    
+    // Bind parameter keyword jika ada
+    if ($keyword) {
+        $stmt->bindValue(':keyword', $params[':keyword'], PDO::PARAM_STR);
+    }
+    
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Mendapatkan total jumlah produk (dengan mempertimbangkan keyword pencarian)
+ */
+function getTotalProdukCount($pdo, $keyword = null) {
+    checkPdo($pdo);
+    
+    $sql = "SELECT COUNT(id_produk) FROM produk ";
+    $params = [];
+    
+    // Logika Pencarian harus SAMA dengan getProdukAll
+    if ($keyword) {
+        $sql .= "WHERE nama ILIKE :keyword OR deskripsi ILIKE :keyword ";
+        $params[':keyword'] = '%' . $keyword . '%'; 
+    }
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return (int) $stmt->fetchColumn(); // Mengambil nilai hitungan pertama
 }
 
 /**
@@ -86,4 +143,5 @@ function createSlug($text) {
     $text = strtolower($text);
     return $text ?: 'file';
 }
+
 ?>

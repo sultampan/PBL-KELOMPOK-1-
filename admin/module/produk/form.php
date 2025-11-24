@@ -1,7 +1,6 @@
 <?php
 // admin/module/produk/form.php
 $initialSrc = !empty($editData['gambar']) ? $webUploadDir . $editData['gambar'] : '';
-
 $initialStyle = empty($editData['gambar']) ? 'display: none;' : '';
 $formData = $oldInput ?: $editData;
 ?>
@@ -10,7 +9,6 @@ $formData = $oldInput ?: $editData;
     <h2><?= $editData ? "Edit Produk" : "Tambah Produk Baru" ?></h2>
 
     <?php 
-    // 🚨 TAMPILKAN PESAN SUKSES DENGAN CLASS EXTERNAL
     if(!empty($success)): ?>
         <div class="alert success">
             <?= htmlspecialchars($success) ?>
@@ -18,12 +16,26 @@ $formData = $oldInput ?: $editData;
     <?php endif; ?>
 
     <?php 
-    // 🚨 TAMPILKAN PESAN ERROR DENGAN CLASS EXTERNAL
     if(!empty($error)): ?>
         <div class="alert error">
             <?= htmlspecialchars($error) ?>
         </div>
     <?php endif; ?>
+    
+    <form method="GET" class="search-form" style="margin-bottom: 20px;">
+        <input type="hidden" name="page" value="produk">
+        <div style="display: flex; gap: 10px;">
+            <input type="text" name="keyword" 
+                   placeholder="Cari berdasarkan Nama atau Deskripsi..." 
+                   value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>" 
+                   style="flex-grow: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+            <button type="submit" class="btn btn-primary" style="padding: 10px 15px;">Cari</button>
+            <?php if (isset($_GET['keyword'])): ?>
+                <a href="?page=produk" class="btn btn-secondary" style="padding: 10px 15px; text-decoration: none;">Reset</a>
+            <?php endif; ?>
+        </div>
+    </form>
+
 
     <form action="module/produk/save.php" method="POST" enctype="multipart/form-data" class="form-grid">
 
@@ -72,5 +84,5 @@ $formData = $oldInput ?: $editData;
             </a>
             
         </div>
-        </form>
+    </form>
 </div>
