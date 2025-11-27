@@ -19,6 +19,5 @@ try {
     $pdo = new PDO($dsn_pg, $user, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Koneksi gagal: " . $e->getMessage());
+    throw new Exception("Database Connection Failed: " . $e->getMessage());
 }
-?>

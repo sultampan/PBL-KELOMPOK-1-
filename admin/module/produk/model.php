@@ -33,7 +33,7 @@ function getProdukAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_prod
         $params[':keyword'] = '%' . $keyword . '%'; 
     }
     
-    // 🚨 KLAUSA PENGURUTAN DINAMIS
+    // KLAUSA PENGURUTAN DINAMIS
     $sql .= "ORDER BY " . $sortBy . " " . $sortOrder; 
     
     // ... (sisa logika LIMIT/OFFSET) ...

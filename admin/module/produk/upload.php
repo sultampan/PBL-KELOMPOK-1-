@@ -1,7 +1,7 @@
 <?php
 // admin/module/produk/upload.php
 
-function handleUpload($fieldName, $oldFile, $uploadDir, $allowedExt, $maxSize, $newSlug) { // 🚨 UBAH PARAMETER KE $newSlug
+function handleUpload($fieldName, $oldFile, $uploadDir, $allowedExt, $maxSize, $newSlug) { // UBAH PARAMETER KE $newSlug
     
     // --- 1. KASUS: TIDAK ADA FILE BARU DI-UPLOAD (MODE RENAME/UPDATE SLUG) ---
     if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] === UPLOAD_ERR_NO_FILE) {

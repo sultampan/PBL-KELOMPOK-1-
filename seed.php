@@ -2,8 +2,8 @@
 require_once __DIR__ . '/config/koneksi.php';
 
 // Data admin
-$username = "";
-$password = "";
+$username = "wildan";
+$password = "wildan";
 
 // Generate salt (32 bytes, aman)
 $salt = bin2hex(random_bytes(32)); 

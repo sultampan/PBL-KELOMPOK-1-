@@ -15,22 +15,22 @@ $inactive_timeout = 1800; // 30 menit
 // 2. Cek waktu terakhir aktivitas
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $inactive_timeout)) {
     // Sesi sudah timeout
-    
+
     // Simpan pesan timeout ke variabel sementara sebelum sesi dihancurkan
     $timeout_message = "Sesi Anda telah berakhir karena tidak aktif. Silakan login kembali.";
 
     // Hapus dan hancurkan sesi lama
-    session_unset(); 
-    session_destroy(); 
-    
+    session_unset();
+    session_destroy();
+
     // Mulai sesi baru untuk menyimpan pesan
-    session_start(); 
-    
+    session_start();
+
     // SIMPAN PESAN TIMEOUT DI SESSION BARU
-    $_SESSION['login_error'] = $timeout_message; 
+    $_SESSION['login_error'] = $timeout_message;
 
     // Redirect ke halaman login
-    header("Location: login.php"); 
+    header("Location: login.php");
     exit;
 }
 

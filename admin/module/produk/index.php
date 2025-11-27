@@ -67,6 +67,7 @@ $totalPages = ceil($totalRecords / $limit); // Total halaman (dibulatkan ke atas
 // 4. LIST PRODUK (Meneruskan LIMIT dan OFFSET)
 $list = getProdukAll($pdo, $limit, $offset, $searchKeyword, $currentSortBy, $currentSortOrder) ?: [];
 
+
 // SIMPAN VARIABEL PAGINASI UNTUK DIGUNAKAN DI table.php
 $paginationData = [
     'currentPage' => $page,
@@ -78,7 +79,6 @@ $paginationData = [
 ];
 
 // TAMPILKAN VIEW & TABLE
-require_once "form.php";
-require_once "table.php";
-
+require_once __DIR__ . "/form.php";
+require_once __DIR__ . "/table.php";
 ?>
