@@ -203,3 +203,113 @@
     border-radius: 5px;
     text-decoration: none;
 }
+/* --- Custom File Input Styling (Revisi) --- */
+
+.custom-file-upload {
+    position: relative; 
+    display: flex; /* 🚨 Gunakan Flexbox untuk mengatur item */
+    align-items: center;
+    width: 100%;
+    /* ... (gaya yang sudah ada) ... */
+    /* Pastikan background container tidak mengganggu */
+    background-color: transparent;
+}
+
+.custom-file-upload .form-control {
+    /* Input asli tetap disembunyikan */
+    position: absolute;
+    top: 0;
+    left: 0; 
+    opacity: 0; 
+    cursor: pointer;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+}
+
+.file-label {
+    display: flex;
+    align-items: center;
+    /* 🚨 Ubah Justify-content agar tombol Browse di kiri */
+    justify-content: flex-start; 
+    
+    padding: 0; /* Hapus padding agar kontrol lebih baik */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    font-weight: normal;
+    transition: background-color 0.2s;
+    width: 100%; /* Mengambil lebar yang tersisa */
+    height: 40px; /* Atur tinggi agar sejajar */
+}
+
+.file-label .file-button {
+    /* Gaya untuk tombol 'Browse' (Sekarang di KIRI) */
+    background: #667eea;
+    color: #fff;
+    padding: 8px 12px; /* Sesuaikan padding */
+    border-radius: 8px 0 0 8px; /* Sudut tumpul hanya di kiri */
+    font-weight: 600;
+    height: 100%;
+}
+
+#fileNameText {
+    /* Teks Placeholder */
+    padding-left: 10px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1; /* Penting: Mengisi ruang di antara tombol Browse dan X */
+}
+
+/* admin/assets/produk.css */
+
+.remove-image-btn {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+
+    background-color: rgba(0, 0, 0, 0.35) !important; /* ANTI DI-OVERRIDE */
+    color: #fff !important;
+
+    width: 24px;
+    height: 24px;
+
+    border: none !important;
+    padding: 0;
+    cursor: pointer;
+
+    font-size: 16px;
+    line-height: 24px;
+    text-align: center;
+
+    border-radius: 4px;
+    z-index: 100;
+}
+
+
+.remove-image-btn:hover {
+    background-color: rgba(0, 0, 0, 0.55); /* lebih gelap saat hover */
+}
+
+.form-grid .remove-image-btn {
+    all: unset; /* hapus semua style default + style warisan */
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    width: 24px;
+    height: 24px;
+    background-color: rgba(0,0,0,0.35);
+    color: #fff;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -40,6 +40,38 @@ function previewImage(event) {
   }
 }
 
+/**
+ * Fungsi untuk menghapus gambar dari preview (tombol 'X')
+ * @param {boolean} isEditMode - True jika saat ini berada di mode Edit.
+ */
+function removeImagePreview(isEditMode) {
+    const input = document.getElementById('inputGambar');
+    const img = document.getElementById('imgPreview');
+    const displayContainer = document.getElementById('image-display-container');
+    const hiddenInputDelete = document.getElementById('hapusGambarLama'); // Hidden input untuk PHP
+
+    // 1. Bersihkan Input File (agar form tidak mengirim file)
+    input.value = ''; 
+
+    // 2. Kosongkan Visual
+    img.src = '';
+    displayContainer.style.display = 'none';
+    
+    // 3. LOGIC KHUSUS MODE EDIT
+    if (isEditMode && hiddenInputDelete) {
+        // Jika mode Edit, atur hidden field ke 1.
+        // Ini memberitahu PHP untuk menghapus file yang namanya ada di gambar_lama (DB).
+        hiddenInputDelete.value = '1';
+    }
+    
+    // Opsional: Bersihkan pesan error file
+    const errorContainer = document.getElementById("fileError");
+    if (errorContainer) {
+        errorContainer.textContent = '';
+        errorContainer.style.display = 'none';
+    }
+}
+
 // --- 2. FUNGSI PEMBANTU (Alert Pop-up) ---
 // Perlu dipanggil di AJAX success/error
 function displayAlert(message, type) {
@@ -158,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then((response) => response.json())
                 .then((data) => {
                     if (data.status === "success") {
-                        displayAlert(data.message, "success");
+                        // displayAlert(data.message, "success");
                         loadProductList(); 
 
                         const isUpdate = formData.get("id_produk");
@@ -166,17 +198,17 @@ document.addEventListener("DOMContentLoaded", function () {
                         // PERBAIKAN KRITIS: Selalu muat ulang form card dari server untuk mereset state PHP
                         loadEmptyForm(data.message); 
                         
-                        if (isUpdate) { 
+                        if (isUpdate) {
                             // Hapus ID Edit dari URL browser
                             window.history.pushState(
                                 {},
                                 document.title,
                                 window.location.pathname + "?page=produk"
                             );
-                        }
-                    } else {
+                        }else {
                         displayAlert(data.message, "error");
                     }
+                    } 
                 })
                 .catch((error) => {
                     console.error("AJAX Error:", error);
@@ -226,7 +258,6 @@ function deleteProduct(productId) {
     .then((response) => response.json())
     .then((data) => {
       if (data.status === "success") {
-        displayAlert(data.message, "success");
         loadProductList(); // Muat ulang tabel setelah sukses
       } else {
         displayAlert(data.message, "error");
@@ -269,8 +300,11 @@ function loadEmptyForm(successMessage) {
   fetch(url)
     .then((response) => response.text())
     .then((html) => {
+      setupInitialAlertCleanup();
       // Ganti seluruh isi card dengan HTML form baru (mode Tambah Baru)
       formContainer.innerHTML = html;
+
+      setupInitialAlertCleanup();
 
       const newNameInput = document.querySelector('#productForm input[name="nama"]');
             
@@ -286,4 +320,55 @@ function loadEmptyForm(successMessage) {
       formContainer.innerHTML =
         '<div style="text-align:center; color:red;">Gagal memuat form.</div>';
     });
+}
+
+/**
+ * Mereset input file, menyembunyikan preview, dan menyembunyikan tombol X.
+ */
+function removeImage() {
+    const input = document.getElementById('inputGambar');
+    const img = document.getElementById('imgPreview');
+    const removeBtn = document.getElementById('removeImageBtn');
+    const fileNameText = document.getElementById('fileNameText');
+    
+    // Reset input file (ini menghapus file baru yang dipilih)
+    if (input) input.value = '';
+
+    // Sembunyikan preview
+    if (img) {
+        img.src = '';
+        img.style.display = 'none';
+    }
+
+    // Reset teks placeholder
+    if (fileNameText) fileNameText.textContent = 'Tidak ada file yang dipilih...';
+    
+    // Sembunyikan tombol X
+    if (removeBtn) removeBtn.style.display = 'none';
+    
+    // Jika ada gambar lama dari DB, tandai untuk dihapus di server saat submit
+    const removeExisting = document.getElementById('removeExistingImage');
+    if (removeExisting) removeExisting.value = '1'; 
+    // Anda harus menambahkan logic di save.php untuk menghapus gambar jika remove_existing_image == 1
+}
+
+/**
+ * Mengubah teks label (dipanggil onchange)
+ */
+function updateFileName(input) {
+    const fileNameText = document.getElementById('fileNameText');
+    const removeBtn = document.getElementById('removeImageBtn');
+    
+    if (input.files && input.files.length > 0) {
+        // Tampilkan nama file dan tombol X
+        fileNameText.textContent = input.files[0].name;
+        if (removeBtn) removeBtn.style.display = 'block';
+    } else {
+        // Jika tidak ada file, sembunyikan tombol X
+        fileNameText.textContent = 'Tidak ada file yang dipilih...';
+        if (removeBtn) removeBtn.style.display = 'none';
+    }
+    // Pastikan nilai hidden field remove_existing_image direset
+    const removeExisting = document.getElementById('removeExistingImage');
+    if (removeExisting) removeExisting.value = '0';
 }

@@ -30,7 +30,21 @@ $oldImg = $_POST['gambar_lama'] ?? null;
 $newSlug = createSlug($nama);
 $new_uploaded_filename = null; // Variabel untuk menyimpan nama file yang baru di-upload
 
+// Ambil status penghapusan
+$should_remove_old_image = ($_POST['remove_existing_image'] ?? '0') === '1';
+
 try {
+
+    // 🚨 Logika 1: Hapus Gambar Lama Jika Tombol X Ditekan
+    if ($should_remove_old_image && !empty($oldImg)) {
+        $file = $uploadDir . $oldImg;
+        if (is_file($file)) @unlink($file);
+        
+        // Atur $oldImg dan $gambar menjadi kosong agar DB juga bersih
+        $oldImg = null;
+        $gambar = null; 
+    }
+
     // LANGKAH 1: Ambil nama file hasil upload
     $gambar = handleUpload("gambar", $oldImg, $uploadDir, $allowedExt, $maxSize, $newSlug);
 

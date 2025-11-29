@@ -1,10 +1,21 @@
 <?php
-// admin/module/produk/form-fields.php (INI ADALAH KONTEN YANG AKAN DI-RELOAD)
+// admin/module/produk/form-fields.php (KODE BERSIH)
 
-// Catatan: Variabel $formData, $editData, $initialSrc, $initialStyle sudah tersedia dari form-load.php
-
-// PERBAIKAN: Form Utama (ID productForm) sekarang membungkus semua input fields
+// Catatan: Variabel $formData, $editData, $initialSrc, $initialStyle sudah tersedia.
 ?>
+
+<?php if (!empty($success)): ?>
+    <div class="alert success">
+        <?= htmlspecialchars($success) ?>
+    </div>
+<?php endif; ?>
+<?php if (!empty($error)): ?>
+    <div class="alert error">
+        <?= htmlspecialchars($error) ?>
+    </div>
+<?php endif; ?>
+
+<h2><?= $editData ? "Edit Produk" : "Tambah Produk Baru" ?></h2>
 
 <form id="productForm" method="POST" class="form-grid"> 
     
@@ -25,23 +36,43 @@
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Link Produk (opsional)</label>
+        <label class="form-label">Link Produk</label>
         <input type="text" name="link_produk" class="form-control"
                value="<?= $formData['link_produk'] ?? '' ?>">
     </div>
 
     <div class="mb-3">
         <label class="form-label">Gambar Produk</label>
+        
+        <div class="custom-file-upload">
+            <input type="file" name="gambar" class="form-control" 
+                   accept="image/*" id="inputGambar" onchange="previewImage(event); updateFileName(this);"> 
+            
+            <label for="inputGambar" class="file-label" id="fileLabel">
+                <span class="file-button">Browse</span> 
+                <span id="fileNameText" class="placeholder-text">Tidak ada file yang dipilih...</span>
+            </label>
+            
+            <button type="button" 
+                    id="removeImageBtn" 
+                    class="remove-image-btn" 
+                    onclick="removeImage();"
+                    style="<?= empty($initialSrc) ? 'display: none;' : '' ?>"
+                    title="Hapus gambar yang dipilih">
+                &times;
+            </button>
+        </div>
+        
         <div id="fileError"></div>
-        <input type="file" name="gambar" class="form-control" accept="image/*" id="inputGambar" onchange="previewImage(event)">
-
+        
         <div class="preview mt-2">
             <img src="<?= $initialSrc ?>"
                  class="img-thumbnail" alt="Preview Gambar" width="auto"
                  id="imgPreview" style="<?= $initialStyle ?>">
         </div>
+        <input type="hidden" name="remove_existing_image" id="removeExistingImage" value="0">
+
     </div>
-    
     <div class="mb-3 button-group">
         <button type="submit" id="submitBtn" class="btn btn-primary">
             <?= $editData ? "Update" : "Simpan" ?>
