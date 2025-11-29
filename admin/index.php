@@ -63,7 +63,7 @@ switch ($page) {
             $countActivity = $countFasilitas = $countMember = $countProduk = 0;
             echo "<div class='error-box'>Error Database: " . $e->getMessage() . "</div>";
         }
-        include __DIR__ . '/pages/dashboard.php';
+        include __DIR__ . '/module/dashboard/index.php';
         break;
 
     case 'produk':
