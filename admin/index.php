@@ -9,27 +9,20 @@ if (!isset($_SESSION['admin']) || $_SESSION['admin'] !== true) {
     header("Location: login.php");
     exit;
 }
+
 // 1. Set waktu timeout 
 $inactive_timeout = 1800; // 30 menit 
 
 // 2. Cek waktu terakhir aktivitas
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $inactive_timeout)) {
-    // Sesi sudah timeout
-
-    // Simpan pesan timeout ke variabel sementara sebelum sesi dihancurkan
     $timeout_message = "Sesi Anda telah berakhir karena tidak aktif. Silakan login kembali.";
 
-    // Hapus dan hancurkan sesi lama
     session_unset();
     session_destroy();
-
-    // Mulai sesi baru untuk menyimpan pesan
     session_start();
 
-    // SIMPAN PESAN TIMEOUT DI SESSION BARU
     $_SESSION['login_error'] = $timeout_message;
 
-    // Redirect ke halaman login
     header("Location: login.php");
     exit;
 }
@@ -47,13 +40,29 @@ if (isset($_GET['logout'])) {
 // halaman default
 $page = $_GET['page'] ?? 'dashboard';
 
-// include layout
-include __DIR__ . '/layout/header.php';
-include __DIR__ . '/layout/sidebar.php';
 
+// ============================
+//  LAYOUT START
+// ============================
+
+include __DIR__ . '/layout/header.php'; // buka <html><body><div class="container">
+include __DIR__ . '/layout/sidebar.php'; // buka <div class="main" id="main">
+
+?>
+
+<!-- ====================== HEADER ADMIN ADA DI DALAM MAIN ====================== -->
+<div class="header">
+    <h3>Dashboard Admin</h3>
+
+    <div style="color:#7f8c8d;">
+        Selamat datang, <?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?>
+    </div>
+</div>
+
+<!-- ========================= ISI HALAMAN ========================== -->
+<?php
 switch ($page) {
     case 'dashboard':
-        // ambil statistik
         try {
             $countActivity = (int) $pdo->query("SELECT COUNT(*) FROM activity")->fetchColumn();
             $countFasilitas = (int) $pdo->query("SELECT COUNT(*) FROM fasilitas")->fetchColumn();
@@ -90,5 +99,4 @@ switch ($page) {
         break;
 }
 
-// footer
-include __DIR__ . '/layout/footer.php';
+include __DIR__ . '/layout/footer.php'; // menutup </div class="main"> dan </div class="container">
