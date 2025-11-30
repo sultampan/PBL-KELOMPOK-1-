@@ -1,12 +1,5 @@
 // admin/assets/js/produk.js
 
-// --- 1. FUNGSI UTAMA (Preview Gambar) ---
-// Ini adalah fungsi yang dipanggil oleh atribut onchange="" di form.php
-// admin/assets/js/produk.js
-
-// --- 1. FUNGSI UTAMA (Preview Gambar & Validasi Instan) ---
-// admin/assets/js/produk.js (Modifikasi Fungsi Preview Image)
-
 function previewImage(event) {
     const input = event.target;
     const imgPreview = document.getElementById("imgPreview");
