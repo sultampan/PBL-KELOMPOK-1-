@@ -3,6 +3,8 @@
         <h3>Daftar Produk</h3>
 
         <?php
+        // 🚨 KOREKSI: Tambahkan deklarasi global di sini
+        global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
         // LOGIKA INITIALISASI DAN EKSTRAKSI PAGINASI
         // Ini membuat variabel $currentPage, $totalPages, $searchKeyword, $limit, $currentSortBy, $currentSortOrder tersedia.
         if (isset($paginationData) && is_array($paginationData)) {
@@ -12,7 +14,7 @@
             $currentPage = 1;
             $totalPages = 1;
             $searchKeyword = null;
-            $limit = 10; 
+            $limit = 10;
             $currentSortBy = 'id_produk';
             $currentSortOrder = 'ASC';
         }
@@ -51,7 +53,7 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        
+
                         <th><?= getSortLink('nama', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
 
                         <th><?= getSortLink('deskripsi', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
@@ -65,14 +67,14 @@
                     <?php
                     // Penyesuaian nomor urut untuk paginasi (dimulai dari offset + 1)
                     $no = (($currentPage - 1) * $limit) + 1;
-                    
+
                     if ($list):
                         foreach ($list as $row):
                     ?>
                             <tr>
                                 <td><?= $no++ ?></td>
                                 <td><?= htmlspecialchars($row['nama']) ?></td>
-                                
+
                                 <td>
                                     <?php
                                     // Logika Pemotongan Deskripsi
@@ -84,13 +86,46 @@
                                     }
                                     ?>
                                 </td>
-                                
-                                <td>
-                                    <?php if ($row['gambar']): ?>
-                                        <img src="<?= $webUploadDir . $row['gambar'] ?>" width="120">
-                                    <?php else: ?>-<?php endif; ?>
-                                </td>
 
+                                <td>
+                                    
+                                    <?php if ($row['gambar']):
+
+                                        $original_filename = $row['gambar'];
+                                        $ext = pathinfo($original_filename, PATHINFO_EXTENSION);
+                                        $base_name = pathinfo($original_filename, PATHINFO_FILENAME);
+                                        $thumbnail_filename = $base_name . '-thumb.' . $ext;
+
+                                        // --- 1. Tentukan Path File Server dan Web ---
+                                        $server_thumb_path = $serverThumbDir . $thumbnail_filename; // Path server THUMBNAIL
+                                        $server_original_path = $serverUploadDir . $original_filename; // Path server ASLI
+
+                                        // --- 2. LOGIKA PENENTUAN TAMPILAN ---
+                                        if (is_file($server_thumb_path)) {
+                                            // A. TAMPILKAN THUMBNAIL (JPG/PNG/WEBP)
+                                            $image_path = $webThumbDir . $thumbnail_filename;
+                                            $path_for_mtime = $server_thumb_path;
+                                        } else {
+                                            // B. TAMPILKAN FILE ASLI (GIF atau Fallback)
+                                            $image_path = $webUploadDir . $original_filename;
+                                            $path_for_mtime = $server_original_path;
+                                        }
+
+                                        // 3. Cache Busting
+                                        if (is_file($path_for_mtime)) {
+                                            $timestamp = filemtime($path_for_mtime);
+                                            $image_path .= '?' . $timestamp; // Memaksa refresh
+                                        }
+
+                                    ?>
+                                        <img
+                                            src="<?= $image_path ?>"
+                                            style="max-width: 120px; height: auto;"
+                                            alt="<?= htmlspecialchars($row['nama']) ?> Thumbnail">
+                                    <?php else: ?>
+                                        -
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <?php if ($row['link_produk']): ?>
                                         <?php
@@ -107,7 +142,7 @@
                                         -
                                     <?php endif; ?>
                                 </td>
-                                
+
                                 <td>
                                     <a href="?page=produk&edit=<?= $row['id_produk'] ?>">Edit</a>
                                     <a href="javascript:void(0)" onclick="deleteProduct(<?= (int)$row['id_produk'] ?>)" class="del" title="Hapus Produk"> Hapus</a>
@@ -147,4 +182,5 @@
             </div>
         <?php endif; ?>
 
-    </div> </div>
+    </div>
+</div>

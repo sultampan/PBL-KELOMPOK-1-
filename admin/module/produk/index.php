@@ -6,6 +6,35 @@ require_once __DIR__ . '/../../../config/koneksi.php';
 
 require_once "model.php";
 
+// --- DEFINISI PATH UNIVERSAL YANG STABIL ---
+
+// 1. Tentukan Base Path Web Dinamis (URL)
+// Output: /Semester3/pbl/PBL-KELOMPOK-1-
+$scriptName = $_SERVER['SCRIPT_NAME'];
+$basePath = substr($scriptName, 0, strpos($scriptName, '/admin/'));
+$basePath = rtrim($basePath, '/'); 
+
+// 2. Tentukan Server Paths
+$projectRoot = dirname(__DIR__, 3) . '/'; // Naik 3 tingkat ke C:\...\PBL-KELOMPOK-1-\
+
+// Path Server File ASLI
+$uploadDir = $projectRoot . 'public/uploads/produk/'; 
+
+// Path Server File THUMBNAIL (LOKASI BARU: public/uploads/thumb/produk-thumb/)
+$serverThumbDir = $projectRoot . 'public/uploads/thumb/produk-thumb/';
+
+// Path Web File ASLI (URL)
+$webUploadDir = $basePath . '/public/uploads/produk/'; 
+
+// Path Web File THUMBNAIL (URL)
+$webThumbDir = $basePath . '/public/uploads/thumb/produk-thumb/'; 
+
+// Pastikan folder thumbnail ada
+if (!is_dir($serverThumbDir)) {
+    @mkdir($serverThumbDir, 0755, true);
+}
+// --- AKHIR DEFINISI PATH UNIVERSAL ---
+
 $uploadDir = __DIR__ . '/../../../public/uploads/produk/';
 $webUploadDir = '../public/uploads/produk/'; 
 

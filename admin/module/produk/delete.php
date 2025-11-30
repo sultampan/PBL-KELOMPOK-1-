@@ -14,7 +14,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
-error_reporting(E_ALL & ~E_NOTICE); // Menangkap semua error kecuali notice
+error_reporting(E_ALL & ~E_NOTICE); 
 
 require_once __DIR__ . '/../../../config/koneksi.php';
 require_once "model.php";
@@ -29,36 +29,55 @@ if ($id) {
     try {
         $id_int = (int)$id;
         $data = getProdukById($pdo, $id_int);
+        $original_filename = $data['gambar'] ?? null;
 
-        // 1. Hapus file foto (jika ada)
-        if ($data && $data['gambar']) {
-            $uploadDir = __DIR__ . '/../../../public/uploads/produk/';
-            if (is_file($uploadDir . $data['gambar'])) {
-                @unlink($uploadDir . $data['gambar']);
+        // --- DEFINISI PATH ---
+        $uploadDir = __DIR__ . '/../../../public/uploads/produk/'; // Lokasi File ASLI
+        // Dari admin/module/produk/ naik 2 tingkat (ke admin/) lalu masuk ke uploads/produk-thumb/
+        $thumbDir = __DIR__ . '/../../../public/uploads/thumb/produk-thumb/'; // lokasi thumbnail
+        // --- END DEFINISI PATH ---
+
+
+        // 1. Hapus file foto ASLI (jika ada)
+        if ($data && $original_filename) {
+            $original_file_path = $uploadDir . $original_filename;
+
+            if (is_file($original_file_path)) {
+                @unlink($original_file_path);
+            }
+
+            // 2. Hapus file THUMBNAIL terkait (jika ada)
+            $ext = pathinfo($original_filename, PATHINFO_EXTENSION);
+            $base_name = pathinfo($original_filename, PATHINFO_FILENAME);
+            $thumbnail_filename = $base_name . '-thumb.' . $ext;
+
+            $thumb_file_path = $thumbDir . $thumbnail_filename;
+            
+            if (is_file($thumb_file_path)) {
+                @unlink($thumb_file_path); // 🚨 Menghapus thumbnail dari admin/uploads/produk-thumb/
             }
         }
 
-        // 2. Hapus data dari DB
+        // 3. Hapus data dari DB
         deleteProduk($pdo, $id_int);
 
         // Kirim JSON Sukses
-        sendJson('success', "Produk berhasil **dihapus**.");
+        sendJson('success', "Produk berhasil dihapus.");
 
     } catch (\PDOException $e) {
         // MENANGKAP ERROR DATABASE SECARA SPESIFIK
-
         $errorMessage = "Database Error: " . $e->getMessage();
 
         // Kode 23503 adalah standar PostgreSQL untuk Foreign Key Violation
         if ($e->getCode() === '23503') {
-            $errorMessage = "Gagal menghapus: Produk ini tidak dapat dihapus karena masih terikat dengan data lain di sistem (misal: digunakan oleh Member atau Activity).";
+            $errorMessage = "Gagal menghapus: Produk ini tidak dapat dihapus karena masih terikat dengan data lain di sistem.";
         } else {
             $errorMessage = "Database Error: " . $e->getMessage();
         }
         sendJson('error', $errorMessage);
 
     } catch (Exception $e) {
-        // Menangkap error PHP umum lainnya (misal file not found)
+        // Menangkap error PHP umum lainnya
         sendJson('error', "Internal Error: " . $e->getMessage());
     }
 } else {

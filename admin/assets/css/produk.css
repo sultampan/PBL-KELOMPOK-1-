@@ -313,3 +313,50 @@
     align-items: center;
     justify-content: center;
 }
+
+/* CSS Tambahan untuk Toast Positioning */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999; 
+    width: 300px;
+}
+.toast {
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+    /* 🚨 Kunci: Opacity awal harus 1 agar terlihat */
+    opacity: 1; 
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out; 
+}
+.alert.error {
+    background-color: #fdd;
+    color: #c00;
+    border: 1px solid #e7c3c3;
+}
+.alert.success {
+    background-color: #e8f7e8;
+    color: #1a7d1a;
+    border: 1px solid #c9e8c9;
+}
+/* 🚨 Kunci: Kelas untuk transisi keluar */
+.toast.hide { 
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+/* --- Styling untuk Notifikasi Warning/Loading --- */
+.alert.warning {
+    background-color: #fdd;
+    color: #c00;
+    border: 1px solid #e7c3c3;
+}
+
+/* Pastikan semua alert styling ada di sini */
+.alert.error {
+    background-color: #fdd;
+    color: #c00;
+    border: 1px solid #e7c3c3;
+}

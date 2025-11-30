@@ -4,17 +4,6 @@
 // Catatan: Variabel $formData, $editData, $initialSrc, $initialStyle sudah tersedia.
 ?>
 
-<?php if (!empty($success)): ?>
-    <div class="alert success">
-        <?= htmlspecialchars($success) ?>
-    </div>
-<?php endif; ?>
-<?php if (!empty($error)): ?>
-    <div class="alert error">
-        <?= htmlspecialchars($error) ?>
-    </div>
-<?php endif; ?>
-
 <h2><?= $editData ? "Edit Produk" : "Tambah Produk Baru" ?></h2>
 
 <form id="productForm" method="POST" class="form-grid"> 
