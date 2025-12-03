@@ -4,7 +4,7 @@
 // Variabel $formData, $editData, $initialSrc, $initialStyle sudah tersedia dari form-load.php atau index.php
 ?>
 
-<h2><?= $editData ? "Edit Fasilitas (TEST)" : "Tambah Fasilitas Baru (TEST)" ?></h2>
+<h2><?= $editData ? "Edit Fasilitas" : "Tambah Fasilitas Baru" ?></h2>
 
 <form id="fasilitasForm" method="POST" class="form-grid"> 
     
