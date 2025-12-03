@@ -248,7 +248,7 @@
     /* Gaya untuk tombol 'Browse' (Sekarang di KIRI) */
     background: #667eea;
     color: #fff;
-    padding: 8px 12px; /* Sesuaikan padding */
+    padding: auto; /* Sesuaikan padding */
     border-radius: 8px 0 0 8px; /* Sudut tumpul hanya di kiri */
     font-weight: 600;
     height: 100%;
