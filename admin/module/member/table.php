@@ -1,50 +1,40 @@
-<div id="product-list-container">
+<div id="member-list-container">
     <div class="card">
-        <h3>Daftar Produk</h3>
+        <h3>Daftar Member</h3>
 
         <?php
-        // 🚨 KOREKSI: Tambahkan deklarasi global di sini
         global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
-        // LOGIKA INITIALISASI DAN EKSTRAKSI PAGINASI
-        // Ini membuat variabel $currentPage, $totalPages, $searchKeyword, $limit, $currentSortBy, $currentSortOrder tersedia.
-        if (isset($paginationData) && is_array($paginationData)) {
-            extract($paginationData);
-        } else {
-            // Fallback default jika variabel belum diset di controller
+        if (isset($paginationData) && is_array($paginationData)) extract($paginationData);
+        else {
             $currentPage = 1;
             $totalPages = 1;
             $searchKeyword = null;
             $limit = 10;
-            $currentSortBy = 'id_produk';
+            $currentSortBy = 'id_member';
             $currentSortOrder = 'ASC';
         }
 
-        /**
-         * Fungsi pembantu untuk membuat link pengurutan
-         */
+        // --- FUNGSI 1: SORTING HEADER ---
         function getSortLink($column, $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage)
         {
-            // Tentukan arah urutan baru
-            $newOrder = 'ASC';
-            if ($currentSortBy === $column) {
-                $newOrder = $currentSortOrder === 'ASC' ? 'DESC' : 'ASC';
-            }
+            $newOrder = ($currentSortBy === $column && $currentSortOrder === 'ASC') ? 'DESC' : 'ASC';
+            $icon = ($currentSortBy === $column) ? ($currentSortOrder === 'ASC' ? ' ▲' : ' ▼') : '';
+            $qs = '?page=member&sort=' . $column . '&order=' . $newOrder . '&p=' . $currentPage;
+            if ($searchKeyword) $qs .= '&keyword=' . urlencode($searchKeyword);
+            return '<a href="' . $qs . '" style="text-decoration: none; color: inherit;">' . ucfirst(str_replace('_', ' ', $column)) . $icon . '</a>';
+        }
 
-            // Ikon untuk menampilkan status
-            $icon = '';
-            if ($currentSortBy === $column) {
-                $icon = $currentSortOrder === 'ASC' ? ' ▲' : ' ▼';
-            }
+        // --- FUNGSI 2: PERBAIKI LINK (Agar jadi Absolute URL) ---
+        function fixUrl($url)
+        {
+            $url = trim($url);
+            if (empty($url)) return '';
 
-            // Bangun query string (mempertahankan page dan keyword)
-            $queryString = '?page=produk&sort=' . $column . '&order=' . $newOrder;
-            if ($searchKeyword) {
-                $queryString .= '&keyword=' . urlencode($searchKeyword);
+            // Jika tidak ada http:// atau https://, tambahkan https://
+            if (strpos($url, 'http://') === false && strpos($url, 'https://') === false) {
+                return 'https://' . $url;
             }
-            // Pertahankan halaman saat ini
-            $queryString .= '&p=' . $currentPage;
-
-            return '<a href="' . $queryString . '" style="text-decoration: none; color: inherit;">' . ucfirst($column) . $icon . '</a>';
+            return $url;
         }
         ?>
 
@@ -53,134 +43,96 @@
                 <thead>
                     <tr>
                         <th>No</th>
+                        <th><?= getSortLink('nama_member', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
+                        <th>NIDN</th>
+                        <th>Jabatan</th>
 
-                        <th><?= getSortLink('nama', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
-
-                        <th><?= getSortLink('deskripsi', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
-
-                        <th>Gambar</th>
-                        <th>Link</th>
+                        <th>Deskripsi</th>
+                        <th>Tautan</th>
+                        <th>Foto</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                    // Penyesuaian nomor urut untuk paginasi (dimulai dari offset + 1)
                     $no = (($currentPage - 1) * $limit) + 1;
-
                     if ($list):
                         foreach ($list as $row):
                     ?>
                             <tr>
                                 <td><?= $no++ ?></td>
-                                <td><?= htmlspecialchars($row['nama']) ?></td>
-
+                                <td><?= htmlspecialchars($row['nama_member']) ?></td>
+                                <td><?= htmlspecialchars($row['nidn']) ?></td>
+                                <td><?= htmlspecialchars($row['jabatan']) ?></td>
                                 <td>
                                     <?php
-                                    // Logika Pemotongan Deskripsi
-                                    $deskripsi_lengkap = htmlspecialchars($row['deskripsi']);
-                                    if (strlen($deskripsi_lengkap) > 90) {
-                                        echo substr($deskripsi_lengkap, 0, 90) . '...';
+                                    // Kita potong biar tabel tidak kepanjangan (maksimal 50 huruf)
+                                    $deskripsi = htmlspecialchars($row['deskripsi']);
+                                    if (strlen($deskripsi) > 50) {
+                                        echo substr($deskripsi, 0, 50) . '...';
                                     } else {
-                                        echo $deskripsi_lengkap;
+                                        echo $deskripsi;
                                     }
                                     ?>
                                 </td>
 
+                                <td style="white-space: nowrap;">
+                                    <?php if ($row['google_scholar']): ?>
+                                        <a href="<?= fixUrl($row['google_scholar']) ?>" target="_blank" class="btn-link-icon" title="Google Scholar">GS</a>
+                                        <?= ($row['orcid'] || $row['sinta']) ? '|' : '' ?>
+                                    <?php endif; ?>
+
+                                    <?php if ($row['orcid']): ?>
+                                        <a href="<?= fixUrl($row['orcid']) ?>" target="_blank" class="btn-link-icon" title="ORCID">OR</a>
+                                        <?= ($row['sinta']) ? '|' : '' ?>
+                                    <?php endif; ?>
+
+                                    <?php if ($row['sinta']): ?>
+                                        <a href="<?= fixUrl($row['sinta']) ?>" target="_blank" class="btn-link-icon" title="Sinta">ST</a>
+                                    <?php endif; ?>
+
+                                    <?php if (!$row['google_scholar'] && !$row['orcid'] && !$row['sinta']) echo "-"; ?>
+                                </td>
+
                                 <td>
-                                    
                                     <?php if ($row['gambar']):
+                                        $orig = $row['gambar'];
+                                        $ext = pathinfo($orig, PATHINFO_EXTENSION);
+                                        $thumb = pathinfo($orig, PATHINFO_FILENAME) . '-thumb.' . $ext;
+                                        $srvThumb = $serverThumbDir . $thumb;
+                                        $srvOrig = $serverUploadDir . $orig;
 
-                                        $original_filename = $row['gambar'];
-                                        $ext = pathinfo($original_filename, PATHINFO_EXTENSION);
-                                        $base_name = pathinfo($original_filename, PATHINFO_FILENAME);
-                                        $thumbnail_filename = $base_name . '-thumb.' . $ext;
-
-                                        // --- 1. Tentukan Path File Server dan Web ---
-                                        $server_thumb_path = $serverThumbDir . $thumbnail_filename; // Path server THUMBNAIL
-                                        $server_original_path = $serverUploadDir . $original_filename; // Path server ASLI
-
-                                        // --- 2. LOGIKA PENENTUAN TAMPILAN ---
-                                        if (is_file($server_thumb_path)) {
-                                            // A. TAMPILKAN THUMBNAIL (JPG/PNG/WEBP)
-                                            $image_path = $webThumbDir . $thumbnail_filename;
-                                            $path_for_mtime = $server_thumb_path;
-                                        } else {
-                                            // B. TAMPILKAN FILE ASLI (GIF atau Fallback)
-                                            $image_path = $webUploadDir . $original_filename;
-                                            $path_for_mtime = $server_original_path;
-                                        }
-
-                                        // 3. Cache Busting
-                                        if (is_file($path_for_mtime)) {
-                                            $timestamp = filemtime($path_for_mtime);
-                                            $image_path .= '?' . $timestamp; // Memaksa refresh
-                                        }
-
+                                        $imgPath = (is_file($srvThumb)) ? $webThumbDir . $thumb : $webUploadDir . $orig;
+                                        if (is_file(is_file($srvThumb) ? $srvThumb : $srvOrig)) $imgPath .= '?' . filemtime(is_file($srvThumb) ? $srvThumb : $srvOrig);
                                     ?>
-                                        <img
-                                            src="<?= $image_path ?>"
-                                            style="max-width: 120px; height: auto;"
-                                            alt="<?= htmlspecialchars($row['nama']) ?> Thumbnail">
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?>
+                                        <img src="<?= $imgPath ?>" style="max-width: 80px; height: auto; border-radius: 4px;" alt="Thumb">
+                                    <?php else: ?> - <?php endif; ?>
                                 </td>
                                 <td>
-                                    <?php if ($row['link_produk']): ?>
-                                        <?php
-                                        // Logika Perbaikan Link URL
-                                        $link_url = htmlspecialchars($row['link_produk']);
-                                        if (strpos($link_url, 'http://') === false && strpos($link_url, 'https://') === false) {
-                                            $link_url_fixed = 'https://' . $link_url;
-                                        } else {
-                                            $link_url_fixed = $link_url;
-                                        }
-                                        ?>
-                                        <a href="<?= $link_url_fixed ?>" target="_blank">Lihat</a>
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?>
-                                </td>
-
-                                <td>
-                                    <a href="?page=produk&edit=<?= $row['id_produk'] ?>">Edit</a>
-                                    <a href="javascript:void(0)" onclick="deleteProduct(<?= (int)$row['id_produk'] ?>)" class="del" title="Hapus Produk"> Hapus</a>
+                                    <a href="?page=member&edit=<?= $row['id_member'] ?>">Edit</a>
+                                    <a href="javascript:void(0)" onclick="deleteMember(<?= (int)$row['id_member'] ?>)" class="del" title="Hapus"> Hapus</a>
                                 </td>
                             </tr>
                         <?php endforeach;
                     else: ?>
                         <tr>
-                            <td colspan="6" class="text-center">Belum ada produk.</td>
+                            <td colspan="7" class="text-center">Belum ada member.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
 
-        <?php
-        // LOGIKA PAGINASI DISPLAY
-        if ($totalPages > 1):
-        ?>
+        <?php if ($totalPages > 1): ?>
             <div class="pagination" style="margin-top: 20px; text-align: center;">
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <?php
-                    // Membangun URL dengan mempertahankan sorting dan keyword
-                    $queryString = '?page=produk&p=' . $i;
-                    if ($searchKeyword) {
-                        $queryString .= '&keyword=' . urlencode($searchKeyword);
-                    }
-                    if ($currentSortBy) {
-                        $queryString .= '&sort=' . $currentSortBy . '&order=' . $currentSortOrder;
-                    }
-                    ?>
-                    <a href="<?= $queryString ?>"
-                        style="padding: 8px 12px; margin: 0 4px; border: 1px solid <?= ($i == $currentPage ? '#3498db' : '#ccc'); ?>; background-color: <?= ($i == $currentPage ? '#3498db' : '#fff'); ?>; color: <?= ($i == $currentPage ? '#fff' : '#3498db'); ?>; text-decoration: none; border-radius: 4px;">
-                        <?= $i ?>
-                    </a>
+                <?php for ($i = 1; $i <= $totalPages; $i++):
+                    $qs = '?page=member&p=' . $i;
+                    if ($searchKeyword) $qs .= '&keyword=' . urlencode($searchKeyword);
+                    if ($currentSortBy) $qs .= '&sort=' . $currentSortBy . '&order=' . $currentSortOrder;
+                ?>
+                    <a href="<?= $qs ?>" style="padding:8px 12px; margin:0 4px; border:1px solid <?= ($i == $currentPage ? '#3498db' : '#ccc'); ?>; background-color:<?= ($i == $currentPage ? '#3498db' : '#fff'); ?>; color:<?= ($i == $currentPage ? '#fff' : '#3498db'); ?>; border-radius:4px; text-decoration:none;"><?= $i ?></a>
                 <?php endfor; ?>
             </div>
         <?php endif; ?>
-
     </div>
 </div>
