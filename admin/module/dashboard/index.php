@@ -18,34 +18,39 @@ try {
 }
 ?>
 
-<div class="card">
-    <div class="content-box">
-        <?php if (isset($dbError)): ?>
-            <div class="error-box"><?= $dbError ?></div>
-        <?php endif; ?>
+<div class="dashboard-row">
 
-        <div style="text-align:center; padding:30px 10px;">
-            <h1>Selamat Datang di Admin Panel</h1>
-            <p style="color:#7f8c8d;">Kelola data Laboratory of Applied Informatics</p>
+    <div class="sb-card border-blue">
+        <div class="sb-card-info">
+            <span class="sb-card-title text-blue">Total Activity</span>
+            <span class="sb-card-value"><?= $countActivity ?></span>
         </div>
-
-        <div class="stats-grid">
-            <div class="stat-card" style="background:linear-gradient(135deg,#667eea,#764ba2)">
-                <h3><?= $countActivity ?></h3>
-                <p>Total Activity</p>
-            </div>
-            <div class="stat-card" style="background:linear-gradient(135deg,#f093fb,#f5576c)">
-                <h3><?= $countFasilitas ?></h3>
-                <p>Total Fasilitas</p>
-            </div>
-            <div class="stat-card" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">
-                <h3><?= $countMember ?></h3>
-                <p>Total Member</p>
-            </div>
-            <div class="stat-card" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">
-                <h3><?= $countProduk ?></h3>
-                <p>Total Produk</p>
-            </div>
-        </div>
+        <i class="fas fa-calendar sb-card-icon icon-blue"></i>
     </div>
+
+    <div class="sb-card border-green">
+        <div class="sb-card-info">
+            <span class="sb-card-title text-green">Total Fasilitas</span>
+            <span class="sb-card-value"><?= $countFasilitas ?></span>
+        </div>
+        <i class="fas fa-building sb-card-icon icon-green"></i>
+    </div>
+
+    <div class="sb-card border-cyan">
+        <div class="sb-card-info">
+            <span class="sb-card-title text-cyan">Total Member</span>
+            <span class="sb-card-value"><?= $countMember ?></span>
+        </div>
+        <i class="fas fa-users sb-card-icon icon-cyan"></i>
+    </div>
+
+    <div class="sb-card border-yellow">
+        <div class="sb-card-info">
+            <span class="sb-card-title text-yellow">Total Produk</span>
+            <span class="sb-card-value"><?= $countProduk ?></span>
+        </div>
+        <i class="fas fa-box sb-card-icon icon-yellow"></i>
+    </div>
+
+
 </div>

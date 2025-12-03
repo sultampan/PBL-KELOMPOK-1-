@@ -1,4 +1,4 @@
-<?php
+<?php 
 $start_time = microtime(true);
 require_once __DIR__ . '/../config/koneksi.php';
 
@@ -40,63 +40,76 @@ if (isset($_GET['logout'])) {
 // halaman default
 $page = $_GET['page'] ?? 'dashboard';
 
-
 // ============================
 //  LAYOUT START
 // ============================
 
-include __DIR__ . '/layout/header.php'; // buka <html><body><div class="container">
-include __DIR__ . '/layout/sidebar.php'; // buka <div class="main" id="main">
+include __DIR__ . '/layout/header.php';      // <html><body><div class="container">
+include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
 
+// ============================
+//  MAIN WRAPPER DIMULAI
+// ============================
 ?>
+<div class="main" id="main">
 
-<!-- ====================== HEADER ADMIN ADA DI DALAM MAIN ====================== -->
-<div class="header">
-    <h3>Dashboard Admin</h3>
+    <!-- ====================== HEADER ADMIN ADA DI DALAM MAIN ====================== -->
+    <div class="header-top" style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:20px;
+    ">
+        <h3 style="margin:0;">Dashboard Admin</h3>
 
-    <div style="color:#7f8c8d;">
-        Selamat datang, <?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?>
+        <div style="color:#7f8c8d;">
+            Selamat datang, <?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?>
+        </div>
     </div>
-</div>
 
-<!-- ========================= ISI HALAMAN ========================== -->
-<?php
-switch ($page) {
-    case 'dashboard':
-        try {
-            $countActivity = (int) $pdo->query("SELECT COUNT(*) FROM activity")->fetchColumn();
-            $countFasilitas = (int) $pdo->query("SELECT COUNT(*) FROM fasilitas")->fetchColumn();
-            $countMember = (int) $pdo->query("SELECT COUNT(*) FROM member")->fetchColumn();
-            $countProduk = (int) $pdo->query("SELECT COUNT(*) FROM produk")->fetchColumn();
-        } catch (PDOException $e) {
-            $countActivity = $countFasilitas = $countMember = $countProduk = 0;
-            echo "<div class='error-box'>Error Database: " . $e->getMessage() . "</div>";
-        }
-        include __DIR__ . '/module/dashboard/index.php';
-        break;
+    <!-- ========================= ISI HALAMAN ========================== -->
+    <?php
+    switch ($page) {
+        case 'dashboard':
+            try {
+                $countActivity = (int) $pdo->query("SELECT COUNT(*) FROM activity")->fetchColumn();
+                $countFasilitas = (int) $pdo->query("SELECT COUNT(*) FROM fasilitas")->fetchColumn();
+                $countMember = (int) $pdo->query("SELECT COUNT(*) FROM member")->fetchColumn();
+                $countProduk = (int) $pdo->query("SELECT COUNT(*) FROM produk")->fetchColumn();
+            } catch (PDOException $e) {
+                $countActivity = $countFasilitas = $countMember = $countProduk = 0;
+                echo "<div class='error-box'>Error Database: " . $e->getMessage() . "</div>";
+            }
+            include __DIR__ . '/module/dashboard/index.php';
+            break;
 
-    case 'produk':
-        include __DIR__ . '/module/produk/index.php';
-        break;
+        case 'produk':
+            include __DIR__ . '/module/produk/index.php';
+            break;
 
-    case 'member':
-        include __DIR__ . '/module/member/view.php';
-        include __DIR__ . '/module/member/table.php';
-        break;
+        case 'member':
+            include __DIR__ . '/module/member/view.php';
+            include __DIR__ . '/module/member/table.php';
+            break;
 
-    case 'fasilitas':
-        include __DIR__ . '/module/fasilitas/view.php';
-        include __DIR__ . '/module/fasilitas/table.php';
-        break;
+        case 'fasilitas':
+            include __DIR__ . '/module/fasilitas/view.php';
+            include __DIR__ . '/module/fasilitas/table.php';
+            break;
 
-    case 'activity':
-        include __DIR__ . '/module/activity/view.php';
-        include __DIR__ . '/module/activity/table.php';
-        break;
+        case 'activity':
+            include __DIR__ . '/module/activity/view.php';
+            include __DIR__ . '/module/activity/table.php';
+            break;
 
-    default:
-        echo "<h3>Halaman tidak ditemukan.</h3>";
-        break;
-}
+        default:
+            echo "<h3>Halaman tidak ditemukan.</h3>";
+            break;
+    }
+    ?>
 
-include __DIR__ . '/layout/footer.php'; // menutup </div class="main"> dan </div class="container">
+</div> <!-- END MAIN -->
+
+<?php 
+include __DIR__ . '/layout/footer.php'; 
+?>

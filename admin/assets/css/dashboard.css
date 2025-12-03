@@ -1,94 +1,81 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
 body {
-  font-family: Segoe UI, Tahoma, sans-serif;
-  background: #f0f2f5;
-}
-.container {
-  display: flex;
-  min-height: 100vh;
-}
-.sidebar {
-  width: 200px;
-  background: #2c3e50;
-  color: #fff;
-  padding: 20px;
-}
-.sidebar a {
-  color: #fff;
-  text-decoration: none;
-  display: block;
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 8px;
-}
-.sidebar a.active,
-.sidebar a:hover {
-  background: #34495e;
-}
-.main {
-  flex: 1;
-  padding: 20px;
-  width: calc(100% - 250px); 
-  box-sizing: border-box;
-}
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-}
-/* .content-box {
-  background: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-} */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 14px;
-  margin-top: 12px;
-}
-.stat-card {
-  padding: 18px;
-  border-radius: 8px;
-  color: #fff;
-  text-align: center;
-}
-.error-box {
-  background: #fee;
-  color: #900;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 15px;
+    font-family: 'Nunito', sans-serif !important;
 }
 
-.sidebar {
-    /* ... (gaya yang sudah ada: lebar, warna latar, dll.) ... */
-    
-    /* 🚨 PERUBAHAN KRUSIAL UNTUK MEMBUAT STICKY */
-    position: fixed; 
-    top: 0;           /* Tetap di bagian atas viewport */
-    height: 100vh;    /* Membuat sidebar mengambil tinggi penuh viewport */
-    overflow-y: auto; /* Memungkinkan sidebar discroll jika kontennya panjang */
-    z-index: 1000;    /* Memastikan sidebar muncul di atas konten lain */
+/* KECUALIKAN ikon Font Awesome agar tidak pakai Nunito */
+i, .fa, .fas, .far, .fal, .fab {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900;
 }
 
-/* 🚨 PENYESUAIAN UNTUK KONTEN UTAMA (.main) */
-/* Karena sidebar sudah FIXED, konten utama harus didorong ke kanan */
-.main {
-    /* Ganti nilai ini sesuai lebar sidebar Anda */
-    margin-left: 200px; 
-    padding: 20px;
+/* ===== Dashboard Cards ===== */
+
+.dashboard-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
 }
 
-html, body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden; 
-    width: 100%;
+.sb-card {
+    background: #ffffff;
+    padding: 20px 25px;
+    border-radius: 12px;
+    border-left: 4px solid #4e73df; /* default warna, nanti ditimpa */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.25s ease;
 }
+
+.sb-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+}
+
+/* Bagian kiri */
+.sb-card-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.sb-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    color: #4e73df; /* Default color */
+}
+
+.sb-card-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #5a5c69;
+}
+
+/* Bagian kanan - Icon */
+.sb-card-icon {
+    font-size: 36px;
+    opacity: 0.65; 
+    color: currentColor; 
+}
+
+
+/* ===== Warna Card ===== */
+
+.border-blue   { border-left-color: #4e73df; }
+.border-green  { border-left-color: #1cc88a; }
+.border-cyan   { border-left-color: #36b9cc; }
+.border-yellow { border-left-color: #f6c23e; }
+
+.text-blue   { color: #4e73df !important; }
+.text-green  { color: #1cc88a !important; }
+.text-cyan   { color: #36b9cc !important; }
+.text-yellow { color: #f6c23e !important; }
+
+.icon-blue   { color: #4e73df !important; }
+.icon-green  { color: #1cc88a !important; }
+.icon-cyan   { color: #36b9cc !important; }
+.icon-yellow { color: #f6c23e !important; }
+
