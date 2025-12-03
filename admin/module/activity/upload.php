@@ -1,8 +1,8 @@
 <?php
-// admin/module/member/upload.php
+// admin/module/activity/upload.php
 
 $serverAdminBase = dirname(__DIR__, 3) . '/'; 
-$thumbDir = $serverAdminBase . 'public/uploads/thumb/member-thumb/';
+$thumbDir = $serverAdminBase . 'public/uploads/thumb/activity-thumb/';
 
 if (!is_dir($thumbDir)) { @mkdir($thumbDir, 0755, true); }
 
@@ -11,6 +11,7 @@ function handleUpload($fieldName, $oldFile, $uploadDir, $allowedExt, $maxSize, $
 
     if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] === UPLOAD_ERR_NO_FILE) {
         if (!empty($oldFile) && is_file($uploadDir . $oldFile)) {
+            // Logika Rename (sama seperti fasilitas/produk)
             $filename_no_ext = pathinfo($oldFile, PATHINFO_FILENAME);
             $ext = pathinfo($oldFile, PATHINFO_EXTENSION);
             $lastHyphenPos = strrpos($filename_no_ext, '-'); 

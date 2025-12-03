@@ -1,5 +1,5 @@
 <?php
-// admin/module/member/form.php
+// admin/module/activity/form.php
 $initialSrc = !empty($editData['gambar']) ? $webUploadDir . $editData['gambar'] : '';
 $initialStyle = empty($editData['gambar']) ? 'display: none;' : '';
 $formData = $oldInput ?: $editData;

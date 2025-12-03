@@ -1,5 +1,5 @@
 <?php
-// admin/module/member/delete.php
+// admin/module/activity/delete.php
 function sendJson($status, $message) {
     header('Content-Type: application/json'); echo json_encode(['status' => $status, 'message' => $message]); exit;
 }
@@ -12,12 +12,12 @@ $id = $_POST['id'] ?? null;
 if ($id) {
     try {
         $id_int = (int)$id;
-        $data = getMemberById($pdo, $id_int);
+        $data = getActivityById($pdo, $id_int);
         if (!$data) sendJson('error', "Data tidak ditemukan.");
 
         $original_filename = $data['gambar'] ?? null;
-        $uploadDir = __DIR__ . '/../../../public/uploads/member/'; 
-        $thumbDir  = __DIR__ . '/../../../public/uploads/thumb/member-thumb/';
+        $uploadDir = __DIR__ . '/../../../public/uploads/activity/'; 
+        $thumbDir  = __DIR__ . '/../../../public/uploads/thumb/activity-thumb/';
 
         if ($original_filename) {
             $original_file_path = $uploadDir . $original_filename;
@@ -30,8 +30,8 @@ if ($id) {
             if (is_file($thumb_file_path)) @unlink($thumb_file_path); 
         }
 
-        deleteMember($pdo, $id_int);
-        sendJson('success', "Member berhasil dihapus.");
+        deleteActivity($pdo, $id_int);
+        sendJson('success', "Activity berhasil dihapus.");
 
     } catch (Exception $e) {
         sendJson('error', "Gagal menghapus: " . $e->getMessage());

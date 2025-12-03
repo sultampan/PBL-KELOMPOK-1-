@@ -1,5 +1,10 @@
 <?php
 // admin/module/fasilitas/save.php
+
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+error_reporting(E_ALL);
+
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../../../config/koneksi.php';
@@ -12,58 +17,59 @@ function sendJson($status, $message) {
     exit;
 }
 
-// Path folder upload (naik 3 level ke root admin, lalu ke public)
+// 1. Definisi Path
 $uploadDir = __DIR__ . '/../../../public/uploads/fasilitas/';
+$thumbDir  = __DIR__ . '/../../../public/uploads/thumb/fasilitas-thumb/'; // <--- TAMBAHAN PATH THUMBNAIL
 @mkdir($uploadDir, 0755, true);
 
 $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-$maxSize = 5 * 1024 * 1024; // 5MB
+$maxSize = 5 * 1024 * 1024; 
 
-// 1. Ambil Input (sesuai tabel fasilitas)
 $judul = trim($_POST['judul'] ?? '');
 $deskripsi = trim($_POST['deskripsi'] ?? '');
-// id_galery adalah Primary Key
-$id = $_POST['id_galery'] ?? null; 
+$id = $_POST['id_galery'] ?? null;
 $oldImg = $_POST['gambar_lama'] ?? null;
 
-// Buat slug dari JUDUL
 $newSlug = createSlug($judul);
 $new_uploaded_filename = null; 
 
 $should_remove_old_image = ($_POST['remove_existing_image'] ?? '0') === '1';
 
 try {
-    // 2. Hapus Gambar Lama Jika Diminta
+    // --- LOGIKA HAPUS GAMBAR LAMA + THUMBNAIL ---
     if ($should_remove_old_image && !empty($oldImg)) {
+        // A. Hapus File Utama
         $file = $uploadDir . $oldImg;
         if (is_file($file)) @unlink($file);
+        
+        // B. Hapus Thumbnail (REVISI BUG)
+        $ext = pathinfo($oldImg, PATHINFO_EXTENSION);
+        $base_name = pathinfo($oldImg, PATHINFO_FILENAME);
+        $thumb_name = $base_name . '-thumb.' . $ext;
+        $thumb_path = $thumbDir . $thumb_name;
+        
+        if (is_file($thumb_path)) @unlink($thumb_path);
         
         $oldImg = null;
         $gambar = null; 
     }
 
-    // 3. Proses Upload
-    // Parameter pertama "gambar" harus sesuai name di <input type="file" name="gambar">
     $gambar = handleUpload("gambar", $oldImg, $uploadDir, $allowedExt, $maxSize, $newSlug);
 
     if ($gambar !== $oldImg) {
         $new_uploaded_filename = $gambar;
     }
 
-    // 4. Simpan ke Database
     if ($id) {
-        // UPDATE
         updateFasilitas($pdo, $id, $judul, $deskripsi, $gambar);
         sendJson('success', "Data fasilitas berhasil diperbarui.");
     } else {
-        // INSERT
-        $id_admin = $_SESSION['id_admin'] ?? 1; // Default 1 jika session kosong (dev mode)
+        $id_admin = $_SESSION['id_admin'] ?? 1;
         insertFasilitas($pdo, $judul, $deskripsi, $gambar, $id_admin);
         sendJson('success', "Fasilitas baru berhasil ditambahkan.");
     }
 
 } catch (Exception $e) {
-    // Rollback: Hapus file fisik jika DB gagal
     if ($new_uploaded_filename && is_file($uploadDir . $new_uploaded_filename)) {
         @unlink($uploadDir . $new_uploaded_filename);
     }
