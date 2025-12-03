@@ -1,3 +1,5 @@
+/*  admin/assests/css/produk.css*/
+
 .card {
     background: #fff;
     padding: 20px;
@@ -201,7 +203,7 @@
 }
 
 /* Gaya khusus untuk link 'Batal' */
-.button-group a.btn-secondary {
+.button-group button.btn-secondary {
     line-height: normal; 
     box-sizing: border-box;
     background-color: #95a5a6;
