@@ -89,8 +89,7 @@ include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
             break;
 
         case 'member':
-            include __DIR__ . '/module/member/view.php';
-            include __DIR__ . '/module/member/table.php';
+            include __DIR__ . '/module/member/index.php';
             break;
 
         case 'fasilitas':
@@ -98,8 +97,7 @@ include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
             break;
 
         case 'activity':
-            include __DIR__ . '/module/activity/view.php';
-            include __DIR__ . '/module/activity/table.php';
+            include __DIR__ . '/module/activity/index.php';
             break;
 
         default:
