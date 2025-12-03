@@ -1,147 +1,114 @@
 <?php
-// admin/module/produk/model.php
+// admin/module/member/model.php
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Tambahkan pengaman untuk fungsi yang membutuhkan $pdo
 function checkPdo($pdo) {
-    if (!$pdo instanceof PDO) {
-        throw new Exception("Error: Koneksi database (\$pdo) tidak tersedia.");
-    }
+    if (!$pdo instanceof PDO) throw new Exception("Koneksi database gagal.");
 }
 
-/**
- * Ambil semua produk
- */
-function getProdukAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_produk', $sortOrder = 'ASC') { 
+function getMemberAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_member', $sortOrder = 'ASC') { 
     checkPdo($pdo);
-    
-    // Validasi input agar aman dari SQL Injection
-    // Pastikan $sortBy hanya kolom yang diizinkan
-    $allowedColumns = ['id_produk', 'nama', 'deskripsi'];
-    if (!in_array($sortBy, $allowedColumns)) {
-        $sortBy = 'id_produk';
-    }
-
-    // Pastikan $sortOrder hanya ASC atau DESC
+    $allowedColumns = ['id_member', 'nama_member', 'nidn', 'jabatan'];
+    if (!in_array($sortBy, $allowedColumns)) $sortBy = 'id_member';
     $sortOrder = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
 
-    $sql = "SELECT * FROM produk ";
+    $sql = "SELECT * FROM member ";
     $params = [];
     
     if ($keyword) {
-        $sql .= "WHERE nama ILIKE :keyword OR deskripsi ILIKE :keyword ";
+        $sql .= "WHERE nama_member ILIKE :keyword OR nidn ILIKE :keyword OR jabatan ILIKE :keyword ";
         $params[':keyword'] = '%' . $keyword . '%'; 
     }
     
-    // KLAUSA PENGURUTAN DINAMIS
-    $sql .= "ORDER BY " . $sortBy . " " . $sortOrder; 
-    
-    // ... (sisa logika LIMIT/OFFSET) ...
-
-    $sql .= " LIMIT :limit OFFSET :offset";
-
+    $sql .= "ORDER BY " . $sortBy . " " . $sortOrder . " LIMIT :limit OFFSET :offset";
     $stmt = $pdo->prepare($sql);
-    
-    // Bind parameter LIMIT/OFFSET (harus integer)
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    
-    // Bind parameter keyword jika ada
-    if ($keyword) {
-        $stmt->bindValue(':keyword', $params[':keyword'], PDO::PARAM_STR);
-    }
+    if ($keyword) $stmt->bindValue(':keyword', $params[':keyword'], PDO::PARAM_STR);
     
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-/**
- * Mendapatkan total jumlah produk (dengan mempertimbangkan keyword pencarian)
- */
-function getTotalProdukCount($pdo, $keyword = null) {
+function getTotalMemberCount($pdo, $keyword = null) {
     checkPdo($pdo);
-    
-    $sql = "SELECT COUNT(id_produk) FROM produk ";
+    $sql = "SELECT COUNT(id_member) FROM member ";
     $params = [];
-    
-    // Logika Pencarian harus SAMA dengan getProdukAll
     if ($keyword) {
-        $sql .= "WHERE nama ILIKE :keyword OR deskripsi ILIKE :keyword ";
+        $sql .= "WHERE nama_member ILIKE :keyword OR nidn ILIKE :keyword OR jabatan ILIKE :keyword ";
         $params[':keyword'] = '%' . $keyword . '%'; 
     }
-    
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    return (int) $stmt->fetchColumn(); // Mengambil nilai hitungan pertama
+    return (int) $stmt->fetchColumn();
 }
 
-/**
- * Ambil 1 produk berdasarkan id
- */
-function getProdukById($pdo, $id) {
+function getMemberById($pdo, $id) {
     checkPdo($pdo); 
-    $stmt = $pdo->prepare("SELECT * FROM produk WHERE id_produk = :id");
+    $stmt = $pdo->prepare("SELECT * FROM member WHERE id_member = :id");
     $stmt->execute([':id' => $id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-/**
- * Insert produk baru
- */
-function insertProduk($pdo, $nama, $deskripsi, $gambar, $link, $id_admin) {
+function insertMember($pdo, $data) {
     checkPdo($pdo);
     $stmt = $pdo->prepare("
-        INSERT INTO produk (nama, deskripsi, gambar, link_produk, created_by)
-        VALUES (:nama, :deskripsi, :gambar, :link, :created_by)
+        INSERT INTO member (nama_member, nidn, jabatan, deskripsi, google_scholar, orcid, sinta, gambar, created_by)
+        VALUES (:nama, :nidn, :jabatan, :deskripsi, :scholar, :orcid, :sinta, :gambar, :created_by)
     ");
-    $stmt->execute([
-        ':nama' => $nama,
-        ':deskripsi' => $deskripsi,
-        ':gambar' => $gambar,
-        ':link' => $link,
-        ':created_by' => $id_admin
-    ]);
+    $stmt->execute($data);
 }
 
-/**
- * Update produk
- */
-function updateProduk($pdo, $id, $nama, $deskripsi, $gambar, $link) {
+function updateMember($pdo, $data) {
     checkPdo($pdo);
     $stmt = $pdo->prepare("
-        UPDATE produk
-        SET nama = :nama, deskripsi = :deskripsi, gambar = :gambar, link_produk = :link
-        WHERE id_produk = :id
+        UPDATE member
+        SET nama_member = :nama, nidn = :nidn, jabatan = :jabatan, deskripsi = :deskripsi,
+            google_scholar = :scholar, orcid = :orcid, sinta = :sinta, gambar = :gambar
+        WHERE id_member = :id
     ");
-    $stmt->execute([
-        ':nama' => $nama,
-        ':deskripsi' => $deskripsi,
-        ':gambar' => $gambar,
-        ':link' => $link,
-        ':id' => $id
-    ]);
+    $stmt->execute($data);
 }
 
-/**
- * Delete produk
- */
-function deleteProduk($pdo, $id) {
+function deleteMember($pdo, $id) {
     checkPdo($pdo);
-    $stmt = $pdo->prepare("DELETE FROM produk WHERE id_produk = :id");
+    $stmt = $pdo->prepare("DELETE FROM member WHERE id_member = :id");
     $stmt->execute([':id' => $id]);
 }
 
-/**
- * Slug generator (untuk nama file gambar)
- */
 function createSlug($text) {
     $text = preg_replace('~[^\pL\d]+~u', '-', $text);
     $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
     $text = preg_replace('~[^-\w]+~', '', $text);
     $text = trim($text, '-');
-    $text = preg_replace('~-+~', '-', $text);
     $text = strtolower($text);
-    return $text ?: 'file';
+    return $text ?: 'member';
 }
 
+/**
+ * Cek apakah Head of Laboratory sudah ada.
+ * @param PDO $pdo
+ * @param int|null $excludeId (Opsional) ID member yang sedang diedit agar tidak menghitung dirinya sendiri.
+ * @return bool True jika sudah ada, False jika belum.
+ */
+function isHeadLabExist($pdo, $excludeId = null) {
+    checkPdo($pdo);
+    
+    // Cari member yang jabatannya 'Head of Laboratory'
+    $sql = "SELECT COUNT(*) FROM member WHERE jabatan = 'Head of Laboratory'";
+    
+    // Jika sedang edit, jangan hitung diri sendiri (supaya bisa update profil sendiri)
+    if ($excludeId) {
+        $sql .= " AND id_member != :id";
+    }
+    
+    $stmt = $pdo->prepare($sql);
+    
+    if ($excludeId) {
+        $stmt->bindValue(':id', $excludeId, PDO::PARAM_INT);
+    }
+    
+    $stmt->execute();
+    return (int) $stmt->fetchColumn() > 0;
+}
 ?>
