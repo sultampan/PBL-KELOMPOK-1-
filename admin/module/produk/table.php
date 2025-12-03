@@ -1,3 +1,4 @@
+<!-- admin/module/produk/table.php -->
 <div id="product-list-container">
     <div class="card">
         <h3>Daftar Produk</h3>
