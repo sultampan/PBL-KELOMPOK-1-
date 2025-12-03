@@ -7,7 +7,17 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../../../config/koneksi.php'; 
 require_once "model.php";
 
-// Pastikan Anda mendapatkan variabel dari URL/GET yang dikirim oleh AJAX
+// --- DEFINISI PATH UNIVERSAL (REPLIKA DARI produk/index.php) ---
+$scriptName = $_SERVER['SCRIPT_NAME'];
+$basePath = substr($scriptName, 0, strpos($scriptName, '/admin/'));
+$basePath = rtrim($basePath, '/'); 
+$projectRoot = dirname(__DIR__, 3) . '/'; 
+
+$serverUploadDir = $projectRoot . 'public/uploads/produk/'; 
+$serverThumbDir = $projectRoot . 'public/uploads/thumb/produk-thumb/';
+$webUploadDir = $basePath . '/public/uploads/produk/'; 
+$webThumbDir = $basePath . '/public/uploads/thumb/produk-thumb/';
+// --- AKHIR DEFINISI PATH UNIVERSAL ---
 
 // --- Konfigurasi dan Pengambilan Parameter ---
 $limit = (int)($_GET['limit'] ?? 10);
@@ -17,9 +27,16 @@ $searchKeyword = $_GET['keyword'] ?? null;
 $currentSortBy = $_GET['sort'] ?? 'id_produk';
 $currentSortOrder = $_GET['order'] ?? 'ASC';
 
-// Pastikan $webUploadDir terdefinisi agar gambar muncul
-$webUploadDir = '../public/uploads/produk/'; 
-// Pastikan path ini sama dengan yang digunakan di index.php
+// // --- DEFINISI PATH BARU ---
+
+// // Path Web untuk file ASLI (public/uploads/produk/)
+// $webUploadDir = '../public/uploads/produk/'; 
+// // Path Web untuk file THUMBNAIL (admin/uploads/produk-thumb/)
+// $webThumbDir = '../public/uploads/thumb/produk-thumb/'; 
+
+// // Path Server untuk pengecekan is_file()
+// $serverUploadDir = __DIR__ . '/../../../public/uploads/produk/'; 
+// $serverThumbDir = __DIR__ . '/../../../public/uploads/thumb/produk-thumb/';
 
 // --- Ambil Data Terbaru ---
 $totalRecords = getTotalProdukCount($pdo, $searchKeyword);
@@ -37,6 +54,5 @@ $paginationData = [
 ];
 
 // Output HANYA HTML TABEL
-// File table.php sudah berisi <div class="card">...</table>
 require_once __DIR__ . "/table.php"; 
 ?>
