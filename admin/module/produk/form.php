@@ -8,9 +8,6 @@ $formData = $oldInput ?: $editData;
 <div class="card">
     
     <div id="form-content-wrapper"> 
-        
-
-        
         <?php 
         require_once __DIR__ . '/form-fields.php'; 
         ?>

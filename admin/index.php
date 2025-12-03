@@ -58,7 +58,7 @@ include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
         display:flex;
         justify-content:space-between;
         align-items:center;
-        margin-bottom:20px;
+        margin-bottom:10px;
     ">
         <h3>Dashboard Admin</h3>
 
