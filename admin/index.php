@@ -60,7 +60,7 @@ include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
         align-items:center;
         margin-bottom:20px;
     ">
-        <h3 style="margin:0;">Dashboard Admin</h3>
+        <h3 style="margin:20px;">Dashboard Admin</h3>
 
         <div style="color:#7f8c8d;">
             Selamat datang, <?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?>
