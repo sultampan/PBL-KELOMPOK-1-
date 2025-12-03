@@ -1,4 +1,6 @@
 <?php
+// admin/module/produk/index.php
+
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 // Memuat koneksi DB
