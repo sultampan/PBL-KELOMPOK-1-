@@ -1,4 +1,5 @@
-<?php 
+<?php
+// admin/index.php 
 $start_time = microtime(true);
 require_once __DIR__ . '/../config/koneksi.php';
 
@@ -93,8 +94,7 @@ include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
             break;
 
         case 'fasilitas':
-            include __DIR__ . '/module/fasilitas/view.php';
-            include __DIR__ . '/module/fasilitas/table.php';
+            include __DIR__ . '/module/fasilitas/index.php';
             break;
 
         case 'activity':
