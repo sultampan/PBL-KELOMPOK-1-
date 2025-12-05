@@ -1,9 +1,4 @@
-<!-- layout/footer.php -->
-
-</div> <!-- end of main -->
-</div> <!-- end of container -->
-
-<script src="assets/js/produk.js"></script>
+</div> </div> <script src="assets/js/produk.js"></script>
 
 <div style="font-size: 12px; padding: 10px; text-align: center; color: #7f8c8d; background: #ecf0f1; margin-top: 15px;">
     <?php
@@ -13,7 +8,6 @@
     ?>
 </div>
 
-<!-- =============== SB ADMIN STYLE SIDEBAR TOGGLE SCRIPT =============== -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -24,20 +18,19 @@ document.addEventListener("DOMContentLoaded", function () {
     // kalau tombol tidak ditemukan, keluar aman
     if (!toggleBtn) return;
 
-    // ambil icon toggle dengan aman
-    const toggleIcon = toggleBtn.querySelector(".toggle-icon");
-
     toggleBtn.addEventListener('click', () => {
-
-        // toggle collapse
-        const collapsed = sidebar.classList.toggle('collapsed');
+        // 1. Toggle collapse (Cukup ini saja!)
+        // CSS akan mendeteksi class 'collapsed' dan otomatis memutar ikonnya.
+        sidebar.classList.toggle('collapsed');
         main.classList.toggle('collapsed');
-
-        // ganti ikon HANYA ikon toggle, bukan yang lain
+        
+        // ❌ BAGIAN INI DIHAPUS SAJA BIAR GAK BENTROK SAMA CSS ROTATE
+        /* const toggleIcon = toggleBtn.querySelector(".toggle-icon");
         if (toggleIcon) {
             toggleIcon.classList.remove("fa-angle-left", "fa-angle-right");
             toggleIcon.classList.add(collapsed ? "fa-angle-right" : "fa-angle-left");
         }
+        */
     });
 });
 </script>

@@ -1,5 +1,6 @@
 // admin/assets/js/member.js
 
+// 1. PREVIEW GAMBAR
 function previewMemberImage(event) {
     const input = event.target;
     const imgPreview = document.getElementById("imgPreview");
@@ -81,7 +82,67 @@ function displayAlert(message, type) {
     }, 4000); 
 }
 
-// --- FUNGSI MUAT ULANG GRID VIA AJAX (REVISI UNTUK GRID) ---
+// 2. MODAL LOGIC
+function showMemberDetail(data) {
+    const modal = document.getElementById("memberDetailModal");
+    document.getElementById("detailNama").textContent = data.nama_member;
+    document.getElementById("detailJabatan").textContent = data.jabatan || '-';
+    document.getElementById("detailNidn").textContent = data.nidn || '-';
+    document.getElementById("detailDeskripsi").textContent = data.deskripsi || '-';
+
+    const imgElement = document.getElementById("detailFoto");
+    if (data.gambar) {
+        imgElement.src = `../public/uploads/member/${data.gambar}`;
+        imgElement.style.display = 'inline-block';
+    } else {
+        imgElement.style.display = 'none';
+    }
+
+    const linkContainer = document.getElementById("linkContainer");
+    linkContainer.innerHTML = ''; 
+    
+    const fixUrlJs = (url) => {
+        if (!url) return '';
+        if (!url.startsWith('http://') && !url.startsWith('https://')) return 'https://' + url;
+        return url;
+    };
+
+    let hasLink = false;
+    if (data.google_scholar) { linkContainer.innerHTML += `<a href="${fixUrlJs(data.google_scholar)}" target="_blank" class="link-btn">Google Scholar</a>`; hasLink = true; }
+    if (data.orcid) { linkContainer.innerHTML += `<a href="${fixUrlJs(data.orcid)}" target="_blank" class="link-btn">ORCID</a>`; hasLink = true; }
+    if (data.sinta) { linkContainer.innerHTML += `<a href="${fixUrlJs(data.sinta)}" target="_blank" class="link-btn">Sinta</a>`; hasLink = true; }
+    if (!hasLink) linkContainer.innerHTML = '<span style="color:#999; font-style:italic;">Tidak ada link.</span>';
+
+    modal.style.display = "block";
+}
+
+function closeMemberModal() { document.getElementById("memberDetailModal").style.display = "none"; }
+window.onclick = function(event) {
+    const modal = document.getElementById("memberDetailModal");
+    if (event.target == modal) modal.style.display = "none";
+}
+
+// 3. CORE AJAX LOGIC (PAGINATION & RELOAD)
+
+// Handle Back/Forward Button
+window.addEventListener('popstate', function(event) {
+    loadMemberList();
+});
+
+// Handle Klik Pagination (.page-link) biar gak reload halaman
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('page-link')) {
+        e.preventDefault(); // Stop reload
+        const href = e.target.getAttribute('href'); // Ambil link (misal: ?page=member&p=2)
+        if (href) {
+            // Update URL browser tanpa reload
+            window.history.pushState(null, "", href);
+            // Panggil fungsi load ajax
+            loadMemberList();
+        }
+    }
+});
+
 function loadMemberList() {
   const listContainer = document.getElementById("member-list-container");
   if (!listContainer) return;
@@ -89,38 +150,42 @@ function loadMemberList() {
   const currentParams = new URLSearchParams(window.location.search);
   const url = "module/member/table-load.php" + window.location.search;
 
-  listContainer.innerHTML = '<div style="text-align:center; padding:20px;">Memuat data...</div>';
+  listContainer.style.opacity = "0.5"; 
 
   fetch(url)
     .then((response) => response.text())
     .then((html) => {
-      // Masukkan HTML ke DOM sementara
-      const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = html;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      
+      // Ambil isi baru
+      const newContentWrapper = doc.getElementById('member-list-container');
+      
+      if (newContentWrapper) {
+          // GANTI TOTAL isi container lama dengan yang baru (Anti Numpuk)
+          listContainer.innerHTML = newContentWrapper.innerHTML;
+      } else {
+          listContainer.innerHTML = html;
+      }
+      
+      listContainer.style.opacity = "1";
 
-      // --- LOGIKA BARU UNTUK GRID ---
+      // Cek Halaman Kosong (Redirect Otomatis)
       const currentPage = parseInt(currentParams.get("p")) || 1;
-      
-      // Hitung jumlah kartu (.mit-card) yang ada di HTML baru
-      const totalCards = tempDiv.querySelectorAll(".mit-card").length;
-      
-      // Cek apakah ada pesan "Belum ada data member" (biasanya di tag <p> atau div)
-      const isEmptyMessage = tempDiv.innerHTML.includes("Belum ada data member");
+      const totalCards = listContainer.querySelectorAll(".mit-card").length;
+      const isEmptyMessage = listContainer.innerHTML.includes("Belum ada data");
 
-      // Jika kita di halaman > 1, tapi datanya 0 (kosong), mundur 1 halaman
       if (currentPage > 1 && totalCards === 0 && (isEmptyMessage || totalCards === 0)) {
         currentParams.set("p", currentPage - 1); 
-        window.history.pushState(null, "", window.location.pathname + "?" + currentParams.toString());
-        loadMemberList(); // Muat ulang halaman sebelumnya
-        return;
+        const newUrl = window.location.pathname + "?" + currentParams.toString();
+        window.history.replaceState(null, "", newUrl); 
+        loadMemberList(); 
       }
-      // -----------------------------
-
-      listContainer.innerHTML = html;
     })
     .catch((error) => {
       console.error("Error loading grid:", error);
       listContainer.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat data.</div>';
+      listContainer.style.opacity = "1";
     });
 }
 
@@ -133,10 +198,9 @@ function loadEmptyMemberForm(successMessage) {
 
     fetch(url).then((response) => response.text()).then((html) => {
         formContainer.innerHTML = html;
+        setupFormValidation(); 
         const newNameInput = document.querySelector('#memberForm input[name="nama_member"]');
         if (newNameInput) setTimeout(() => { newNameInput.focus(); }, 50); 
-    }).catch((error) => {
-        console.error("Error loading form:", error);
     });
 }
 
@@ -150,12 +214,11 @@ function cancelMemberForm() {
             const currentUrl = new URL(window.location);
             currentUrl.searchParams.delete('edit'); 
             window.history.pushState({}, '', currentUrl);
-
+            setupFormValidation();
             const namaInput = document.querySelector('#memberForm input[name="nama_member"]');
             if (namaInput) setTimeout(() => { namaInput.focus(); }, 50);
-            
             document.querySelector('.card h2').scrollIntoView({ behavior: 'smooth' });
-    }).catch((error) => { console.error("Error resetting form:", error); });
+    });
 }
 
 function deleteMember(id) {
@@ -172,9 +235,53 @@ function deleteMember(id) {
     }).catch((error) => { console.error("AJAX Delete Error:", error); displayAlert("Terjadi kesalahan jaringan.", "error"); });
 }
 
-// ... (kode fungsi preview, remove, dll di atas BIARKAN SAJA) ...
+// 4. VALIDASI FORM
+function validateFormState() {
+    const nama = document.querySelector('input[name="nama_member"]')?.value.trim();
+    const nidn = document.querySelector('input[name="nidn"]')?.value.trim();
+    const jabatanInput = document.querySelector('[name="jabatan"]');
+    const jabatan = jabatanInput ? jabatanInput.value.trim() : '';
+    const idMemberInput = document.querySelector('input[name="id_member"]');
+    const isEditMode = idMemberInput && idMemberInput.value !== "";
+    
+    // Tambahan: Deteksi perubahan input apapun (untuk tombol Batal)
+    const allInputs = document.querySelectorAll('#memberForm input:not([type=hidden]), #memberForm textarea, #memberForm select');
+    let isDirty = false;
+    allInputs.forEach(inp => { if(inp.value.trim() !== '') isDirty = true; });
+
+    const btnSimpan = document.getElementById("submitBtn");
+    const btnBatal = document.querySelector(".button-group .btn-secondary");
+
+    if (btnSimpan) {
+        if (nama && nidn && jabatan) {
+            btnSimpan.disabled = false; btnSimpan.style.opacity = "1"; btnSimpan.style.cursor = "pointer";
+        } else {
+            btnSimpan.disabled = true; btnSimpan.style.opacity = "0.6"; btnSimpan.style.cursor = "not-allowed";
+        }
+    }
+
+    if (btnBatal) {
+        if (isEditMode || isDirty) {
+            btnBatal.disabled = false; btnBatal.style.opacity = "1"; btnBatal.style.cursor = "pointer";
+        } else {
+            btnBatal.disabled = true; btnBatal.style.opacity = "0.6"; btnBatal.style.cursor = "not-allowed";
+        }
+    }
+}
+
+function setupFormValidation() {
+    const inputs = document.querySelectorAll('#memberForm input, #memberForm textarea, #memberForm select');
+    if(inputs.length > 0) {
+        validateFormState();
+        inputs.forEach(input => {
+            input.addEventListener('input', validateFormState);
+            input.addEventListener('change', validateFormState);
+        });
+    }
+}
 
 document.addEventListener("DOMContentLoaded", function () {
+  setupFormValidation();
   document.addEventListener("submit", function (e) {
     if (e.target && e.target.id === "memberForm") {
       e.preventDefault(); 
@@ -183,11 +290,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const url = "module/member/save.php"; 
       
       const submitBtn = document.getElementById("submitBtn");
-      // 1. Simpan teks asli tombol sebelum diubah (Simpan / Update)
-      const originalBtnText = submitBtn.textContent; 
-      
-      submitBtn.disabled = true; 
-      submitBtn.textContent = "Memproses...";
+      submitBtn.disabled = true; submitBtn.textContent = "Memproses...";
 
       fetch(url, { method: "POST", body: formData })
         .then((response) => response.json())
@@ -198,28 +301,17 @@ document.addEventListener("DOMContentLoaded", function () {
             loadEmptyMemberForm(data.message);
             if (isUpdate) window.history.pushState({}, document.title, window.location.pathname + "?page=member");
           } else {
-            // JIKA ERROR
             displayAlert(data.message, "error");
-            
-            // Reset input file visual jika error (opsional)
             const input = document.getElementById('inputGambar');
-            const img = document.getElementById('imgPreview');
             if (input) input.value = ''; 
-            if (img) img.style.display = 'none'; 
             updateMemberFileName(input);
           }
         })
-        .catch((error) => { 
-            console.error("AJAX Error:", error); 
-            displayAlert("Terjadi kesalahan jaringan/server.", "error"); 
-        })
+        .catch((error) => { console.error("AJAX Error:", error); displayAlert("Terjadi kesalahan jaringan.", "error"); })
         .finally(() => { 
-            // BAGIAN INI YANG DIPERBAIKI
             const finalBtn = document.getElementById("submitBtn");
             if (finalBtn) {
                 finalBtn.disabled = false;
-                // Kembalikan teks tombol ke aslinya ("Simpan" atau "Update")
-                // Kita cek apakah input id_member ada isinya di formData
                 const isEditMode = formData.get("id_member"); 
                 finalBtn.textContent = isEditMode ? "Update" : "Simpan";
             }
@@ -227,76 +319,3 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
-
-// admin/assets/js/member.js
-
-// --- FUNGSI MODAL DETAIL ---
-
-function showMemberDetail(data) {
-    const modal = document.getElementById("memberDetailModal");
-    
-    // 1. Isi Data Teks
-    document.getElementById("detailNama").textContent = data.nama_member;
-    document.getElementById("detailJabatan").textContent = data.jabatan || '-';
-    document.getElementById("detailNidn").textContent = data.nidn || '-';
-    document.getElementById("detailDeskripsi").textContent = data.deskripsi || '-';
-
-    // 2. Isi Foto (Handle path thumbnail vs original)
-    const imgElement = document.getElementById("detailFoto");
-    if (data.gambar) {
-        // Asumsi path gambar publik ada di ../public/uploads/member/
-        // Kita pakai path relatif sederhana untuk display
-        imgElement.src = `../public/uploads/member/${data.gambar}`;
-        imgElement.style.display = 'inline-block';
-    } else {
-        imgElement.style.display = 'none';
-    }
-
-    // 3. Isi Link (Logic Fix URL di JS)
-    const linkContainer = document.getElementById("linkContainer");
-    linkContainer.innerHTML = ''; // Kosongkan dulu
-    
-    // Helper function buat fix URL
-    const fixUrlJs = (url) => {
-        if (!url) return '';
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            return 'https://' + url;
-        }
-        return url;
-    };
-
-    let hasLink = false;
-
-    if (data.google_scholar) {
-        linkContainer.innerHTML += `<a href="${fixUrlJs(data.google_scholar)}" target="_blank" class="link-btn">Google Scholar</a>`;
-        hasLink = true;
-    }
-    if (data.orcid) {
-        linkContainer.innerHTML += `<a href="${fixUrlJs(data.orcid)}" target="_blank" class="link-btn">ORCID</a>`;
-        hasLink = true;
-    }
-    if (data.sinta) {
-        linkContainer.innerHTML += `<a href="${fixUrlJs(data.sinta)}" target="_blank" class="link-btn">Sinta</a>`;
-        hasLink = true;
-    }
-
-    if (!hasLink) {
-        linkContainer.innerHTML = '<span style="color:#999; font-style:italic;">Tidak ada link.</span>';
-    }
-
-    // 4. Tampilkan Modal
-    modal.style.display = "block";
-}
-
-function closeMemberModal() {
-    const modal = document.getElementById("memberDetailModal");
-    modal.style.display = "none";
-}
-
-// Tutup modal kalau klik di luar kotak (backdrop)
-window.onclick = function(event) {
-    const modal = document.getElementById("memberDetailModal");
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-}

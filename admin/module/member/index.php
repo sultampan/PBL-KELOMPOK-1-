@@ -9,7 +9,7 @@ $webThumbDir = '../public/uploads/thumb/member-thumb/';
 require_once "model.php";
 
 $page = (int)($_GET['p'] ?? 1);
-$limit = 10;
+$limit = 6;
 $offset = ($page - 1) * $limit;
 $searchKeyword = $_GET['keyword'] ?? null;
 $currentSortBy = $_GET['sort'] ?? 'id_member'; 

@@ -185,21 +185,21 @@
     /* display: none; akan diatur oleh JS */
 }
 
-/* admin/assets/produk.css */
-.button-group {
+/* --- BUTTON GROUP (TOMBOL SEJAJAR) --- */
+.form-grid .button-group {
     display: flex;
+    flex-direction: row !important; /* Paksa jadi Baris (Kiri-Kanan) */
     gap: 10px;
+    width: 100%;
+    order: 2 !important;
 }
 
-/* --- Gaya untuk semua elemen di dalam button-group --- */
-.button-group button, 
-.button-group a.btn-secondary {
-    font-size: 14px;
-    flex-grow: 1;
-    text-align: center;
-    font-weight: 600;
-    padding: 10px 20px;
-    margin: 0;
+/* Pastikan tombol di dalamnya menyesuaikan */
+.form-grid .button-group button, 
+.form-grid .button-group a.btn-secondary {
+    width: auto;
+    flex: 1; /* Bagi ruang 50:50 */
+    order: 1 !important;
 }
 
 /* Gaya tombol Submit (hanya untuk referensi)
@@ -503,17 +503,17 @@
 .mit-card {
     background: #fff;
     border: 1px solid #e0e0e0;
-    padding: 20px;
-    border-radius: 4px; /* Sedikit melengkung */
+    
+    /* KURANGI PADDING (Awalnya 20px -> jadi 15px) */
+    padding: 15px; 
+    
+    border-radius: 4px;
     transition: box-shadow 0.2s;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-}
-
-.mit-card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    border-color: #ccc;
+    
+    /* Kurangi jarak antar elemen (Awalnya 10px -> jadi 5px atau 8px) */
+    gap: 0px; 
 }
 
 /* Bagian Atas: Role / Jabatan Kecil */
@@ -534,31 +534,51 @@
     letter-spacing: 0.5px;
 }
 
+.role-badge-head {
+    background-color: #FE7C11; /* Oranye Mencolok */
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+}
+
 /* Nama Member */
 .mit-card-name {
-    margin: 0;
+    margin: 0 !important;
+    margin-top: 5px;    /* Jarak dikit dari Role Badge */
+    margin-bottom: 2px;
     font-size: 18px;
     font-weight: 700;
     
-    /* --- UKURAN FIX & PEMOTONGAN --- */
-    height: 48px; /* Tinggi pas untuk 2 baris */
-    line-height: 1.3; /* Jarak antar baris */
-    overflow: hidden; /* Sembunyikan kelebihan teks */
+    /* Container fixed height */
+    height: 48px; 
     
-    /* Logic Titik-titik (...) */
-    display: -webkit-box;
-    line-clamp: 2; /* Maksimal 2 baris */
-    -webkit-box-orient: vertical;
-    
-    /* Center vertical (opsional, kalau nama pendek biar di tengah kotak namanya) */
-    display: flex;
+    /* Use Grid to center the link vertically safely */
+    display: grid;
     align-items: center; 
+    align-content: center; /* Ensures content stays middle */
 }
 
 .mit-card-name a {
     text-decoration: none;
-    color: #000;
+    color: #02406C;
     transition: color 0.2s;
+
+    /* Line height rapat */
+    line-height: 1.2;
+    
+    /* Text Truncation Logic */
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    
+    word-break: break-word;
+    
+    /* Reset margins/padding */
+    margin: 0;
+    padding: 0;
 }
 
 .mit-card-name a:hover {
@@ -577,8 +597,11 @@
 /* Area Konten (Foto & Email) */
 .mit-card-content {
     display: flex;
-    gap: 20px;
+    gap: 15px; /* Kurangi gap foto-kontak jika perlu, misal jadi 10px */
     align-items: flex-start;
+    
+    /* TAMBAHAN BARU: Tarik ke atas sedikit */
+    margin-top: 0px !important;
 }
 
 .mit-avatar img {
@@ -647,6 +670,8 @@
     /* Ini memaksa teks seperti "asdfghjk..." tanpa spasi untuk dipenggal */
     word-break: break-all;      /* Opsional: Memotong paksa kata */
     overflow-wrap: break-word;  /* Standar web modern */
+    margin-top: 8px; 
+    padding-top: 8px;
 }
 
 /* --- STYLE TOMBOL AKSI DI KARTU MEMBER --- */
@@ -699,4 +724,57 @@
 
 a.menu-item {
     margin-bottom: 0;
+}
+
+/* --- CUSTOM PAGINATION STYLE (Modern & Clean) --- */
+
+.pagination {
+    display: flex;
+    justify-content: center; /* Posisi di tengah */
+    align-items: center;
+    margin-top: 30px;
+    gap: 8px; /* Jarak antar tombol */
+}
+
+.page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Ukuran Tombol */
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    
+    /* Warna & Border Default */
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px; /* Sudut melengkung */
+    
+    /* Teks */
+    color: #02406C; /* Navy */
+    text-decoration: none !important;
+    font-size: 14px;
+    font-weight: 600;
+    
+    /* Efek Transisi Halus */
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Bayangan tipis */
+}
+
+/* EFEK HOVER (Disorot Mouse) */
+.page-link:hover:not(.active) {
+    background-color: #02406C;
+    color: #fff;
+    box-shadow: 0 5px 10px rgba(1, 181, 184, 0.3); /* Bayangan Tosca */
+}
+
+/* EFEK AKTIF (Halaman Sekarang) -> Jadi Navy Solid */
+.page-link.active {
+    background-color: #02406C;
+    border-color: #02406C;
+    color: #fff;
+    cursor: default;
+    pointer-events: none; /* Biar gak bisa diklik */
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); /* Efek tekan ke dalam */
 }

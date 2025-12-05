@@ -11,13 +11,13 @@
     <?php endif; ?>
 
     <div class="mb-3">
-        <label class="form-label">Nama Member</label>
+        <label class="form-label">Nama Member <span style="color: red">*</span></label>
         <input type="text" name="nama_member" class="form-control"
-            value="<?= $formData['nama_member'] ?? '' ?>" required>
+               value="<?= $formData['nama_member'] ?? '' ?>" required>
     </div>
 
     <div class="mb-3">
-        <label class="form-label">NIDN</label>
+        <label class="form-label">NIDN <span style="color: red">*</span></label>
         <input type="text" name="nidn" class="form-control"
                value="<?= $formData['nidn'] ?? '' ?>" 
                inputmode="numeric" 
@@ -26,7 +26,8 @@
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Jabatan</label>
+        <label class="form-label">Jabatan <span style="color: red">*</span></label>
+        
         <select name="jabatan" class="form-control" required>
             <option value="">-- Pilih Jabatan --</option>
             <option value="Head of Laboratory" <?= ($formData['jabatan'] ?? '') == 'Head of Laboratory' ? 'selected' : '' ?>>Head of Laboratory</option>
@@ -90,11 +91,16 @@
     </div>
 
     <div class="mb-3 button-group">
-        <button type="submit" id="submitBtn" class="btn btn-primary">
-            <?= $editData ? "Update" : "Simpan" ?>
-        </button>
+        
         <button type="button" class="btn btn-secondary" onclick="cancelMemberForm()">
             Batal
         </button>
+
+        <button type="submit" id="submitBtn" class="btn btn-primary">
+            <?= $editData ? "Update" : "Simpan" ?>
+        </button>
+        
     </div>
+
+</form>
 </form>
