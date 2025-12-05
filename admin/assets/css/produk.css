@@ -696,3 +696,7 @@
 .btn-card:active {
     transform: translateY(1px);
 }
+
+a.menu-item {
+    margin-bottom: 0;
+}

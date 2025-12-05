@@ -138,9 +138,9 @@
                             <a href="?page=member&edit=<?= $row['id_member'] ?>" class="btn-card btn-card-edit">
                                 Edit
                             </a>
-                            <button type="button" onclick="deleteMember(<?= (int)$row['id_member'] ?>)" class="btn-card btn-card-delete">
+                            <a type="button" onclick="deleteMember(<?= (int)$row['id_member'] ?>)" class="btn-card btn-card-delete">
                                 Hapus
-                            </button>
+                                </a>
                         </div>
 
                     </div>
