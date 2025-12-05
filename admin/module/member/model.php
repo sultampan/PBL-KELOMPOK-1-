@@ -111,4 +111,32 @@ function isHeadLabExist($pdo, $excludeId = null) {
     $stmt->execute();
     return (int) $stmt->fetchColumn() > 0;
 }
+
+/**
+ * Cek apakah NIDN sudah terdaftar.
+ * @param PDO $pdo
+ * @param string $nidn NIDN yang akan dicek
+ * @param int|null $excludeId ID member saat edit (agar tidak bentrok dengan diri sendiri)
+ * @return bool
+ */
+function isNidnExist($pdo, $nidn, $excludeId = null) {
+    checkPdo($pdo);
+    
+    $sql = "SELECT COUNT(*) FROM member WHERE nidn = :nidn";
+    
+    // Jika mode edit, abaikan ID sendiri
+    if ($excludeId) {
+        $sql .= " AND id_member != :id";
+    }
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':nidn', $nidn);
+    
+    if ($excludeId) {
+        $stmt->bindValue(':id', $excludeId, PDO::PARAM_INT);
+    }
+    
+    $stmt->execute();
+    return (int) $stmt->fetchColumn() > 0;
+}
 ?>

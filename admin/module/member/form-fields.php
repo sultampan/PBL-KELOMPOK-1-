@@ -19,7 +19,10 @@
     <div class="mb-3">
         <label class="form-label">NIDN</label>
         <input type="text" name="nidn" class="form-control"
-            value="<?= $formData['nidn'] ?? '' ?>">
+               value="<?= $formData['nidn'] ?? '' ?>" 
+               inputmode="numeric" 
+               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+               placeholder="Contoh: 0011223344">
     </div>
 
     <div class="mb-3">

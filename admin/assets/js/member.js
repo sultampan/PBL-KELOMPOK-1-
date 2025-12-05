@@ -81,28 +81,46 @@ function displayAlert(message, type) {
     }, 4000); 
 }
 
+// --- FUNGSI MUAT ULANG GRID VIA AJAX (REVISI UNTUK GRID) ---
 function loadMemberList() {
   const listContainer = document.getElementById("member-list-container");
   if (!listContainer) return;
+
   const currentParams = new URLSearchParams(window.location.search);
   const url = "module/member/table-load.php" + window.location.search;
 
   listContainer.innerHTML = '<div style="text-align:center; padding:20px;">Memuat data...</div>';
 
-  fetch(url).then((response) => response.text()).then((html) => {
-      const tempDiv = document.createElement("div"); tempDiv.innerHTML = html;
+  fetch(url)
+    .then((response) => response.text())
+    .then((html) => {
+      // Masukkan HTML ke DOM sementara
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = html;
+
+      // --- LOGIKA BARU UNTUK GRID ---
       const currentPage = parseInt(currentParams.get("p")) || 1;
-      const tableBody = tempDiv.querySelector(".table tbody");
-      if (currentPage > 1 && tableBody && tableBody.children.length === 1 && tableBody.querySelector("td[colspan]")) {
+      
+      // Hitung jumlah kartu (.mit-card) yang ada di HTML baru
+      const totalCards = tempDiv.querySelectorAll(".mit-card").length;
+      
+      // Cek apakah ada pesan "Belum ada data member" (biasanya di tag <p> atau div)
+      const isEmptyMessage = tempDiv.innerHTML.includes("Belum ada data member");
+
+      // Jika kita di halaman > 1, tapi datanya 0 (kosong), mundur 1 halaman
+      if (currentPage > 1 && totalCards === 0 && (isEmptyMessage || totalCards === 0)) {
         currentParams.set("p", currentPage - 1); 
         window.history.pushState(null, "", window.location.pathname + "?" + currentParams.toString());
-        loadMemberList();
+        loadMemberList(); // Muat ulang halaman sebelumnya
         return;
       }
+      // -----------------------------
+
       listContainer.innerHTML = html;
-    }).catch((error) => {
-      console.error("Error loading table:", error);
-      listContainer.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat tabel.</div>';
+    })
+    .catch((error) => {
+      console.error("Error loading grid:", error);
+      listContainer.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat data.</div>';
     });
 }
 
@@ -154,6 +172,8 @@ function deleteMember(id) {
     }).catch((error) => { console.error("AJAX Delete Error:", error); displayAlert("Terjadi kesalahan jaringan.", "error"); });
 }
 
+// ... (kode fungsi preview, remove, dll di atas BIARKAN SAJA) ...
+
 document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("submit", function (e) {
     if (e.target && e.target.id === "memberForm") {
@@ -161,25 +181,122 @@ document.addEventListener("DOMContentLoaded", function () {
       const form = e.target;
       const formData = new FormData(form);
       const url = "module/member/save.php"; 
+      
       const submitBtn = document.getElementById("submitBtn");
-      submitBtn.disabled = true; submitBtn.textContent = "Memproses...";
+      // 1. Simpan teks asli tombol sebelum diubah (Simpan / Update)
+      const originalBtnText = submitBtn.textContent; 
+      
+      submitBtn.disabled = true; 
+      submitBtn.textContent = "Memproses...";
 
       fetch(url, { method: "POST", body: formData })
-        .then((response) => response.json()).then((data) => {
+        .then((response) => response.json())
+        .then((data) => {
           if (data.status === "success") {
             loadMemberList();
             const isUpdate = formData.get("id_member"); 
             loadEmptyMemberForm(data.message);
             if (isUpdate) window.history.pushState({}, document.title, window.location.pathname + "?page=member");
           } else {
+            // JIKA ERROR
             displayAlert(data.message, "error");
+            
+            // Reset input file visual jika error (opsional)
             const input = document.getElementById('inputGambar');
             const img = document.getElementById('imgPreview');
-            if (input) input.value = ''; if (img) img.style.display = 'none'; 
+            if (input) input.value = ''; 
+            if (img) img.style.display = 'none'; 
             updateMemberFileName(input);
           }
-        }).catch((error) => { console.error("AJAX Error:", error); displayAlert("Terjadi kesalahan jaringan/server.", "error"); })
-        .finally(() => { const finalBtn = document.getElementById("submitBtn"); if (finalBtn) finalBtn.disabled = false; });
+        })
+        .catch((error) => { 
+            console.error("AJAX Error:", error); 
+            displayAlert("Terjadi kesalahan jaringan/server.", "error"); 
+        })
+        .finally(() => { 
+            // BAGIAN INI YANG DIPERBAIKI
+            const finalBtn = document.getElementById("submitBtn");
+            if (finalBtn) {
+                finalBtn.disabled = false;
+                // Kembalikan teks tombol ke aslinya ("Simpan" atau "Update")
+                // Kita cek apakah input id_member ada isinya di formData
+                const isEditMode = formData.get("id_member"); 
+                finalBtn.textContent = isEditMode ? "Update" : "Simpan";
+            }
+        });
     }
   });
 });
+
+// admin/assets/js/member.js
+
+// --- FUNGSI MODAL DETAIL ---
+
+function showMemberDetail(data) {
+    const modal = document.getElementById("memberDetailModal");
+    
+    // 1. Isi Data Teks
+    document.getElementById("detailNama").textContent = data.nama_member;
+    document.getElementById("detailJabatan").textContent = data.jabatan || '-';
+    document.getElementById("detailNidn").textContent = data.nidn || '-';
+    document.getElementById("detailDeskripsi").textContent = data.deskripsi || '-';
+
+    // 2. Isi Foto (Handle path thumbnail vs original)
+    const imgElement = document.getElementById("detailFoto");
+    if (data.gambar) {
+        // Asumsi path gambar publik ada di ../public/uploads/member/
+        // Kita pakai path relatif sederhana untuk display
+        imgElement.src = `../public/uploads/member/${data.gambar}`;
+        imgElement.style.display = 'inline-block';
+    } else {
+        imgElement.style.display = 'none';
+    }
+
+    // 3. Isi Link (Logic Fix URL di JS)
+    const linkContainer = document.getElementById("linkContainer");
+    linkContainer.innerHTML = ''; // Kosongkan dulu
+    
+    // Helper function buat fix URL
+    const fixUrlJs = (url) => {
+        if (!url) return '';
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            return 'https://' + url;
+        }
+        return url;
+    };
+
+    let hasLink = false;
+
+    if (data.google_scholar) {
+        linkContainer.innerHTML += `<a href="${fixUrlJs(data.google_scholar)}" target="_blank" class="link-btn">Google Scholar</a>`;
+        hasLink = true;
+    }
+    if (data.orcid) {
+        linkContainer.innerHTML += `<a href="${fixUrlJs(data.orcid)}" target="_blank" class="link-btn">ORCID</a>`;
+        hasLink = true;
+    }
+    if (data.sinta) {
+        linkContainer.innerHTML += `<a href="${fixUrlJs(data.sinta)}" target="_blank" class="link-btn">Sinta</a>`;
+        hasLink = true;
+    }
+
+    if (!hasLink) {
+        linkContainer.innerHTML = '<span style="color:#999; font-style:italic;">Tidak ada link.</span>';
+    }
+
+    // 4. Tampilkan Modal
+    modal.style.display = "block";
+}
+
+function closeMemberModal() {
+    const modal = document.getElementById("memberDetailModal");
+    modal.style.display = "none";
+}
+
+// Tutup modal kalau klik di luar kotak (backdrop)
+window.onclick = function(event) {
+    const modal = document.getElementById("memberDetailModal");
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}

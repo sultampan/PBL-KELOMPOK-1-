@@ -3,7 +3,7 @@
 /* ==================== SIDEBAR ==================== */
 .sidebar {
     width: 200px;
-    background: #2c3e50;
+    background: #02406C; /* utk hover #012B49 */
     height: 100vh;
     position: fixed;
     left: 0;
@@ -36,7 +36,7 @@
     gap: 12px;
     padding: 12px;
     text-decoration: none;
-    border-radius: 6px;
+    /* border-radius: 6px; */
     margin-bottom: 10px;
     transition: background 0.2s ease;
 }
@@ -55,7 +55,7 @@
 /* Hover & Active */
 .sidebar a:hover,
 .sidebar a.active {
-    background: #34495e;
+    background: #012B49;
 }
 
 /* ==================== SB ADMIN STYLE TOGGLE BUTTON ==================== */
@@ -84,6 +84,7 @@
     justify-content: center;
 
     transition: 0.25s ease;
+    outline: none;
 }
 
 /* hover lebih terang */

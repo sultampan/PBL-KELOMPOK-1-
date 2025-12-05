@@ -265,6 +265,7 @@ function deleteProduct(productId) {
 // --- MAIN EVENT LISTENER ---
 document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("submit", function (e) {
+    // Pastikan ID form sesuai dengan yang di form-fields.php (productForm)
     if (e.target && e.target.id === "productForm") {
       e.preventDefault(); 
 
@@ -280,6 +281,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((response) => response.json())
         .then((data) => {
           if (data.status === "success") {
+            // LOGIKA SUKSES
             loadProductList();
 
             const isUpdate = formData.get("id_produk");
@@ -289,8 +291,10 @@ document.addEventListener("DOMContentLoaded", function () {
               window.history.pushState({}, document.title, window.location.pathname + "?page=produk");
             }
           } else {
+            // LOGIKA ERROR DARI SERVER
             displayAlert(data.message, "error");
 
+            // Reset input file visual jika error
             const input = document.getElementById('inputGambar');
             const img = document.getElementById('imgPreview');
             if (input) input.value = ''; 
@@ -303,8 +307,18 @@ document.addEventListener("DOMContentLoaded", function () {
           displayAlert("Terjadi kesalahan jaringan atau server. Cek Konsol (F12).", "error");
         })
         .finally(() => {
+          // BAGIAN INI YANG DIPERBAIKI
           const finalBtn = document.getElementById("submitBtn");
-          if (finalBtn) finalBtn.disabled = false;
+          if (finalBtn) {
+            finalBtn.disabled = false;
+            
+            // Cek apakah ini mode Edit atau Simpan Baru
+            // Kita cek apakah ada 'id_produk' di data yang dikirim
+            const isEditMode = formData.get("id_produk"); 
+            
+            // Kembalikan teks tombol sesuai modenya
+            finalBtn.textContent = isEditMode ? "Update" : "Simpan";
+          }
         });
     }
   });

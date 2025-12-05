@@ -157,30 +157,57 @@ function deleteActivity(id) {
 
 document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("submit", function (e) {
+    // Pastikan ID form sesuai dengan yang di form-fields.php (activityForm)
     if (e.target && e.target.id === "activityForm") {
       e.preventDefault(); 
       const form = e.target;
       const formData = new FormData(form);
       const url = "module/activity/save.php"; 
+
       const submitBtn = document.getElementById("submitBtn");
-      submitBtn.disabled = true; submitBtn.textContent = "Memproses...";
+      submitBtn.disabled = true; 
+      submitBtn.textContent = "Memproses...";
 
       fetch(url, { method: "POST", body: formData })
-        .then((response) => response.json()).then((data) => {
+        .then((response) => response.json())
+        .then((data) => {
           if (data.status === "success") {
             loadActivityList();
-            const isUpdate = formData.get("id_activity"); 
+            
+            const isUpdate = formData.get("id_activity"); // Cek Primary Key Activity
             loadEmptyActivityForm(data.message);
-            if (isUpdate) window.history.pushState({}, document.title, window.location.pathname + "?page=activity");
+            
+            if (isUpdate) {
+                window.history.pushState({}, document.title, window.location.pathname + "?page=activity");
+            }
           } else {
+            // LOGIKA ERROR
             displayAlert(data.message, "error");
+            
             const input = document.getElementById('inputGambar');
             const img = document.getElementById('imgPreview');
-            if (input) input.value = ''; if (img) img.style.display = 'none'; 
+            if (input) input.value = ''; 
+            if (img) img.style.display = 'none'; 
             updateActivityFileName(input);
           }
-        }).catch((error) => { console.error("AJAX Error:", error); displayAlert("Terjadi kesalahan jaringan/server.", "error"); })
-        .finally(() => { const finalBtn = document.getElementById("submitBtn"); if (finalBtn) finalBtn.disabled = false; });
+        })
+        .catch((error) => { 
+            console.error("AJAX Error:", error); 
+            displayAlert("Terjadi kesalahan jaringan/server.", "error"); 
+        })
+        .finally(() => { 
+            // BAGIAN INI YANG DIPERBAIKI
+            const finalBtn = document.getElementById("submitBtn");
+            if (finalBtn) {
+                finalBtn.disabled = false; 
+                
+                // Cek apakah ini mode Edit (ada id_activity) atau Simpan Baru
+                const isEditMode = formData.get("id_activity"); 
+                
+                // Kembalikan teks tombol sesuai modenya
+                finalBtn.textContent = isEditMode ? "Update" : "Simpan";
+            } 
+        });
     }
   });
 });

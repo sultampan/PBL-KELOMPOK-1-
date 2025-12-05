@@ -37,6 +37,20 @@ $should_remove_old_image = ($_POST['remove_existing_image'] ?? '0') === '1';
 try {
     if (empty($nama)) throw new Exception("Nama Member wajib diisi.");
 
+    // --- VALIDASI NIDN ---
+    if (!empty($nidn)) {
+        // 1. Cek apakah angka semua?
+        if (!ctype_digit($nidn)) {
+            throw new Exception("NIDN tidak valid! Hanya boleh berisi angka (0-9).");
+        }
+
+        // 2. Cek apakah sudah dipakai orang lain? (LOGIKA BARU)
+        // Kita kirim $id juga supaya kalau lagi Edit, dia gak ngecek dirinya sendiri
+        if (isNidnExist($pdo, $nidn, $id)) {
+            throw new Exception("Gagal: NIDN '$nidn' sudah terdaftar digunakan oleh member lain.");
+        }
+    }
+
     // --- LOGIKA BARU: VALIDASI HEAD OF LABORATORY ---
     // Jika user memilih jabatan 'Head of Laboratory', cek apakah sudah ada orang lain yg menjabat
     if ($jabatan === 'Head of Laboratory') {
@@ -83,7 +97,23 @@ try {
         sendJson('success', "Member baru berhasil ditambahkan.");
     }
 } catch (Exception $e) {
-    if ($new_uploaded_filename && is_file($uploadDir . $new_uploaded_filename)) @unlink($uploadDir . $new_uploaded_filename);
-    sendJson('error', "Gagal menyimpan: " . $e->getMessage());
+    // 1. Rollback File (Hapus file fisik jika upload sukses tapi DB gagal)
+    if ($new_uploaded_filename && is_file($uploadDir . $new_uploaded_filename)) {
+        @unlink($uploadDir . $new_uploaded_filename);
+    }
+
+    // 2. TANGKAP PESAN ERROR ASLI
+    $rawError = $e->getMessage();
+    $friendlyMessage = "Gagal menyimpan: " . $rawError;
+
+    // 3. DETEKSI ERROR CONSTRAINT JABATAN
+    // Cek apakah error mengandung kata kunci "member_jabatan_check"
+    if (strpos($rawError, 'member_jabatan_check') !== false) {
+        $friendlyMessage = "Gagal: Jabatan tidak valid! Pastikan Anda memilih jabatan yang tersedia (misal: Head of Laboratory atau Member Lab).";
+    }
+
+    // 4. Kirim pesan yang sudah dipercantik
+    sendJson('error', $friendlyMessage);
 }
+?>
 ?>
