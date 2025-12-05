@@ -19,18 +19,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!toggleBtn) return;
 
     toggleBtn.addEventListener('click', () => {
-        // 1. Toggle collapse (Cukup ini saja!)
-        // CSS akan mendeteksi class 'collapsed' dan otomatis memutar ikonnya.
         sidebar.classList.toggle('collapsed');
         main.classList.toggle('collapsed');
-        
-        // ❌ BAGIAN INI DIHAPUS SAJA BIAR GAK BENTROK SAMA CSS ROTATE
-        /* const toggleIcon = toggleBtn.querySelector(".toggle-icon");
-        if (toggleIcon) {
-            toggleIcon.classList.remove("fa-angle-left", "fa-angle-right");
-            toggleIcon.classList.add(collapsed ? "fa-angle-right" : "fa-angle-left");
-        }
-        */
     });
 });
 </script>
