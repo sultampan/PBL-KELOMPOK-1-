@@ -1,5 +1,45 @@
 // admin/assets/js/member.js
 
+// --- FUNGSI PENCARIAN MEMBER ---
+function searchMember() {
+    const input = document.getElementById('searchMemberInput');
+    if (!input) return;
+
+    const keyword = input.value.trim();
+    const currentUrl = new URL(window.location.href);
+    
+    // Set parameter keyword di URL
+    if (keyword) {
+        currentUrl.searchParams.set('keyword', keyword);
+    } else {
+        currentUrl.searchParams.delete('keyword'); // Kalau kosong, hapus param
+    }
+    
+    // Reset ke halaman 1 saat mencari baru
+    currentUrl.searchParams.set('p', 1);
+
+    // Update URL dan Load Data
+    window.history.pushState(null, "", currentUrl);
+    loadMemberList();
+}
+
+// Fitur tambahan: Tekan Enter di input langsung cari
+document.addEventListener('keydown', function(e) {
+    if (e.target && e.target.id === 'searchMemberInput' && e.key === 'Enter') {
+        searchMember();
+    }
+});
+
+// --- FUNGSI RESET PENCARIAN ---
+function resetSearchMember() {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.delete('keyword');
+    currentUrl.searchParams.set('p', 1); // Reset ke hal 1
+    
+    window.history.pushState(null, "", currentUrl);
+    loadMemberList();
+}
+
 // 1. PREVIEW GAMBAR
 function previewMemberImage(event) {
     const input = event.target;
@@ -236,86 +276,211 @@ function deleteMember(id) {
 }
 
 // 4. VALIDASI FORM
+// ... (kode fungsi preview, remove, displayAlert, loadMemberList, deleteMember biarkan sama) ...
+
+// --- VARIABEL GLOBAL UNTUK MENYIMPAN DATA ASLI (SNAPSHOT) ---
+let initialFormState = {}; 
+
+// --- FUNGSI UNTUK MEREKAM DATA AWAL ---
+function captureInitialState() {
+    initialFormState = {}; // Reset dulu
+    const inputs = document.querySelectorAll('#memberForm input, #memberForm textarea, #memberForm select');
+    
+    inputs.forEach(input => {
+        // Kita simpan value berdasarkan name-nya
+        // Kecuali input file (karena file tidak punya value string yang bisa disimpan)
+        if (input.type !== 'file') {
+            initialFormState[input.name] = input.value;
+        }
+    });
+    // Debugging (Opsional, bisa dihapus)
+    // console.log("Data Awal Disimpan:", initialFormState);
+}
+
+// --- VALIDASI TOMBOL PINTAR (SIMPAN & BATAL) ---
 function validateFormState() {
-    const nama = document.querySelector('input[name="nama_member"]')?.value.trim();
-    const nidn = document.querySelector('input[name="nidn"]')?.value.trim();
+    // 1. Ambil Input Wajib
+    const nama = document.querySelector('input[name="nama_member"]').value.trim();
+    const nidn = document.querySelector('input[name="nidn"]').value.trim();
     const jabatanInput = document.querySelector('[name="jabatan"]');
     const jabatan = jabatanInput ? jabatanInput.value.trim() : '';
+
+    // 2. Cek Mode (Tambah atau Edit?)
     const idMemberInput = document.querySelector('input[name="id_member"]');
     const isEditMode = idMemberInput && idMemberInput.value !== "";
-    
-    // Tambahan: Deteksi perubahan input apapun (untuk tombol Batal)
-    const allInputs = document.querySelectorAll('#memberForm input:not([type=hidden]), #memberForm textarea, #memberForm select');
-    let isDirty = false;
-    allInputs.forEach(inp => { if(inp.value.trim() !== '') isDirty = true; });
 
+    // 3. Cek Perubahan Data (Dirty Check)
+    let hasChanges = false;
+    
+    // Cek Input File (Kalau ada file dipilih, pasti dianggap berubah)
+    const fileInput = document.getElementById('inputGambar');
+    if (fileInput && fileInput.files.length > 0) {
+        hasChanges = true;
+    } else {
+        // Cek Input Teks/Select bandingkan dengan Data Awal
+        const allInputs = document.querySelectorAll('#memberForm input, #memberForm textarea, #memberForm select');
+        
+        // Loop semua input, kalau ada SATU saja yang beda dengan initialFormState, berarti berubah
+        for (let input of allInputs) {
+            if (input.type !== 'file' && initialFormState[input.name] !== undefined) {
+                if (input.value !== initialFormState[input.name]) {
+                    hasChanges = true;
+                    break; // Stop looping kalau sudah ketemu perubahan
+                }
+            }
+        }
+    }
+
+    // --- LOGIKA TOMBOL ---
     const btnSimpan = document.getElementById("submitBtn");
     const btnBatal = document.querySelector(".button-group .btn-secondary");
 
+    // A. LOGIKA TOMBOL SIMPAN
+    const isRequiredFilled = (nama !== "" && nidn !== "" && jabatan !== "");
+    
     if (btnSimpan) {
-        if (nama && nidn && jabatan) {
-            btnSimpan.disabled = false; btnSimpan.style.opacity = "1"; btnSimpan.style.cursor = "pointer";
+        if (isEditMode) {
+            // MODE EDIT: Harus Wajib Terisi DAN Ada Perubahan
+            if (isRequiredFilled && hasChanges) {
+                enableBtn(btnSimpan);
+            } else {
+                disableBtn(btnSimpan);
+            }
         } else {
-            btnSimpan.disabled = true; btnSimpan.style.opacity = "0.6"; btnSimpan.style.cursor = "not-allowed";
+            // MODE TAMBAH: Cukup Wajib Terisi
+            if (isRequiredFilled) {
+                enableBtn(btnSimpan);
+            } else {
+                disableBtn(btnSimpan);
+            }
         }
     }
 
+    // B. LOGIKA TOMBOL BATAL
+    // Deteksi apakah ada input apapun yang terisi (untuk mode tambah)
+    // Untuk mode edit, Batal selalu aktif.
     if (btnBatal) {
-        if (isEditMode || isDirty) {
-            btnBatal.disabled = false; btnBatal.style.opacity = "1"; btnBatal.style.cursor = "pointer";
+        if (isEditMode) {
+            enableBtn(btnBatal);
         } else {
-            btnBatal.disabled = true; btnBatal.style.opacity = "0.6"; btnBatal.style.cursor = "not-allowed";
+            // Mode Tambah: Aktif kalau ada satu field aja yang diisi/berubah
+            // Kita pakai variabel hasChanges karena logikanya mirip (beda dari kosong)
+            // Tapi kita harus cek manual field wajib karena initial state mode tambah itu kosong
+            const isDirty = nama || nidn || jabatan || hasChanges; 
+            
+            if (isDirty) {
+                enableBtn(btnBatal);
+            } else {
+                disableBtn(btnBatal);
+            }
         }
     }
 }
 
-function setupFormValidation() {
-    const inputs = document.querySelectorAll('#memberForm input, #memberForm textarea, #memberForm select');
-    if(inputs.length > 0) {
-        validateFormState();
-        inputs.forEach(input => {
-            input.addEventListener('input', validateFormState);
-            input.addEventListener('change', validateFormState);
-        });
-    }
+// Helper untuk Nyala/Mati Tombol biar kodingan rapi
+function enableBtn(btn) {
+    btn.disabled = false;
+    btn.style.opacity = "1";
+    btn.style.cursor = "pointer";
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  setupFormValidation();
-  document.addEventListener("submit", function (e) {
-    if (e.target && e.target.id === "memberForm") {
-      e.preventDefault(); 
-      const form = e.target;
-      const formData = new FormData(form);
-      const url = "module/member/save.php"; 
-      
-      const submitBtn = document.getElementById("submitBtn");
-      submitBtn.disabled = true; submitBtn.textContent = "Memproses...";
+function disableBtn(btn) {
+    btn.disabled = true;
+    btn.style.opacity = "0.6";
+    btn.style.cursor = "not-allowed";
+}
 
-      fetch(url, { method: "POST", body: formData })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status === "success") {
-            loadMemberList();
-            const isUpdate = formData.get("id_member"); 
-            loadEmptyMemberForm(data.message);
-            if (isUpdate) window.history.pushState({}, document.title, window.location.pathname + "?page=member");
-          } else {
-            displayAlert(data.message, "error");
-            const input = document.getElementById('inputGambar');
-            if (input) input.value = ''; 
-            updateMemberFileName(input);
-          }
-        })
-        .catch((error) => { console.error("AJAX Error:", error); displayAlert("Terjadi kesalahan jaringan.", "error"); })
-        .finally(() => { 
-            const finalBtn = document.getElementById("submitBtn");
-            if (finalBtn) {
-                finalBtn.disabled = false;
-                const isEditMode = formData.get("id_member"); 
-                finalBtn.textContent = isEditMode ? "Update" : "Simpan";
+// ... (kode fungsi validateFormState di atas BIARKAN SAMA) ...
+
+// --- FUNGSI DEBOUNCE (PENUNDA EKSEKUSI) ---
+// Ini fungsi sakti biar browser gak ngos-ngosan
+function debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout); // Batalkan timer sebelumnya kalau user ngetik lagi
+        timeout = setTimeout(() => func.apply(this, args), delay); // Set timer baru
+    };
+}
+
+// Pasang "Mata-mata" (Event Listener) ke SEMUA input
+function setupFormValidation() {
+    const inputs = document.querySelectorAll(
+        '#memberForm input, #memberForm textarea, #memberForm select'
+    );
+    
+    if(inputs.length > 0) {
+        // 1. Rekam Data Awal
+        captureInitialState();
+
+        // 2. Cek kondisi awal (Langsung jalankan tanpa delay)
+        validateFormState();
+
+        // 3. Buat versi fungsi yang "Sabar" (Delay 300ms)
+        const validateSabar = debounce(validateFormState, 300);
+
+        // 4. Pasang Event Listener
+        inputs.forEach(input => {
+            // Kalau ngetik (input text/textarea), pakai yang SABAR (Debounce)
+            if (input.type === 'text' || input.tagName === 'TEXTAREA') {
+                input.addEventListener('input', validateSabar);
+            } 
+            // Kalau pilih dropdown/file (change), langsung jalankan (gak perlu nunggu)
+            else {
+                input.addEventListener('change', validateFormState);
             }
         });
     }
+}
+
+// ... (kode document.addEventListener di bawah BIARKAN SAMA) ...
+
+document.addEventListener("DOMContentLoaded", function () {
+  setupFormValidation();
+  
+  // ... (kode event listener submit form biarkan sama) ...
+  document.addEventListener("submit", function (e) {
+      // ... (copy paste logika submit yang lama di sini) ...
+      // Pastikan logika submit tetap ada ya bos, jangan dihapus
+      if (e.target && e.target.id === "memberForm") {
+        e.preventDefault(); 
+        const form = e.target;
+        const formData = new FormData(form);
+        const url = "module/member/save.php"; 
+        
+        const submitBtn = document.getElementById("submitBtn");
+        submitBtn.disabled = true; 
+        submitBtn.textContent = "Memproses...";
+  
+        fetch(url, { method: "POST", body: formData })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              loadMemberList();
+              const isUpdate = formData.get("id_member"); 
+              loadEmptyMemberForm(data.message);
+              if (isUpdate) window.history.pushState({}, document.title, window.location.pathname + "?page=member");
+            } else {
+              displayAlert(data.message, "error");
+            }
+          })
+          .catch((error) => { 
+              console.error("AJAX Error:", error); 
+              displayAlert("Terjadi kesalahan jaringan/server.", "error"); 
+          })
+          .finally(() => { 
+              const finalBtn = document.getElementById("submitBtn");
+              if (finalBtn) {
+                  finalBtn.disabled = false;
+                  // Kembalikan teks tombol
+                  const isEditMode = formData.get("id_member"); 
+                  finalBtn.textContent = isEditMode ? "Update" : "Simpan";
+                  
+                  // PENTING: Update Initial State setelah simpan sukses 
+                  // supaya tombol update mati lagi sampai ada perubahan baru
+                  captureInitialState();
+                  validateFormState();
+              }
+          });
+      }
   });
 });

@@ -13,7 +13,8 @@
     <div class="mb-3">
         <label class="form-label">Nama Member <span style="color: red">*</span></label>
         <input type="text" name="nama_member" class="form-control"
-               value="<?= $formData['nama_member'] ?? '' ?>" required>
+               value="<?= $formData['nama_member'] ?? '' ?>" 
+               maxlength="100" required>
     </div>
 
     <div class="mb-3">
@@ -60,32 +61,45 @@
 
     <div class="mb-3">
         <label class="form-label">Foto Member</label>
+        
+        <?php 
+            // --- LOGIKA TAMPILAN NAMA FILE ---
+            // Default teks jika kosong
+            $labelTeks = "Tidak ada file yang dipilih...";
+            
+            // Jika Mode Edit DAN ada gambar di database
+            if (!empty($editData['gambar'])) {
+                // Tampilkan nama file dari database
+                $labelTeks = htmlspecialchars($editData['gambar']);
+            }
+        ?>
+
         <div class="custom-file-upload">
-            <input type="file" name="gambar" class="form-control"
-                accept="image/*" id="inputGambar"
-                onchange="previewMemberImage(event); updateMemberFileName(this);">
-
+            <input type="file" name="gambar" class="form-control" 
+                   accept="image/*" id="inputGambar" 
+                   onchange="previewMemberImage(event); updateMemberFileName(this);"> 
+            
             <label for="inputGambar" class="file-label" id="fileLabel">
-                <span class="file-button">Browse</span>
-                <span id="fileNameText" class="placeholder-text">Tidak ada file yang dipilih...</span>
+                <span class="file-button">Browse</span> 
+                <span id="fileNameText" class="placeholder-text"><?= $labelTeks ?></span>
             </label>
-
-            <button type="button"
-                id="removeImageBtn"
-                class="remove-image-btn"
-                onclick="removeMemberImage();"
-                style="<?= empty($initialSrc) ? 'display: none;' : '' ?>"
-                title="Hapus gambar">
+            
+            <button type="button" 
+                    id="removeImageBtn" 
+                    class="remove-image-btn" 
+                    onclick="removeMemberImage();"
+                    style="<?= empty($initialSrc) ? 'display: none;' : '' ?>"
+                    title="Hapus gambar">
                 &times;
             </button>
         </div>
-
+        
         <div id="fileError" style="margin-top: 10px;"></div>
-
+        
         <div class="preview mt-2">
             <img src="<?= $initialSrc ?>"
-                class="img-thumbnail" alt="Preview Gambar" width="auto"
-                id="imgPreview" style="<?= $initialStyle ?>">
+                 class="img-thumbnail" alt="Preview Gambar" width="auto"
+                 id="imgPreview" style="<?= $initialStyle ?>">
         </div>
         <input type="hidden" name="remove_existing_image" id="removeExistingImage" value="0">
     </div>

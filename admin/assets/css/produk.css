@@ -136,7 +136,7 @@
     padding: 6px 10px;
     border-radius: 4px;
     margin-right: 5px;
-    font-weight: 500;
+    font-weight: 600;
     display: inline-block;
 }
 
@@ -726,55 +726,195 @@ a.menu-item {
     margin-bottom: 0;
 }
 
-/* --- CUSTOM PAGINATION STYLE (Modern & Clean) --- */
+/* --- PAGINATION STYLE (ANGKA & PANAH BEDA UKURAN) --- */
 
 .pagination {
     display: flex;
-    justify-content: center; /* Posisi di tengah */
+    justify-content: center;
     align-items: center;
     margin-top: 30px;
-    gap: 8px; /* Jarak antar tombol */
+    gap: 8px; /* Jarak sedikit lebih rapat */
 }
 
+/* Base Style (Wadah Kotak) */
 .page-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     
-    /* Ukuran Tombol */
-    min-width: 40px;
-    height: 40px;
-    padding: 0 12px;
+    /* Ukuran Kotak Tetap Sama (Biar Rapi) */
+    width: 42px; 
+    height: 42px;
+    padding: 0; /* Padding 0 biar center sempurna */
     
-    /* Warna & Border Default */
     background-color: #fff;
     border: 1px solid #e0e0e0;
-    border-radius: 8px; /* Sudut melengkung */
-    
-    /* Teks */
-    color: #02406C; /* Navy */
+    border-radius: 8px;
+    color: #02406C;
     text-decoration: none !important;
-    font-size: 14px;
-    font-weight: 600;
     
-    /* Efek Transisi Halus */
+    cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Bayangan tipis */
+    /* box-shadow: 0 3px 6px rgba(0,0,0,0.05); */
 }
 
-/* EFEK HOVER (Disorot Mouse) */
+/* --- 1. STYLE KHUSUS ANGKA (Normal) --- */
+.page-link.page-num {
+    font-size: 14px; /* Ukuran Angka Standar */
+    font-weight: 600;
+}
+
+/* --- 2. STYLE KHUSUS PANAH (Besar & Tebal) --- */
+.page-link.page-arrow {
+    font-size: 30px; /* Ukuran Panah Besar */
+    font-weight: 400;
+    line-height: 1; /* Biar vertikal align pas tengah */
+    padding-bottom: 4px; /* Koreksi dikit posisi panah biar pas di mata */
+}
+
+/* Efek Hover */
 .page-link:hover:not(.active) {
     background-color: #02406C;
+    border-color: #02406C;
     color: #fff;
-    box-shadow: 0 5px 10px rgba(1, 181, 184, 0.3); /* Bayangan Tosca */
+    /* transform: translateY(-2px); */
+    /* box-shadow: 0 5px 10px rgba(1, 181, 184, 0.3); */
 }
 
-/* EFEK AKTIF (Halaman Sekarang) -> Jadi Navy Solid */
+/* Efek Aktif (Hanya untuk Angka biasanya) */
 .page-link.active {
     background-color: #02406C;
     border-color: #02406C;
     color: #fff;
     cursor: default;
-    pointer-events: none; /* Biar gak bisa diklik */
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); /* Efek tekan ke dalam */
+    pointer-events: none;
+}
+
+/* Tombol Mati */
+.page-link.disabled {
+    background-color: #f8f9fa;
+    color: #d1d1d1;
+    border-color: #eee;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none;
+}
+
+/* --- SEARCH BOX (FLAT & CLEAN) --- */
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Jarak rapat */
+}
+
+/* 1. Input Text (Biasa Saja) */
+.search-box input {
+    border: 1px solid #ced4da; /* Border abu standar */
+    background: #fff;
+    padding: 6px 12px;         /* Padding pas */
+    font-size: 13px;
+    outline: none;
+    color: #333;
+    width: 220px;
+    border-radius: 4px;        /* Radius kecil (sedikit tumpul) */
+    height: 34px;              /* Tinggi fix biar sejajar tombol */
+    box-sizing: border-box;
+}
+
+/* Saat diklik cuma ganti warna border (Tanpa Glow/Shadow) */
+.search-box input:focus {
+    border-color: #01B5B8; /* Tosca */
+}
+
+/* 2. Tombol Cari (Flat Navy) */
+.btn-search {
+    background-color: #02406C; /* Navy */
+    color: #fff;
+    border: 1px solid #02406C;
+    padding: 0 15px;
+    height: 34px;              /* Tinggi sama dengan input */
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    
+    /* Matikan semua animasi aneh-aneh */
+    box-shadow: none;
+    transform: none;
+}
+
+/* Hover cuma ganti warna dikit (Tanpa Gerak) */
+.btn-search:hover {
+    background-color: #012B49; /* Navy Gelap */
+    border-color: #012B49;
+}
+
+/* 3. Tombol Reset (Flat Abu) */
+.btn-reset {
+    background-color: #f8f9fa; /* Abu terang */
+    color: #666;
+    border: 1px solid #ced4da;
+    width: 34px;               /* Kotak */
+    height: 34px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    
+    /* Matikan animasi */
+    box-shadow: none;
+    transform: none;
+}
+
+/* Hover jadi Merah Flat */
+.btn-reset:hover {
+    background-color: #dc3545; /* Merah */
+    border-color: #dc3545;
+    color: #fff;
+}
+
+/* --- CUSTOM STYLE UNTUK SELECT / DROPDOWN --- */
+
+.form-grid select {
+    /* 1. Matikan Style Bawaan Browser (PENTING) */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* 2. Tambahkan Panah Custom (Pakai SVG warna Navy) */
+    /* Ini menggambar ikon panah ke bawah secara manual */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2302406C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    
+    background-repeat: no-repeat;
+    background-position: right 12px center; /* Posisi di kanan */
+    background-size: 16px; /* Ukuran panah */
+
+    /* 3. Penyesuaian Ruang */
+    padding-right: 40px; /* Kasih jarak di kanan biar teks gak nabrak panah */
+    cursor: pointer;     /* Kursor tangan biar kerasa bisa diklik */
+    
+    /* Pastikan font sama dengan input lain */
+    font-family: sans-serif;
+    color: #333;
+}
+
+/* Saat dropdown dibuka/diklik */
+.form-grid select:focus {
+    border-color:#333;  /* #01B5B8;  Border jadi Tosca */
+    outline: none;
+    /* box-shadow: 0 0 0 3px rgba(1, 181, 184, 0.1); Glow dikit */
+}
+
+/* Opsi di dalam dropdown (Styling terbatas oleh OS, tapi kita rapikan dikit) */
+.form-grid select option {
+    padding: 10px;
+    font-size: 14px;
+    background-color: #fff;
+    color: #333;
 }

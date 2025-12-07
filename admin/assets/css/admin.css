@@ -20,8 +20,7 @@
 
 /* ==================== TITLE ==================== */
 .sidebar-title {
-    text-align: center;
-    margin-bottom: 25px;
+    margin: 20px;
 }
 
 .sidebar.collapsed .sidebar-title span {
@@ -33,12 +32,13 @@
     color: white;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
+    gap: 20px;
+    padding: 15px;
     text-decoration: none;
     /* border-radius: 6px; */
     margin-bottom: 10px;
     transition: background 0.2s ease;
+    justify-content: center;
 }
 
 .sidebar a i {

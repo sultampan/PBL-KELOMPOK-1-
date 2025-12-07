@@ -30,7 +30,7 @@ $orcid = trim($_POST['orcid'] ?? '');
 $sinta = trim($_POST['sinta'] ?? '');
 $oldImg = $_POST['gambar_lama'] ?? null;
 
-$newSlug = createSlug($nama);
+$newSlug = substr(createSlug($nama), 0, 50);
 $new_uploaded_filename = null; 
 $should_remove_old_image = ($_POST['remove_existing_image'] ?? '0') === '1';
 
@@ -97,23 +97,39 @@ try {
         sendJson('success', "Member baru berhasil ditambahkan.");
     }
 } catch (Exception $e) {
-    // 1. Rollback File (Hapus file fisik jika upload sukses tapi DB gagal)
-    if ($new_uploaded_filename && is_file($uploadDir . $new_uploaded_filename)) {
-        @unlink($uploadDir . $new_uploaded_filename);
+    // 1. ROLLBACK FILE (PENTING)
+    // Hapus file baru jika DB gagal disimpan
+    if ($new_uploaded_filename) {
+        $path_to_delete = $uploadDir . $new_uploaded_filename;
+        
+        // Hapus file asli
+        if (file_exists($path_to_delete)) {
+            @unlink($path_to_delete);
+        }
+
+        // Hapus thumbnail juga (jika sempat terbuat)
+        // Kita hitung nama thumbnail berdasarkan nama file baru
+        $ext = pathinfo($new_uploaded_filename, PATHINFO_EXTENSION);
+        $base = pathinfo($new_uploaded_filename, PATHINFO_FILENAME);
+        $thumb_to_delete = $thumbDir . $base . '-thumb.' . $ext;
+
+        if (file_exists($thumb_to_delete)) {
+            @unlink($thumb_to_delete);
+        }
     }
 
-    // 2. TANGKAP PESAN ERROR ASLI
+    // 2. PESAN ERROR USER FRIENDLY (seperti request sebelumnya)
     $rawError = $e->getMessage();
     $friendlyMessage = "Gagal menyimpan: " . $rawError;
 
-    // 3. DETEKSI ERROR CONSTRAINT JABATAN
-    // Cek apakah error mengandung kata kunci "member_jabatan_check"
     if (strpos($rawError, 'member_jabatan_check') !== false) {
-        $friendlyMessage = "Gagal: Jabatan tidak valid! Pastikan Anda memilih jabatan yang tersedia (misal: Head of Laboratory atau Member Lab).";
+        $friendlyMessage = "Gagal: Jabatan tidak valid.";
+    }
+    // Deteksi error kepanjangan (value too long)
+    if (strpos($rawError, 'value too long') !== false) {
+        $friendlyMessage = "Gagal: Inputan terlalu panjang (melebihi batas karakter).";
     }
 
-    // 4. Kirim pesan yang sudah dipercantik
     sendJson('error', $friendlyMessage);
 }
-?>
 ?>

@@ -16,7 +16,12 @@ function getMemberAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_memb
     $params = [];
     
     if ($keyword) {
-        $sql .= "WHERE nama_member ILIKE :keyword OR nidn ILIKE :keyword OR jabatan ILIKE :keyword ";
+        // TAMBAHKAN 'OR deskripsi ILIKE :keyword' DI SINI
+        $sql .= "WHERE nama_member ILIKE :keyword 
+                 OR nidn ILIKE :keyword 
+                 OR jabatan ILIKE :keyword 
+                 OR deskripsi ILIKE :keyword "; 
+        
         $params[':keyword'] = '%' . $keyword . '%'; 
     }
     
@@ -35,7 +40,12 @@ function getTotalMemberCount($pdo, $keyword = null) {
     $sql = "SELECT COUNT(id_member) FROM member ";
     $params = [];
     if ($keyword) {
-        $sql .= "WHERE nama_member ILIKE :keyword OR nidn ILIKE :keyword OR jabatan ILIKE :keyword ";
+        // TAMBAHKAN 'OR deskripsi ILIKE :keyword' DI SINI
+        $sql .= "WHERE nama_member ILIKE :keyword 
+                 OR nidn ILIKE :keyword 
+                 OR jabatan ILIKE :keyword 
+                 OR deskripsi ILIKE :keyword "; 
+        
         $params[':keyword'] = '%' . $keyword . '%'; 
     }
     $stmt = $pdo->prepare($sql);

@@ -43,7 +43,7 @@ function handleUpload($fieldName, $oldFile, $uploadDir, $allowedExt, $maxSize, $
     if (!in_array($mime_type, $allowedMime)) throw new Exception("Tipe file tidak valid.");
 
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if (!in_array($ext, $allowedExt)) throw new Exception("Ekstensi tidak diizinkan.");
+    if (!in_array($ext, $allowedExt)) throw new Exception("Ekstensi file `." . $ext . "` tidak diizinkan. Hanya: " . implode(', ', $allowedExt));
     
     if ($oldFile) {
         $old_thumb_name = pathinfo($oldFile, PATHINFO_FILENAME) . '-thumb.' . pathinfo($oldFile, PATHINFO_EXTENSION);
