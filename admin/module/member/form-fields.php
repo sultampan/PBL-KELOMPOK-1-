@@ -52,7 +52,7 @@ $link3 = $links[2] ?? null; // Slot 3
         </label>
         
         <div class="link-row-static">
-            <label class="link-helper-label">Link 1</label>
+            <label class="link-helper-label">Link 1 (Contoh: Google Scholar)</label>
             <div class="link-inputs-wrapper">
                 <input type="text" name="judul_link[]" class="form-control input-judul" 
                        placeholder="Judul Link" 
@@ -65,7 +65,7 @@ $link3 = $links[2] ?? null; // Slot 3
         </div>
 
         <div class="link-row-static">
-            <label class="link-helper-label">Link 2</label>
+            <label class="link-helper-label">Link 2 (Contoh: Sinta)</label>
             <div class="link-inputs-wrapper">
                 <input type="text" name="judul_link[]" class="form-control input-judul" 
                        placeholder="Judul Link" 
@@ -78,7 +78,7 @@ $link3 = $links[2] ?? null; // Slot 3
         </div>
 
         <div class="link-row-static">
-            <label class="link-helper-label">Link 3</label>
+            <label class="link-helper-label">Link 3 (Contoh: ORCID/LinkedIn)</label>
             <div class="link-inputs-wrapper">
                 <input type="text" name="judul_link[]" class="form-control input-judul" 
                        placeholder="Judul Link" 
@@ -98,6 +98,11 @@ $link3 = $links[2] ?? null; // Slot 3
             if (!empty($editData['gambar'])) {
                 $labelTeks = htmlspecialchars($editData['gambar']);
             }
+
+            // LOGIKA BARU: Tentukan nasib kotak preview
+            // Kalau tidak ada gambar awal ($initialSrc kosong), kotak disembunyikan (display: none)
+            // Kalau ada gambar, kotak dimunculkan (display: flex)
+            $boxStyle = empty($initialSrc) ? 'display: none;' : 'display: flex;';
         ?>
         <div class="custom-file-upload">
             <input type="file" name="gambar" class="form-control" accept="image/*" id="inputGambar" 
@@ -113,10 +118,12 @@ $link3 = $links[2] ?? null; // Slot 3
                     style="<?= empty($initialSrc) ? 'display: none;' : '' ?>">&times;</button>
         </div>
         
-        <div id="fileError"></div>
-        <div class="form-preview-box">
-            <img src="<?= $initialSrc ?>" class="img-thumbnail" id="imgPreview" style="<?= $initialStyle ?>">
+        <div id="fileError" style="margin-top: 10px;"></div>
+
+        <div class="form-preview-box" id="previewBox" style="<?= $boxStyle ?>">
+            <img src="<?= $initialSrc ?>" class="img-thumbnail" id="imgPreview">
         </div>
+
         <input type="hidden" name="remove_existing_image" id="removeExistingImage" value="0">
     </div>
 
