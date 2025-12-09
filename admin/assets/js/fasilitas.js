@@ -39,7 +39,6 @@ function checkFormState() {
 
 function previewFasilitasImage(event) {
   const input = event.target;
-  // Target Pembungkus (Kotak) dan Gambarnya
   const previewContainer = document.getElementById("previewContainer");
   const imgPreview = document.getElementById("imgPreview");
   
@@ -77,7 +76,6 @@ function previewFasilitasImage(event) {
       reader.onload = function (e) {
           if(imgPreview && previewContainer) {
               imgPreview.src = e.target.result;
-              // Tampilkan Kotak
               previewContainer.style.display = "flex"; 
           }
       };
@@ -97,7 +95,6 @@ if (input.files && input.files.length > 0) {
   fileNameText.textContent = input.files[0].name;
   if (removeBtn) removeBtn.style.display = "block";
 } else {
-  // Jika tidak ada file baru, cek apakah kotak preview tampil (mode edit)
   if (previewContainer && previewContainer.style.display === 'none') {
       fileNameText.textContent = "Tidak ada file yang dipilih...";
       if (removeBtn) removeBtn.style.display = "none";
@@ -116,7 +113,7 @@ const fileNameText = document.getElementById("fileNameText");
 
 if (input) input.value = "";
 if (imgPreview) imgPreview.src = "";
-if (previewContainer) previewContainer.style.display = "none"; // Sembunyikan kotak
+if (previewContainer) previewContainer.style.display = "none";
 
 if (fileNameText) fileNameText.textContent = "Tidak ada file yang dipilih...";
 if (removeBtn) removeBtn.style.display = "none";
@@ -211,18 +208,22 @@ function loadEmptyFasilitasForm(successMessage) {
       });
 }
 
+// --- BAGIAN YANG DIUPDATE ---
 function deleteFasilitas(id) {
 if (!confirm("Anda yakin ingin menghapus fasilitas ini?")) return;
 const url = "module/fasilitas/delete.php"; 
 const formData = new FormData();
 formData.append("id", id); 
-displayAlert("Menghapus data...", "warning");
+
+// HAPUS BARIS INI (displayAlert "Menghapus data...")
+// displayAlert("Menghapus data...", "warning"); 
+
 fetch(url, { method: "POST", body: formData })
   .then((response) => response.json())
   .then((data) => {
     if (data.status === "success") {
       loadFasilitasList(); 
-      displayAlert(data.message, "success");
+      displayAlert(data.message, "success"); // Ini yang akan tampil
     } else {
       displayAlert(data.message, "error");
     }
