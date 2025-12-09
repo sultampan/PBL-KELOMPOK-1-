@@ -113,8 +113,8 @@ $link3 = $links[2] ?? null; // Slot 3
                     style="<?= empty($initialSrc) ? 'display: none;' : '' ?>">&times;</button>
         </div>
         
-        <div id="fileError" style="margin-top: 10px;"></div>
-        <div class="preview mt-2">
+        <div id="fileError"></div>
+        <div class="form-preview-box">
             <img src="<?= $initialSrc ?>" class="img-thumbnail" id="imgPreview" style="<?= $initialStyle ?>">
         </div>
         <input type="hidden" name="remove_existing_image" id="removeExistingImage" value="0">
