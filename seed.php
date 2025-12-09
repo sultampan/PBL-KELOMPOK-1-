@@ -1,19 +1,42 @@
 <?php
 require_once __DIR__ . '/config/koneksi.php';
 
-// Data admin
-$username = "";
-$password = "";
+try {
+    // === KONFIGURASI ===
+    $username       = "admin";
+    $email          = "tes@example.com";
+    $password_login = "admin";      // Password Login Admin
+    $password_email = "tes"; // Password App Gmail/SMTP
 
-// Generate salt (32 bytes, aman)
-$salt = bin2hex(random_bytes(32)); 
+    // Key Enkripsi (SIMPAN INI DI FILE CONFIG, JANGAN HILANG!)
+    // Ini kuncinya. Kalau hilang, password email tidak bisa dibuka lagi.
+    $kunci_rahasia  = "KunciRahasiaDapur1234567890"; 
+    $cipher_method  = "AES-256-CBC";
 
-// Hash manual
-$hashed = hash_hmac("sha256", $salt . $password, "key-rahasia-opsional");
+    // === 1. PROSES DATA ===
+    
+    // A. Password Login -> Pakai HASH (Satu Arah)
+    $hash_login = password_hash($password_login, PASSWORD_DEFAULT);
 
-// Insert ke database
-$sql = "INSERT INTO admin (username, password, salt) VALUES (?, ?, ?)";
-$stmt = $pdo->prepare($sql);
-$stmt->execute([$username, $hashed, $salt]);
+    // B. Password Email -> Pakai ENKRIPSI (Dua Arah)
+    $iv_length = openssl_cipher_iv_length($cipher_method);
+    $iv        = openssl_random_pseudo_bytes($iv_length); // Buat pengacak
+    $encrypted = openssl_encrypt($password_email, $cipher_method, $kunci_rahasia, 0, $iv);
+    
+    // Gabungkan IV dan Hasil Enkripsi dengan pemisah "::" lalu encode ke base64
+    // Format simpan: Base64(IV::EncryptedData)
+    $token_email_aman = base64_encode($iv . "::" . $encrypted);
 
-echo "Admin berhasil dibuat!";
+    // === 2. INSERT KE DATABASE ===
+    $sql = "INSERT INTO admin (username, email, password, email_password) VALUES (?, ?, ?, ?)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$username, $email, $hash_login, $token_email_aman]);
+
+    echo "Sukses!";
+    echo "Password Admin: Di-Hash (Aman, tidak bisa dibaca)";
+    echo "Password Email: Di-Enkripsi (Aman, tapi bisa dikembalikan saat kirim email)";
+
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
+?>

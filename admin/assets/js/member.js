@@ -65,10 +65,17 @@ function previewMemberImage(event) {
         }
 
         const reader = new FileReader();
-        reader.onload = function (e) { imgPreview.src = e.target.result; imgPreview.style.display = "block"; };
+        reader.onload = function (e) { 
+            imgPreview.src = e.target.result; 
+            imgPreview.style.display = "block";
+            // [BARU] Panggil validasi saat gambar berubah agar tombol simpan nyala
+            validateFormState(); 
+        };
         reader.readAsDataURL(file); 
     } else {
         imgPreview.src = ""; imgPreview.style.display = "none";
+        // [BARU] Validasi saat batal pilih gambar
+        validateFormState();
     }
 }
 
@@ -85,6 +92,9 @@ function removeMemberImage() {
 
   const removeExisting = document.getElementById("removeExistingImage");
   if (removeExisting) removeExisting.value = "1";
+
+  // [BARU] Panggil validasi saat gambar dihapus
+  validateFormState();
 }
 
 function updateMemberFileName(input) {
@@ -99,6 +109,9 @@ function updateMemberFileName(input) {
   }
   const removeExisting = document.getElementById("removeExistingImage");
   if (removeExisting) removeExisting.value = "0";
+  
+  // [BARU] Validasi nama file
+  validateFormState();
 }
 
 function displayAlert(message, type) {
@@ -141,17 +154,23 @@ function showMemberDetail(data) {
     const linkContainer = document.getElementById("linkContainer");
     linkContainer.innerHTML = ''; 
     
-    const fixUrlJs = (url) => {
-        if (!url) return '';
-        if (!url.startsWith('http://') && !url.startsWith('https://')) return 'https://' + url;
-        return url;
-    };
-
-    let hasLink = false;
-    if (data.google_scholar) { linkContainer.innerHTML += `<a href="${fixUrlJs(data.google_scholar)}" target="_blank" class="link-btn">Google Scholar</a>`; hasLink = true; }
-    if (data.orcid) { linkContainer.innerHTML += `<a href="${fixUrlJs(data.orcid)}" target="_blank" class="link-btn">ORCID</a>`; hasLink = true; }
-    if (data.sinta) { linkContainer.innerHTML += `<a href="${fixUrlJs(data.sinta)}" target="_blank" class="link-btn">Sinta</a>`; hasLink = true; }
-    if (!hasLink) linkContainer.innerHTML = '<span style="color:#999; font-style:italic;">Tidak ada link.</span>';
+    // Logic Link Array
+    if (data.links && data.links.length > 0) {
+        data.links.forEach(link => {
+            const a = document.createElement('a');
+            // Pastikan URL ada http/https
+            const url = (link.url_link.startsWith('http')) ? link.url_link : 'https://' + link.url_link;
+            a.href = url;
+            a.target = "_blank";
+            a.className = "link-btn";
+            a.textContent = link.judul_link;
+            // Styling inline sementara biar rapi
+            a.style.cssText = "display:inline-block; padding:5px 10px; background:#02406C; color:#fff; border-radius:4px; text-decoration:none; margin-right:5px; margin-bottom:5px; font-size:12px;";
+            linkContainer.appendChild(a);
+        });
+    } else {
+        linkContainer.innerHTML = '<span style="color:#999; font-style:italic;">Tidak ada link.</span>';
+    }
 
     modal.style.display = "block";
 }
@@ -275,109 +294,105 @@ function deleteMember(id) {
     }).catch((error) => { console.error("AJAX Delete Error:", error); displayAlert("Terjadi kesalahan jaringan.", "error"); });
 }
 
-// 4. VALIDASI FORM
-// ... (kode fungsi preview, remove, displayAlert, loadMemberList, deleteMember biarkan sama) ...
+// =========================================================
+// 4. VALIDASI FORM & STATE CHECK (BARU)
+// =========================================================
 
-// --- VARIABEL GLOBAL UNTUK MENYIMPAN DATA ASLI (SNAPSHOT) ---
-let initialFormState = {}; 
+// Kita pakai String untuk menyimpan snapshot seluruh form
+// Ini lebih aman untuk array input seperti judul_link[]
+let initialFormString = ""; 
 
-// --- FUNGSI UNTUK MEREKAM DATA AWAL ---
-function captureInitialState() {
-    initialFormState = {}; // Reset dulu
-    const inputs = document.querySelectorAll('#memberForm input, #memberForm textarea, #memberForm select');
+// Fungsi Helper untuk mengambil "Foto Copy" Form saat ini
+function getFormString() {
+    const form = document.getElementById("memberForm");
+    if (!form) return "";
     
-    inputs.forEach(input => {
-        // Kita simpan value berdasarkan name-nya
-        // Kecuali input file (karena file tidak punya value string yang bisa disimpan)
-        if (input.type !== 'file') {
-            initialFormState[input.name] = input.value;
-        }
-    });
-    // Debugging (Opsional, bisa dihapus)
-    // console.log("Data Awal Disimpan:", initialFormState);
+    // FormData otomatis menangkap semua input teks, select, textarea, hidden, dan array
+    const formData = new FormData(form);
+    
+    // Hapus input file dari string (karena file object berubah-ubah dan tidak bisa dibanding string)
+    // Kita handle file terpisah lewat cek files.length
+    formData.delete("gambar"); 
+
+    // Trik: Convert ke URLSearchParams biar jadi string rapi "nama=Budi&jabatan=Head..."
+    return new URLSearchParams(formData).toString();
 }
 
-// --- VALIDASI TOMBOL PINTAR (SIMPAN & BATAL) ---
+// Fungsi rekam data awal (dijalankan saat form load/reset)
+function captureInitialState() {
+    initialFormString = getFormString();
+}
+
+// FUNGSI UTAMA: CEK TOMBOL
 function validateFormState() {
+    const btnSimpan = document.getElementById("submitBtn");
+    const btnBatal = document.querySelector(".button-group .btn-secondary");
+    if (!btnSimpan) return;
+
     // 1. Ambil Input Wajib
     const nama = document.querySelector('input[name="nama_member"]').value.trim();
-    const nidn = document.querySelector('input[name="nidn"]').value.trim();
     const jabatanInput = document.querySelector('[name="jabatan"]');
     const jabatan = jabatanInput ? jabatanInput.value.trim() : '';
 
-    // 2. Cek Mode (Tambah atau Edit?)
+    // 2. Cek Mode (Edit atau Tambah)
     const idMemberInput = document.querySelector('input[name="id_member"]');
     const isEditMode = idMemberInput && idMemberInput.value !== "";
 
-    // 3. Cek Perubahan Data (Dirty Check)
+    // 3. Deteksi Perubahan (Dirty Check)
     let hasChanges = false;
     
-    // Cek Input File (Kalau ada file dipilih, pasti dianggap berubah)
-    const fileInput = document.getElementById('inputGambar');
-    if (fileInput && fileInput.files.length > 0) {
-        hasChanges = true;
-    } else {
-        // Cek Input Teks/Select bandingkan dengan Data Awal
-        const allInputs = document.querySelectorAll('#memberForm input, #memberForm textarea, #memberForm select');
+    if (isEditMode) {
+        // --- LOGIKA MODE EDIT ---
         
-        // Loop semua input, kalau ada SATU saja yang beda dengan initialFormState, berarti berubah
-        for (let input of allInputs) {
-            if (input.type !== 'file' && initialFormState[input.name] !== undefined) {
-                if (input.value !== initialFormState[input.name]) {
-                    hasChanges = true;
-                    break; // Stop looping kalau sudah ketemu perubahan
-                }
+        // A. Cek apakah ada file gambar baru yg dipilih?
+        const fileInput = document.getElementById('inputGambar');
+        if (fileInput && fileInput.files.length > 0) {
+            hasChanges = true;
+        }
+
+        // B. Cek apakah form teks/array berubah? (Bandingkan string snapshot)
+        if (!hasChanges) {
+            const currentString = getFormString();
+            if (currentString !== initialFormString) {
+                hasChanges = true;
             }
         }
+    } else {
+        // --- LOGIKA MODE TAMBAH ---
+        // Dianggap "berubah" kalau field wajib sudah diisi
+        // Ini agar tombol nyala ketika user mulai mengisi data
+        hasChanges = true; 
     }
 
-    // --- LOGIKA TOMBOL ---
-    const btnSimpan = document.getElementById("submitBtn");
-    const btnBatal = document.querySelector(".button-group .btn-secondary");
-
-    // A. LOGIKA TOMBOL SIMPAN
-    const isRequiredFilled = (nama !== "" && nidn !== "" && jabatan !== "");
+    // 4. ATUR TOMBOL SIMPAN
+    const isRequiredFilled = (nama !== "" && jabatan !== ""); // NIDN opsional
     
-    if (btnSimpan) {
-        if (isEditMode) {
-            // MODE EDIT: Harus Wajib Terisi DAN Ada Perubahan
-            if (isRequiredFilled && hasChanges) {
-                enableBtn(btnSimpan);
-            } else {
-                disableBtn(btnSimpan);
-            }
-        } else {
-            // MODE TAMBAH: Cukup Wajib Terisi
-            if (isRequiredFilled) {
-                enableBtn(btnSimpan);
-            } else {
-                disableBtn(btnSimpan);
-            }
+    // Syarat Tombol Nyala: Data Wajib Terisi DAN (Mode Tambah ATAU (Mode Edit & Ada Perubahan))
+    if (isRequiredFilled && hasChanges) {
+        enableBtn(btnSimpan);
+        btnSimpan.textContent = isEditMode ? "Update" : "Simpan";
+    } else {
+        disableBtn(btnSimpan);
+        // Teks feedback hanya untuk Mode Edit yang belum diubah
+        if (isEditMode && !hasChanges) {
+            btnSimpan.textContent = "Tidak ada perubahan";
         }
     }
 
-    // B. LOGIKA TOMBOL BATAL
-    // Deteksi apakah ada input apapun yang terisi (untuk mode tambah)
-    // Untuk mode edit, Batal selalu aktif.
+    // 5. ATUR TOMBOL BATAL (Opsional)
     if (btnBatal) {
         if (isEditMode) {
             enableBtn(btnBatal);
         } else {
-            // Mode Tambah: Aktif kalau ada satu field aja yang diisi/berubah
-            // Kita pakai variabel hasChanges karena logikanya mirip (beda dari kosong)
-            // Tapi kita harus cek manual field wajib karena initial state mode tambah itu kosong
-            const isDirty = nama || nidn || jabatan || hasChanges; 
-            
-            if (isDirty) {
-                enableBtn(btnBatal);
-            } else {
-                disableBtn(btnBatal);
-            }
+            // Kalau mode tambah, tombol batal nyala kalau ada isinya dikit
+            const isDirty = (nama || jabatan || hasChanges); 
+            // hasChanges di mode tambah selalu true, jadi cek manual isi field
+            const anythingFilled = (nama !== "" || jabatan !== "");
+            if(anythingFilled) enableBtn(btnBatal); else disableBtn(btnBatal);
         }
     }
 }
 
-// Helper untuk Nyala/Mati Tombol biar kodingan rapi
 function enableBtn(btn) {
     btn.disabled = false;
     btn.style.opacity = "1";
@@ -390,57 +405,44 @@ function disableBtn(btn) {
     btn.style.cursor = "not-allowed";
 }
 
-// ... (kode fungsi validateFormState di atas BIARKAN SAMA) ...
-
-// --- FUNGSI DEBOUNCE (PENUNDA EKSEKUSI) ---
-// Ini fungsi sakti biar browser gak ngos-ngosan
+// Fungsi Debounce (Biar gak berat saat ngetik)
 function debounce(func, delay) {
     let timeout;
     return function(...args) {
-        clearTimeout(timeout); // Batalkan timer sebelumnya kalau user ngetik lagi
-        timeout = setTimeout(() => func.apply(this, args), delay); // Set timer baru
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
     };
 }
 
-// Pasang "Mata-mata" (Event Listener) ke SEMUA input
+// Pasang Event Listener ke SEMUA input
 function setupFormValidation() {
-    const inputs = document.querySelectorAll(
-        '#memberForm input, #memberForm textarea, #memberForm select'
-    );
+    const inputs = document.querySelectorAll('#memberForm input, #memberForm textarea, #memberForm select');
     
     if(inputs.length > 0) {
         // 1. Rekam Data Awal
         captureInitialState();
 
-        // 2. Cek kondisi awal (Langsung jalankan tanpa delay)
+        // 2. Cek kondisi awal
         validateFormState();
 
-        // 3. Buat versi fungsi yang "Sabar" (Delay 300ms)
-        const validateSabar = debounce(validateFormState, 300);
+        // 3. Pasang Listener
+        const validateSabar = debounce(validateFormState, 200);
 
-        // 4. Pasang Event Listener
         inputs.forEach(input => {
-            // Kalau ngetik (input text/textarea), pakai yang SABAR (Debounce)
             if (input.type === 'text' || input.tagName === 'TEXTAREA') {
                 input.addEventListener('input', validateSabar);
-            } 
-            // Kalau pilih dropdown/file (change), langsung jalankan (gak perlu nunggu)
-            else {
+            } else {
                 input.addEventListener('change', validateFormState);
             }
         });
     }
 }
 
-// ... (kode document.addEventListener di bawah BIARKAN SAMA) ...
-
+// STARTUP
 document.addEventListener("DOMContentLoaded", function () {
   setupFormValidation();
   
-  // ... (kode event listener submit form biarkan sama) ...
   document.addEventListener("submit", function (e) {
-      // ... (copy paste logika submit yang lama di sini) ...
-      // Pastikan logika submit tetap ada ya bos, jangan dihapus
       if (e.target && e.target.id === "memberForm") {
         e.preventDefault(); 
         const form = e.target;
@@ -455,10 +457,29 @@ document.addEventListener("DOMContentLoaded", function () {
           .then((response) => response.json())
           .then((data) => {
             if (data.status === "success") {
+              // 1. Refresh Tabel Member
               loadMemberList();
+              
               const isUpdate = formData.get("id_member"); 
-              loadEmptyMemberForm(data.message);
-              if (isUpdate) window.history.pushState({}, document.title, window.location.pathname + "?page=member");
+
+              // 2. LOGIKA BARU SETELAH SUKSES
+              if (isUpdate) {
+                  // === KASUS UPDATE ===
+                  
+                  // A. Bersihkan URL (Hapus ?edit=123) biar gak nyangkut
+                  const currentUrl = new URL(window.location);
+                  currentUrl.searchParams.delete('edit'); 
+                  window.history.pushState({}, document.title, currentUrl);
+
+                  // B. Reset Form jadi Kosong (Mode Tambah) + Tampilkan Notif Toast
+                  loadEmptyMemberForm("Update Berhasil! Data telah disimpan.");
+                  
+              } else {
+                  // === KASUS TAMBAH BARU ===
+                  // Reset form jadi kosong + Tampilkan Notif Toast
+                  loadEmptyMemberForm(data.message);
+              }
+
             } else {
               displayAlert(data.message, "error");
             }
@@ -468,19 +489,14 @@ document.addEventListener("DOMContentLoaded", function () {
               displayAlert("Terjadi kesalahan jaringan/server.", "error"); 
           })
           .finally(() => { 
+              // Tombol akan di-reset otomatis saat loadEmptyMemberForm selesai merender ulang form
+              // Tapi untuk jaga-jaga jika error:
               const finalBtn = document.getElementById("submitBtn");
-              if (finalBtn) {
+              if (finalBtn && finalBtn.disabled) {
                   finalBtn.disabled = false;
-                  // Kembalikan teks tombol
-                  const isEditMode = formData.get("id_member"); 
-                  finalBtn.textContent = isEditMode ? "Update" : "Simpan";
-                  
-                  // PENTING: Update Initial State setelah simpan sukses 
-                  // supaya tombol update mati lagi sampai ada perubahan baru
-                  captureInitialState();
-                  validateFormState();
+                  finalBtn.textContent = "Simpan"; // Default balik ke Simpan
               }
           });
       }
-  });
+});
 });

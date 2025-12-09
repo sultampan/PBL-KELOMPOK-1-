@@ -6,22 +6,18 @@
 
             <div class="search-box">
                 <?php
-                // --- DEFINISI VARIABEL & FUNGSI HELPER (JANGAN DIHAPUS) ---
+                // --- DEFINISI VARIABEL & FUNGSI HELPER ---
                 global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
+                
+                // Pastikan variabel pagination tersedia
                 if (isset($paginationData) && is_array($paginationData)) extract($paginationData);
                 else {
-                    $currentPage = 1;
-                    $totalPages = 1;
-                    $searchKeyword = null;
-                    $limit = 6;
-                    $currentSortBy = 'id_member';
-                    $currentSortOrder = 'ASC';
+                    $currentPage = 1; $totalPages = 1; $searchKeyword = null;
+                    $limit = 6; $currentSortBy = 'id_member'; $currentSortOrder = 'ASC';
                 }
 
-                // Fungsi Build URL Paginasi
                 if (!function_exists('buildPageUrl')) {
-                    function buildPageUrl($p, $searchKeyword, $currentSortBy, $currentSortOrder)
-                    {
+                    function buildPageUrl($p, $searchKeyword, $currentSortBy, $currentSortOrder) {
                         $qs = '?page=member&p=' . $p;
                         if ($searchKeyword) $qs .= '&keyword=' . urlencode($searchKeyword);
                         if ($currentSortBy) $qs .= '&sort=' . $currentSortBy . '&order=' . $currentSortOrder;
@@ -29,10 +25,8 @@
                     }
                 }
 
-                // Fungsi Fix URL (PENTING! JANGAN HILANG)
                 if (!function_exists('fixUrl')) {
-                    function fixUrl($url)
-                    {
+                    function fixUrl($url) {
                         $url = trim($url);
                         if (empty($url)) return '';
                         if (strpos($url, 'http://') === false && strpos($url, 'https://') === false) return 'https://' . $url;
@@ -61,7 +55,10 @@
         <div class="member-grid">
             <?php if ($list): ?>
                 <?php foreach ($list as $row):
+                    // Encode data row ke JSON untuk keperluan Modal Detail (JS)
+                    // Pastikan key 'links' sudah ada dari Model
                     $dataJson = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
+                    
                     $isHead = ($row['jabatan'] === 'Head of Laboratory');
                     $badgeLabel = $isHead ? 'HEAD LAB' : 'MEMBER';
                     $badgeClass = $isHead ? 'role-badge-head' : 'role-badge';
@@ -83,7 +80,7 @@
                                 <?php
                                 $defaultImg = 'https://ui-avatars.com/api/?name=' . urlencode($row['nama_member']) . '&background=random&color=fff&size=128&length=1';
                                 $imgSrc = $defaultImg;
-                                if ($row['gambar']) {
+                                if (!empty($row['gambar'])) {
                                     $thumb = pathinfo($row['gambar'], PATHINFO_FILENAME) . '-thumb.' . pathinfo($row['gambar'], PATHINFO_EXTENSION);
                                     if (is_file($serverThumbDir . $thumb)) $imgSrc = $webThumbDir . $thumb;
                                     elseif (is_file($serverUploadDir . $row['gambar'])) $imgSrc = $webUploadDir . $row['gambar'];
@@ -95,26 +92,26 @@
                             </div>
 
                             <div class="mit-contact">
-                                <?php if ($row['google_scholar']): ?>
-                                    <div class="mit-email-row">
-                                        <span class="mit-icon">GS</span>
-                                        <a href="<?= fixUrl($row['google_scholar']) ?>" target="_blank">Google Scholar</a>
+                                <?php 
+                                // Cek apakah ada array 'links'
+                                if (!empty($row['links']) && is_array($row['links'])): 
+                                    foreach ($row['links'] as $link):
+                                        $judulLink = $link['judul_link'];
+                                        $urlLink   = fixUrl($link['url_link']);
+                                ?>
+                                    <div class="mit-email-row" style="margin-bottom: 4px;">
+                                        <i class="fas fa-link" style="color:#ccc; font-size:12px; margin-right:6px;"></i>
+                                        
+                                        <a href="<?= $urlLink ?>" target="_blank" title="<?= htmlspecialchars($judulLink) ?>" 
+                                           style="color: #01B5B8; font-weight: 600; text-decoration: none;">
+                                            <?= htmlspecialchars($judulLink) ?>
+                                        </a>
                                     </div>
-                                <?php endif; ?>
-                                <?php if ($row['sinta']): ?>
-                                    <div class="mit-email-row">
-                                        <span class="mit-icon">ST</span>
-                                        <a href="<?= fixUrl($row['sinta']) ?>" target="_blank">Sinta ID</a>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ($row['orcid']): ?>
-                                    <div class="mit-email-row">
-                                        <span class="mit-icon">OR</span>
-                                        <a href="<?= fixUrl($row['orcid']) ?>" target="_blank">ORCID</a>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+                                <?php 
+                                    endforeach;
+                                endif; 
+                                ?>
+                            </div>                        </div>
 
                         <div class="mit-bio">
                             <?= htmlspecialchars($row['deskripsi']) ?>
@@ -132,7 +129,6 @@
                 </div>
             <?php endif; ?>
         </div>
-
 
         <?php if ($totalPages > 1): ?>
             <div class="pagination" style="margin-top: 20px; text-align: center;">
@@ -155,15 +151,8 @@
                 $start_page = $currentPage - $half;
                 $end_page   = $currentPage + $half;
 
-                if ($start_page < 1) {
-                    $start_page = 1;
-                    $end_page = $start_page + $max_buttons - 1;
-                }
-                if ($end_page > $totalPages) {
-                    $end_page = $totalPages;
-                    $start_page = $end_page - $max_buttons + 1;
-                    if ($start_page < 1) $start_page = 1;
-                }
+                if ($start_page < 1) { $start_page = 1; $end_page = $start_page + $max_buttons - 1; }
+                if ($end_page > $totalPages) { $end_page = $totalPages; $start_page = $end_page - $max_buttons + 1; if ($start_page < 1) $start_page = 1; }
 
                 for ($i = $start_page; $i <= $end_page; $i++):
                     $isActive = ($i == $currentPage) ? 'active' : '';

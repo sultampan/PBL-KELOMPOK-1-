@@ -613,6 +613,7 @@
 }
 
 .mit-contact {
+    margin-top: 10px;
     display: flex;
     flex-direction: column;
     font-size: 13px;
@@ -917,4 +918,138 @@ a.menu-item {
     font-size: 14px;
     background-color: #fff;
     color: #333;
+}
+
+/* --- STYLE UNTUK DYNAMIC LINKS --- */
+
+.link-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+/* Input judul lebih pendek dari URL */
+.link-row input[name="judul_link[]"] {
+    flex: 1; /* Lebar 1 bagian */
+}
+
+.link-row input[name="url_link[]"] {
+    flex: 2; /* Lebar 2 bagian (lebih panjang) */
+}
+
+/* Tombol Hapus X Merah */
+.btn-remove-link {
+    background-color: #ffdddd;
+    color: #c00;
+    border: 1px solid #e7c3c3;
+    width: 30px;
+    height: 38px; /* Sesuaikan tinggi input */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-remove-link:hover {
+    background-color: #c00;
+    color: white;
+}
+
+/* Tombol Tambah Link (+ Dashed Border) */
+.btn-add-link {
+    width: 100%;
+    padding: 8px;
+    background-color: #fff;
+    border: 1px dashed #01B5B8; /* Warna Tosca putus-putus */
+    color: #01B5B8;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 5px;
+    transition: all 0.2s;
+}
+
+.btn-add-link:hover {
+    background-color: #e0fbfb;
+}
+
+/* Modal Link Button (Tampilan di Modal Detail) */
+.link-btn {
+    display: inline-block;
+    padding: 5px 10px;
+    background: #02406C;
+    color: #fff;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+.link-btn:hover {
+    background: #01B5B8;
+}
+
+/* --- STYLE SECTION LINK (Clean Version) --- */
+
+.link-section-box {
+    background: #f8f9fa;       /* Abu sangat muda */
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+.link-section-title {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #34495e;            /* Samakan dengan warna label lain */
+}
+
+.link-row-static {
+    margin-bottom: 15px;
+}
+
+/* Hapus margin bawah untuk baris terakhir biar rapi */
+.link-row-static:last-child {
+    margin-bottom: 0;
+}
+
+.link-helper-label {
+    display: block;
+    font-size: 12px;
+    color: #7f8c8d;            /* Abu sedang */
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.link-inputs-wrapper {
+    display: flex;
+    gap: 15px;                 /* Jarak antar input Judul dan URL */
+    align-items: center;
+}
+
+/* Mengatur Proporsi Lebar Input */
+.input-judul {
+    flex: 1;                   /* Lebar 1 bagian (lebih kecil) */
+}
+
+.input-url {
+    flex: 2;                   /* Lebar 2 bagian (lebih lebar) */
+}
+
+/* Responsif: Kalau layar kecil (HP), inputnya jadi atas-bawah */
+@media (max-width: 600px) {
+    .link-inputs-wrapper {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .input-judul, .input-url {
+        width: 100%;
+        flex: none;
+    }
 }

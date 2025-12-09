@@ -6,22 +6,25 @@ function checkPdo($pdo) {
     if (!$pdo instanceof PDO) throw new Exception("Koneksi database gagal.");
 }
 
+// Ambil semua member (Table View)
 function getMemberAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_member', $sortOrder = 'ASC') { 
     checkPdo($pdo);
     $allowedColumns = ['id_member', 'nama_member', 'nidn', 'jabatan'];
     if (!in_array($sortBy, $allowedColumns)) $sortBy = 'id_member';
     $sortOrder = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
 
-    $sql = "SELECT * FROM member ";
+    // Kita join dengan member_link agar bisa ditampilkan di JSON (opsional, via subquery array)
+    // Tapi untuk performa list, kita ambil data member intinya saja dulu.
+    // Kolom google_scholar, orcid, sinta SUDAH DIHAPUS, jadi SELECT * aman.
+    
+    $sql = "SELECT m.* FROM member m ";
     $params = [];
     
     if ($keyword) {
-        // TAMBAHKAN 'OR deskripsi ILIKE :keyword' DI SINI
-        $sql .= "WHERE nama_member ILIKE :keyword 
-                 OR nidn ILIKE :keyword 
-                 OR jabatan ILIKE :keyword 
-                 OR deskripsi ILIKE :keyword "; 
-        
+        $sql .= "WHERE m.nama_member ILIKE :keyword 
+                 OR m.nidn ILIKE :keyword 
+                 OR m.jabatan ILIKE :keyword 
+                 OR m.deskripsi ILIKE :keyword "; 
         $params[':keyword'] = '%' . $keyword . '%'; 
     }
     
@@ -32,7 +35,14 @@ function getMemberAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_memb
     if ($keyword) $stmt->bindValue(':keyword', $params[':keyword'], PDO::PARAM_STR);
     
     $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // OPTIONAL: Ambil Links untuk setiap member agar icon di tabel tetap muncul
+    // Ini teknik "Eager Loading" manual biar query ga berat
+    foreach ($members as &$m) {
+        $m['links'] = getLinksByMemberId($pdo, $m['id_member']);
+    }
+    return $members;
 }
 
 function getTotalMemberCount($pdo, $keyword = null) {
@@ -40,12 +50,7 @@ function getTotalMemberCount($pdo, $keyword = null) {
     $sql = "SELECT COUNT(id_member) FROM member ";
     $params = [];
     if ($keyword) {
-        // TAMBAHKAN 'OR deskripsi ILIKE :keyword' DI SINI
-        $sql .= "WHERE nama_member ILIKE :keyword 
-                 OR nidn ILIKE :keyword 
-                 OR jabatan ILIKE :keyword 
-                 OR deskripsi ILIKE :keyword "; 
-        
+        $sql .= "WHERE nama_member ILIKE :keyword OR nidn ILIKE :keyword OR jabatan ILIKE :keyword OR deskripsi ILIKE :keyword "; 
         $params[':keyword'] = '%' . $keyword . '%'; 
     }
     $stmt = $pdo->prepare($sql);
@@ -53,100 +58,57 @@ function getTotalMemberCount($pdo, $keyword = null) {
     return (int) $stmt->fetchColumn();
 }
 
+// Ambil 1 member beserta link-nya (Untuk Edit Form)
 function getMemberById($pdo, $id) {
     checkPdo($pdo); 
+    // 1. Ambil data induk
     $stmt = $pdo->prepare("SELECT * FROM member WHERE id_member = :id");
     $stmt->execute([':id' => $id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    $member = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($member) {
+        // 2. Ambil data anak (links)
+        $member['links'] = getLinksByMemberId($pdo, $id);
+    }
+
+    return $member;
 }
 
-function insertMember($pdo, $data) {
+// Fungsi helper ambil link
+function getLinksByMemberId($pdo, $id_member) {
+    $stmt = $pdo->prepare("SELECT * FROM member_link WHERE id_member = ?");
+    $stmt->execute([$id_member]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Cek NIDN
+function isNidnExist($pdo, $nidn, $excludeId = null) {
     checkPdo($pdo);
-    $stmt = $pdo->prepare("
-        INSERT INTO member (nama_member, nidn, jabatan, deskripsi, google_scholar, orcid, sinta, gambar, created_by)
-        VALUES (:nama, :nidn, :jabatan, :deskripsi, :scholar, :orcid, :sinta, :gambar, :created_by)
-    ");
-    $stmt->execute($data);
+    $sql = "SELECT COUNT(*) FROM member WHERE nidn = :nidn";
+    if ($excludeId) $sql .= " AND id_member != :id";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':nidn', $nidn);
+    if ($excludeId) $stmt->bindValue(':id', $excludeId, PDO::PARAM_INT);
+    $stmt->execute();
+    return (int) $stmt->fetchColumn() > 0;
 }
 
-function updateMember($pdo, $data) {
+// Cek Head Lab
+function isHeadLabExist($pdo, $excludeId = null) {
     checkPdo($pdo);
-    $stmt = $pdo->prepare("
-        UPDATE member
-        SET nama_member = :nama, nidn = :nidn, jabatan = :jabatan, deskripsi = :deskripsi,
-            google_scholar = :scholar, orcid = :orcid, sinta = :sinta, gambar = :gambar
-        WHERE id_member = :id
-    ");
-    $stmt->execute($data);
+    $sql = "SELECT COUNT(*) FROM member WHERE jabatan = 'Head of Laboratory'";
+    if ($excludeId) $sql .= " AND id_member != :id";
+    $stmt = $pdo->prepare($sql);
+    if ($excludeId) $stmt->bindValue(':id', $excludeId, PDO::PARAM_INT);
+    $stmt->execute();
+    return (int) $stmt->fetchColumn() > 0;
 }
 
+// Hapus Member (Cascade akan otomatis menghapus link di Postgres jika di-set ON DELETE CASCADE)
+// Tapi kita hapus manual gambarnya di controller.
 function deleteMember($pdo, $id) {
     checkPdo($pdo);
     $stmt = $pdo->prepare("DELETE FROM member WHERE id_member = :id");
     $stmt->execute([':id' => $id]);
-}
-
-function createSlug($text) {
-    $text = preg_replace('~[^\pL\d]+~u', '-', $text);
-    $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-    $text = preg_replace('~[^-\w]+~', '', $text);
-    $text = trim($text, '-');
-    $text = strtolower($text);
-    return $text ?: 'member';
-}
-
-/**
- * Cek apakah Head of Laboratory sudah ada.
- * @param PDO $pdo
- * @param int|null $excludeId (Opsional) ID member yang sedang diedit agar tidak menghitung dirinya sendiri.
- * @return bool True jika sudah ada, False jika belum.
- */
-function isHeadLabExist($pdo, $excludeId = null) {
-    checkPdo($pdo);
-    
-    // Cari member yang jabatannya 'Head of Laboratory'
-    $sql = "SELECT COUNT(*) FROM member WHERE jabatan = 'Head of Laboratory'";
-    
-    // Jika sedang edit, jangan hitung diri sendiri (supaya bisa update profil sendiri)
-    if ($excludeId) {
-        $sql .= " AND id_member != :id";
-    }
-    
-    $stmt = $pdo->prepare($sql);
-    
-    if ($excludeId) {
-        $stmt->bindValue(':id', $excludeId, PDO::PARAM_INT);
-    }
-    
-    $stmt->execute();
-    return (int) $stmt->fetchColumn() > 0;
-}
-
-/**
- * Cek apakah NIDN sudah terdaftar.
- * @param PDO $pdo
- * @param string $nidn NIDN yang akan dicek
- * @param int|null $excludeId ID member saat edit (agar tidak bentrok dengan diri sendiri)
- * @return bool
- */
-function isNidnExist($pdo, $nidn, $excludeId = null) {
-    checkPdo($pdo);
-    
-    $sql = "SELECT COUNT(*) FROM member WHERE nidn = :nidn";
-    
-    // Jika mode edit, abaikan ID sendiri
-    if ($excludeId) {
-        $sql .= " AND id_member != :id";
-    }
-    
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindValue(':nidn', $nidn);
-    
-    if ($excludeId) {
-        $stmt->bindValue(':id', $excludeId, PDO::PARAM_INT);
-    }
-    
-    $stmt->execute();
-    return (int) $stmt->fetchColumn() > 0;
 }
 ?>

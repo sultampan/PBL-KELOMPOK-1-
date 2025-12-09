@@ -2,6 +2,12 @@
 session_start();
 require_once __DIR__ . '/../config/koneksi.php';
 
+// Cek jika user sudah login, langsung lempar ke index
+if (isset($_SESSION["admin"]) && $_SESSION["admin"] === true) {
+    header("Location: index.php");
+    exit;
+}
+
 $timeout_error = null;
 if (isset($_SESSION['login_error'])) {
     $timeout_error = $_SESSION['login_error'];
@@ -15,31 +21,40 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = trim($_POST["username"]);
     $password = $_POST["password"];
 
-    // Ambil user berdasarkan username
-    $sql = "SELECT * FROM admin WHERE username = ? LIMIT 1";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$username]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    try {
+        // 1. Ambil user berdasarkan username
+        // Kita tidak perlu mengambil salt lagi, cukup ambil hash passwordnya
+        $sql = "SELECT * FROM admin WHERE username = ? LIMIT 1";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$username]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($user) {
-        // Hash ulang password login menggunakan salt dari DB
-        $rehashed = hash_hmac("sha256", $user['salt'] . $password, "key-rahasia-opsional");
+        // 2. Cek apakah user ada
+        if ($user) {
+            // 3. Verifikasi Password
+            // password_verify otomatis mencocokkan inputan dengan hash di database
+            if (password_verify($password, $user["password"])) {
 
-        // Cocokkan hash DB
-        if (hash_equals($user["password"], $rehashed)) {
+                // Login Sukses
+                $_SESSION["admin"] = true;
+                $_SESSION["username"] = $user["username"];
+                
+                // Pastikan nama kolom ID sesuai tabel (id_admin)
+                $_SESSION["id_admin"] = $user["id_admin"]; 
+                
+                $_SESSION['last_activity'] = time();
 
-            $_SESSION["admin"] = true;
-            $_SESSION["username"] = $user["username"];
-            $_SESSION["id_admin"] = $user["id"];
-            $_SESSION['last_activity'] = time();
-
-            header("Location: index.php");
-            exit;
+                header("Location: index.php");
+                exit;
+            }
         }
-    }
 
-    // Jika gagal
-    $error = "Username atau password salah!";
+        // Jika user tidak ditemukan ATAU password salah
+        $error = "Username atau password salah!";
+        
+    } catch (PDOException $e) {
+        $error = "Terjadi kesalahan sistem: " . $e->getMessage();
+    }
 }
 ?>
 
@@ -54,16 +69,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <body>
 
 <div class="login-container">
-    <h1 style="margin-top: auto";>LAB AI Admin</h1>
+    <h1 style="margin-top: auto;">LAB AI Admin</h1>
 
     <?php if (!empty($timeout_error)): ?>
     <div class="alert alert-warning" style="background:#fff3cd; color:#856404; padding:10px; border-radius:5px; margin-bottom:15px; border: 1px solid #ffeeba;">
         <?= htmlspecialchars($timeout_error) ?>
     </div>
-<?php endif; ?>
+    <?php endif; ?>
 
     <?php if (!empty($error)): ?>
-        <div class="error"><?= htmlspecialchars($error) ?></div>
+        <div class="error" style="background:#f8d7da; color:#721c24; padding:10px; border-radius:5px; margin-bottom:15px; border: 1px solid #f5c6cb;">
+            <?= htmlspecialchars($error) ?>
+        </div>
     <?php endif; ?>
 
     <form method="post" autocomplete="off">
