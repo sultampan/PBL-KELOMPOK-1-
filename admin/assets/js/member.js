@@ -280,18 +280,41 @@ function cancelMemberForm() {
     });
 }
 
-function deleteMember(id) {
-  if (!confirm("Anda yakin ingin menghapus member ini?")) return;
-  const url = "module/member/delete.php"; 
-  const formData = new FormData();
-  formData.append("id", id); 
-  displayAlert("Menghapus data...", "warning");
+// --- GANTI FUNGSI deleteMember DENGAN INI ---
 
-  fetch(url, { method: "POST", body: formData })
-    .then((response) => response.json()).then((data) => {
-      if (data.status === "success") loadMemberList(); 
-      else displayAlert(data.message, "error");
-    }).catch((error) => { console.error("AJAX Delete Error:", error); displayAlert("Terjadi kesalahan jaringan.", "error"); });
+function deleteMember(id) {
+    // 1. Konfirmasi
+    if (!confirm("Anda yakin ingin menghapus member ini?")) return;
+
+    const url = "module/member/delete.php";
+    const formData = new FormData();
+    formData.append("id", id);
+
+    // (Opsional) Tampilkan pesan loading kuning/abu
+    // displayAlert("Memproses penghapusan...", "warning");
+
+    fetch(url, {
+        method: "POST",
+        body: formData
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        if (data.status === "success") {
+            // [FIX] Tampilkan Notif Hijau (Sukses)
+            displayAlert(data.message || "Member berhasil dihapus.", "success");
+
+            // Refresh tampilan grid
+            loadMemberList();
+        } else {
+            // Error dari PHP (Merah)
+            displayAlert(data.message, "error");
+        }
+    })
+    .catch((error) => {
+        console.error("AJAX Delete Error:", error);
+        // Pesan error jaringan (Merah)
+        displayAlert("Terjadi kesalahan sistem saat menghapus member.", "error");
+    });
 }
 
 // =========================================================

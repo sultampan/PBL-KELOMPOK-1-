@@ -30,7 +30,9 @@ if (isset($_GET['edit'])) {
 }
 ?>
 
-<link rel="stylesheet" href="assets/css/produk.css">
+<link rel="stylesheet" href="assets/css/activity.css">
+<link rel="stylesheet" href="assets/css/forms.css">
+<link rel="stylesheet" href="assets/css/components.css">
 
 <div class="header-title" style="margin-bottom: 20px;">
 </div>

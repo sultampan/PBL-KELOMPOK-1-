@@ -52,7 +52,7 @@ $link3 = $links[2] ?? null; // Slot 3
         </label>
         
         <div class="link-row-static">
-            <label class="link-helper-label">Link 1 (Contoh: Google Scholar)</label>
+            <label class="link-helper-label">Link 1</label>
             <div class="link-inputs-wrapper">
                 <input type="text" name="judul_link[]" class="form-control input-judul" 
                        placeholder="Judul Link" 
@@ -65,7 +65,7 @@ $link3 = $links[2] ?? null; // Slot 3
         </div>
 
         <div class="link-row-static">
-            <label class="link-helper-label">Link 2 (Contoh: Sinta)</label>
+            <label class="link-helper-label">Link 2</label>
             <div class="link-inputs-wrapper">
                 <input type="text" name="judul_link[]" class="form-control input-judul" 
                        placeholder="Judul Link" 
@@ -78,7 +78,7 @@ $link3 = $links[2] ?? null; // Slot 3
         </div>
 
         <div class="link-row-static">
-            <label class="link-helper-label">Link 3 (Contoh: ORCID/LinkedIn)</label>
+            <label class="link-helper-label">Link 3</label>
             <div class="link-inputs-wrapper">
                 <input type="text" name="judul_link[]" class="form-control input-judul" 
                        placeholder="Judul Link" 
