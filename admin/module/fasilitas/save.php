@@ -19,7 +19,7 @@ function sendJson($status, $message) {
 
 // 1. Definisi Path
 $uploadDir = __DIR__ . '/../../../public/uploads/fasilitas/';
-$thumbDir  = __DIR__ . '/../../../public/uploads/thumb/fasilitas-thumb/'; // <--- TAMBAHAN PATH THUMBNAIL
+$thumbDir  = __DIR__ . '/../../../public/uploads/thumb/fasilitas-thumb/';
 @mkdir($uploadDir, 0755, true);
 
 $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -27,7 +27,9 @@ $maxSize = 5 * 1024 * 1024;
 
 $judul = trim($_POST['judul'] ?? '');
 $deskripsi = trim($_POST['deskripsi'] ?? '');
-$id = $_POST['id_galery'] ?? null;
+
+// GANTI id_galery JADI id_fasilitas
+$id = $_POST['id_fasilitas'] ?? null;
 $oldImg = $_POST['gambar_lama'] ?? null;
 
 $newSlug = createSlug($judul);
@@ -38,11 +40,9 @@ $should_remove_old_image = ($_POST['remove_existing_image'] ?? '0') === '1';
 try {
     // --- LOGIKA HAPUS GAMBAR LAMA + THUMBNAIL ---
     if ($should_remove_old_image && !empty($oldImg)) {
-        // A. Hapus File Utama
         $file = $uploadDir . $oldImg;
         if (is_file($file)) @unlink($file);
         
-        // B. Hapus Thumbnail (REVISI BUG)
         $ext = pathinfo($oldImg, PATHINFO_EXTENSION);
         $base_name = pathinfo($oldImg, PATHINFO_FILENAME);
         $thumb_name = $base_name . '-thumb.' . $ext;

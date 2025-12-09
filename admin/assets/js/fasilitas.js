@@ -242,9 +242,9 @@ document.addEventListener("DOMContentLoaded", function () {
           if (data.status === "success") {
             loadFasilitasList();
 
-            const isUpdate = formData.get("id_galery"); // Cek Primary Key Fasilitas
+            // GANTI id_galery JADI id_fasilitas
+            const isUpdate = formData.get("id_fasilitas"); 
             
-            // PANGGIL FUNGSI YANG SUDAH DIGANTI NAMANYA
             loadEmptyFasilitasForm(data.message);
 
             if (isUpdate) {
@@ -258,7 +258,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (input) input.value = ''; 
             if (img) img.style.display = 'none'; 
             
-            // PANGGIL FUNGSI YANG SUDAH DIGANTI NAMANYA
             updateFasilitasFileName(input);
           }
         })
@@ -267,15 +266,13 @@ document.addEventListener("DOMContentLoaded", function () {
           displayAlert("Terjadi kesalahan jaringan/server.", "error");
         })
         .finally(() => {
-          // BAGIAN INI YANG DIPERBAIKI
           const finalBtn = document.getElementById("submitBtn");
           if (finalBtn) {
             finalBtn.disabled = false;
             
-            // Cek apakah ini mode Edit (ada id_galery) atau Simpan Baru
-            const isEditMode = formData.get("id_galery"); 
+            // GANTI id_galery JADI id_fasilitas
+            const isEditMode = formData.get("id_fasilitas"); 
             
-            // Kembalikan teks tombol sesuai modenya
             finalBtn.textContent = isEditMode ? "Update" : "Simpan";
           }
         });

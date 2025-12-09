@@ -1053,3 +1053,91 @@ a.menu-item {
         flex: none;
     }
 }
+
+/* admin/assets/css/produk.css */
+
+/* ... (CSS lama biarkan) ... */
+
+/* --- STYLE SECTION TIM / LINK DINAMIS --- */
+
+.link-section-box {
+    background: #f8f9fa;       /* Abu sangat muda */
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+.link-section-title {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #34495e; 
+}
+
+.link-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+/* Style Khusus untuk Dropdown & Input di dalam link-row */
+.link-row select, 
+.link-row input {
+    height: 38px; /* Pastikan tingginya sama */
+}
+
+/* Tombol Hapus (Silang Merah) */
+.btn-remove-link {
+    background-color: #ffdddd;
+    color: #c00;
+    border: 1px solid #e7c3c3;
+    width: 38px;  /* Lebar kotak */
+    height: 38px; /* Tinggi sama dengan input */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.btn-remove-link:hover {
+    background-color: #c00;
+    color: white;
+}
+
+/* Tombol Tambah Anggota (+ Dashed Border) */
+.btn-add-link {
+    width: 100%;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px dashed #01B5B8; /* Warna Tosca putus-putus */
+    color: #01B5B8;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 5px;
+    transition: all 0.2s;
+}
+
+.btn-add-link:hover {
+    background-color: #e0fbfb;
+}
+
+/* --- RESPONSIVE UNTUK LAYAR KECIL --- */
+@media (max-width: 600px) {
+    .link-row {
+        flex-direction: column; /* Jadi tumpuk ke bawah */
+        align-items: stretch;
+    }
+    
+    .btn-remove-link {
+        width: 100%; /* Tombol hapus jadi lebar penuh */
+        height: 30px;
+        background-color: #ffeaea;
+    }
+}

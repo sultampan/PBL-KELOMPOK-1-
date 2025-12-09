@@ -9,6 +9,13 @@ function checkPdo($pdo) {
     }
 }
 
+// [TAMBAHAN BARU] Ambil semua member ringkas untuk Dropdown
+function getAllMembersOption($pdo) {
+    checkPdo($pdo);
+    $stmt = $pdo->query("SELECT id_member, nama_member FROM member ORDER BY nama_member ASC");
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 /**
  * Ambil semua produk
  */
@@ -78,11 +85,30 @@ function getTotalProdukCount($pdo, $keyword = null) {
 /**
  * Ambil 1 produk berdasarkan id
  */
+// [MODIFIKASI] Update getProdukById untuk mengambil data tim sekalian
 function getProdukById($pdo, $id) {
     checkPdo($pdo); 
+    
+    // 1. Ambil Data Induk (Produk)
     $stmt = $pdo->prepare("SELECT * FROM produk WHERE id_produk = :id");
     $stmt->execute([':id' => $id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    $produk = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($produk) {
+        // 2. Ambil Data Anak (Member + Role) dari tabel produk_member
+        // Kita JOIN ke tabel member biar dapat namanya buat ditampilkan
+        $sqlMem = "SELECT pm.id_member, pm.role, m.nama_member 
+                   FROM produk_member pm 
+                   JOIN member m ON pm.id_member = m.id_member 
+                   WHERE pm.id_produk = ? 
+                   ORDER BY pm.id_produk_member ASC";
+        
+        $stmtMem = $pdo->prepare($sqlMem);
+        $stmtMem->execute([$id]);
+        $produk['team'] = $stmtMem->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    return $produk;
 }
 
 /**

@@ -12,13 +12,11 @@
             $totalPages = 1;
             $searchKeyword = null;
             $limit = 10;
-            $currentSortBy = 'id_galery';
+            // GANTI id_galery JADI id_fasilitas
+            $currentSortBy = 'id_fasilitas';
             $currentSortOrder = 'ASC';
         }
 
-        /**
-         * Fungsi pembantu sorting (diadaptasi untuk fasilitas)
-         */
         function getSortLink($column, $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage)
         {
             $newOrder = 'ASC';
@@ -104,8 +102,8 @@
                                 </td>
 
                                 <td>
-                                    <a href="?page=fasilitas&edit=<?= $row['id_galery'] ?>">Edit</a>
-                                    <a href="javascript:void(0)" onclick="deleteFasilitas(<?= (int)$row['id_galery'] ?>)" class="del" title="Hapus"> Hapus</a>
+                                    <a href="?page=fasilitas&edit=<?= $row['id_fasilitas'] ?>">Edit</a>
+                                    <a href="javascript:void(0)" onclick="deleteFasilitas(<?= (int)$row['id_fasilitas'] ?>)" class="del" title="Hapus"> Hapus</a>
                                 </td>
                             </tr>
                         <?php endforeach;

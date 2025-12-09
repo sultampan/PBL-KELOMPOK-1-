@@ -11,13 +11,14 @@ function checkPdo($pdo) {
 /**
  * Ambil semua fasilitas
  */
-function getFasilitasAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_galery', $sortOrder = 'ASC') { 
+function getFasilitasAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_fasilitas', $sortOrder = 'ASC') { 
     checkPdo($pdo);
     
     // Validasi kolom sorting (sesuai field tabel fasilitas)
-    $allowedColumns = ['id_galery', 'judul', 'deskripsi'];
+    // GANTI id_galery jadi id_fasilitas
+    $allowedColumns = ['id_fasilitas', 'judul', 'deskripsi'];
     if (!in_array($sortBy, $allowedColumns)) {
-        $sortBy = 'id_galery';
+        $sortBy = 'id_fasilitas';
     }
 
     $sortOrder = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
@@ -52,7 +53,8 @@ function getFasilitasAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_g
 function getTotalFasilitasCount($pdo, $keyword = null) {
     checkPdo($pdo);
     
-    $sql = "SELECT COUNT(id_galery) FROM fasilitas ";
+    // GANTI id_galery jadi id_fasilitas
+    $sql = "SELECT COUNT(id_fasilitas) FROM fasilitas ";
     $params = [];
     
     if ($keyword) {
@@ -70,8 +72,8 @@ function getTotalFasilitasCount($pdo, $keyword = null) {
  */
 function getFasilitasById($pdo, $id) {
     checkPdo($pdo); 
-    // Perhatikan: primary key adalah id_galery
-    $stmt = $pdo->prepare("SELECT * FROM fasilitas WHERE id_galery = :id");
+    // GANTI id_galery jadi id_fasilitas
+    $stmt = $pdo->prepare("SELECT * FROM fasilitas WHERE id_fasilitas = :id");
     $stmt->execute([':id' => $id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
@@ -98,10 +100,11 @@ function insertFasilitas($pdo, $judul, $deskripsi, $gambar, $id_admin) {
  */
 function updateFasilitas($pdo, $id, $judul, $deskripsi, $gambar) {
     checkPdo($pdo);
+    // GANTI id_galery jadi id_fasilitas
     $stmt = $pdo->prepare("
         UPDATE fasilitas
         SET judul = :judul, deskripsi = :deskripsi, gambar = :gambar
-        WHERE id_galery = :id
+        WHERE id_fasilitas = :id
     ");
     $stmt->execute([
         ':judul' => $judul,
@@ -116,7 +119,8 @@ function updateFasilitas($pdo, $id, $judul, $deskripsi, $gambar) {
  */
 function deleteFasilitas($pdo, $id) {
     checkPdo($pdo);
-    $stmt = $pdo->prepare("DELETE FROM fasilitas WHERE id_galery = :id");
+    // GANTI id_galery jadi id_fasilitas
+    $stmt = $pdo->prepare("DELETE FROM fasilitas WHERE id_fasilitas = :id");
     $stmt->execute([':id' => $id]);
 }
 

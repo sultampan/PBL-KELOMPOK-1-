@@ -1,7 +1,5 @@
 <?php
 // admin/module/fasilitas/form-fields.php
-
-// Variabel $formData, $editData, $initialSrc, $initialStyle sudah tersedia dari form-load.php atau index.php
 ?>
 
 <h2><?= $editData ? "Edit Fasilitas" : "Tambah Fasilitas Baru" ?></h2>
@@ -9,7 +7,7 @@
 <form id="fasilitasForm" method="POST" class="form-grid"> 
     
     <?php if ($editData): ?>
-        <input type="hidden" name="id_galery" value="<?= $editData['id_galery'] ?>">
+        <input type="hidden" name="id_fasilitas" value="<?= $editData['id_fasilitas'] ?>">
         <input type="hidden" name="gambar_lama" value="<?= htmlspecialchars($editData['gambar']) ?>">
     <?php endif; ?>
 

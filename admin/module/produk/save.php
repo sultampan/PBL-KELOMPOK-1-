@@ -71,10 +71,61 @@ try {
         insertProduk($pdo, $nama, $deskripsi, $gambar, $link, $id_admin);
         sendJson('success', "Data produk berhasil ditambahkan.");
     }
-} catch (Exception $e) {
-    if ($new_uploaded_filename && is_file($uploadDir . $new_uploaded_filename)) {
-        @unlink($uploadDir . $new_uploaded_filename);
+
+    // === MULAI TRANSAKSI ===
+    $pdo->beginTransaction();
+
+    // 1. SIMPAN DATA PRODUK (TABEL INDUK)
+    if ($id) {
+        updateProduk($pdo, $id, $nama, $deskripsi, $gambar, $link);
+        $id_produk_target = $id; // ID yang sedang diedit
+        $msg = "Data produk berhasil diperbarui.";
+    } else {
+        $id_admin = $_SESSION['id_admin'] ?? 1;
+        // insertProduk harus kita ubah sedikit biar mengembalikan ID, 
+        // ATAU kita pakai lastInsertId() manual di sini.
+        // Asumsi: insertProduk pakai RETURNING id atau kita panggil lastInsertId
+        
+        // Agar aman, lebih baik query insert manual disini biar dapat ID-nya langsung:
+        $stmt = $pdo->prepare("INSERT INTO produk (nama, deskripsi, gambar, link_produk, created_by) 
+                               VALUES (?, ?, ?, ?, ?) RETURNING id_produk");
+        $stmt->execute([$nama, $deskripsi, $gambar, $link, $id_admin]);
+        $id_produk_target = $stmt->fetchColumn(); 
+        
+        $msg = "Data produk berhasil ditambahkan.";
     }
+
+    // 2. SIMPAN DATA MEMBER (TABEL ANAK)
+    
+    // A. Hapus data lama (Reset member untuk produk ini)
+    $stmtDel = $pdo->prepare("DELETE FROM produk_member WHERE id_produk = ?");
+    $stmtDel->execute([$id_produk_target]);
+
+    // B. Insert data baru dari form
+    $member_ids   = $_POST['member_ids'] ?? [];
+    $member_roles = $_POST['member_roles'] ?? [];
+
+    if (!empty($member_ids) && is_array($member_ids)) {
+        $sqlInsert = "INSERT INTO produk_member (id_produk, id_member, role) VALUES (?, ?, ?)";
+        $stmtInsert = $pdo->prepare($sqlInsert);
+
+        for ($i = 0; $i < count($member_ids); $i++) {
+            $m_id = $member_ids[$i];
+            $role = trim($member_roles[$i]);
+
+            // Hanya simpan jika Member dipilih dan Role diisi
+            if (!empty($m_id) && !empty($role)) {
+                $stmtInsert->execute([$id_produk_target, $m_id, $role]);
+            }
+        }
+    }
+
+    // === COMMIT TRANSAKSI ===
+    $pdo->commit();
+    sendJson('success', $msg);
+} catch (Exception $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
+    // ... (Error handling file upload SAMA) ...
     sendJson('error', "Gagal menyimpan: " . $e->getMessage());
 }
 ?>
