@@ -1,0 +1,401 @@
+/*  admin/assests/css/produk.css*/
+
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin: auto;
+    margin-bottom: 20px;
+    min-width: 228px; /* jgn diganti */
+}
+
+.card h2 {
+    margin-top: 0px;
+    margin-bottom: 25px;
+    color: #2c3e50;
+}
+
+.form-content-wrapper{
+    position: relative;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.form-grid div {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-grid label {
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #34495e;
+}
+
+.form-grid input[type="text"],
+.form-grid input[type="file"],
+.form-grid textarea {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.form-grid button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background: #3498db;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* .form-grid button:hover {
+    background: #2980b9;
+} */
+
+.preview img {
+    max-width: 300px;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 6px;
+}
+/* --- Styling untuk Daftar Produk (.table) --- */
+
+.table {
+    width: 100%;
+    border-collapse: collapse; /* Menghilangkan jarak antar border sel */
+    margin-top: 15px; /* Memberi jarak dari header Daftar Produk */
+    font-size: 14px;
+    table-layout: auto; /* Memungkinkan kolom menyesuaikan konten */
+}
+
+/* Header Tabel */
+.table thead th {
+    background-color: #34495e; /* Warna gelap/biru tua */
+    color: #fff;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Baris Data */
+.table tbody tr {
+    border-bottom: 1px solid #ecf0f1; /* Garis pemisah antar baris */
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa; /* Efek hover saat mouse melewati baris */
+}
+
+/* Sel Data */
+.table tbody td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    color: #34495e;
+    max-width: 250px; /* Batasi lebar sel agar tidak terlalu lebar */
+    word-wrap: break-word; /* Memastikan teks panjang pindah baris */
+}
+
+/* Gambar Produk */
+.table tbody td img {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    object-fit: cover;
+    display: block; /* Penting untuk menghilangkan ruang putih di bawah gambar */
+}
+
+.table tbody tr td:nth-child(3) {
+    width: 20%; /* Beri lebar 30% pada kolom deskripsi */
+    max-width: 300px; /* Batas maksimum agar tampilan tidak melebar */
+    word-break: break-word;
+    /* Pastikan padding dan vertikal-align sudah diset oleh .table tbody td */
+}
+
+/* Kolom Aksi (Edit/Hapus) */
+.table tbody td:last-child {
+    white-space: nowrap; /* Memastikan tombol aksi tetap dalam satu baris */
+    width: 1%; /* Agar kolom aksi sekecil mungkin */
+}
+
+.table tbody td a {
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin-right: 5px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+/* Gaya Tombol Edit */
+.table tbody td a:nth-child(1) { /* Tombol Edit */
+    background-color: #f39c12; /* Warna kuning/oranye */
+    color: #fff;
+}
+
+/* Gaya Tombol Hapus */
+.table tbody td a:nth-child(2) { /* Tombol Hapus */
+    background-color: #e74c3c; /* Warna merah */
+    color: #fff;
+}
+
+/* Gaya untuk pesan "Belum ada produk" */
+.table tbody tr td[colspan="5"] {
+    text-align: center !important;
+    font-style: italic;
+    color: #7f8c8d;
+}
+
+/* --- Tambahan untuk Alerts (Pesan Sukses/Error) --- */
+.alert {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.alert.success {
+    background: #e8f7e8; /* Latar hijau muda */
+    color: #1a7d1a;     /* Teks hijau tua */
+    border: 1px solid #c9e8c9;
+}
+
+.alert.error {
+    background: #fdd;   /* Latar merah muda */
+    color: #c00;       /* Teks merah tua */
+    border: 1px solid #c00;
+}
+
+/* --- Tambahan untuk Input File Error (JavaScript) --- */
+#fileError {
+    color: red;
+    margin-bottom: 5px;
+    /* display: none; akan diatur oleh JS */
+}
+
+/* admin/assets/produk.css */
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* --- Gaya untuk semua elemen di dalam button-group --- */
+.button-group button, 
+.button-group a.btn-secondary {
+    font-size: 14px;
+    flex-grow: 1;
+    text-align: center;
+    font-weight: 600;
+    padding: 10px 20px;
+    margin: 0;
+}
+
+/* Gaya tombol Submit (hanya untuk referensi)
+.form-grid button {
+    ... (gaya yang sudah ada) ...
+    Pastikan padding dan font-size di sini di-override oleh .button-group
+}
+
+/* Gaya khusus untuk link 'Batal' */
+.button-group button.btn-secondary {
+    line-height: normal; 
+    box-sizing: border-box;
+    background-color: #95a5a6;
+    text-align: center;
+    color: #fff;
+    border-radius: 5px;
+    text-decoration: none;
+}
+/* --- Custom File Input Styling (Revisi) --- */
+
+.custom-file-upload {
+    position: relative; 
+    display: flex; /* 🚨 Gunakan Flexbox untuk mengatur item */
+    align-items: center;
+    width: 100%;
+    height: 40px;
+    /* ... (gaya yang sudah ada) ... */
+    /* Pastikan background container tidak mengganggu */
+    background-color: transparent;
+}
+
+.custom-file-upload .form-control {
+    /* Input asli tetap disembunyikan */
+    position: absolute;
+    top: 0;
+    left: 0; 
+    bottom: 0;
+    opacity: 0; 
+    cursor: pointer;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+}
+
+/* .custom-file-upload .file-label { */
+    /* Input asli tetap disembunyikan */
+    /* position: absolute;
+    top: 0;
+    left: 0; 
+    opacity: 0; 
+    cursor: pointer;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+} */
+
+.file-label {
+    /* 🔑 Kunci 1: Gunakan Absolute Positioning */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; 
+    height: 100%; 
+    z-index: 10; /* Pastikan di atas input tersembunyi, tapi di bawah tombol hapus */
+    
+    /* 🔑 Kunci 2: Terapkan Flexbox untuk menyusun konten di dalamnya */
+    display: flex; 
+    align-items: center; 
+    
+    /* Kunci 3: Pindahkan border dan radius ke sini */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.file-label .file-button {
+    /* Gaya untuk tombol 'Browse' */
+    background: #667eea;
+    color: #fff;
+    padding: 8px 12px;
+    
+    /* Hapus border-radius di kanan agar menyatu dengan teks */
+    border-radius: 8px 0 0 8px; 
+    font-weight: 600;
+    
+    /* Hapus height: 100%; - Flexbox sudah mengatur tinggi */
+    height: auto;
+
+    /* padding */
+    padding: 10px 14px;
+    
+    /* Penting: membuat tombol tidak bisa "shrink" */
+    flex-shrink: 0;
+}
+
+.file-label .file-name {
+    /* Gaya untuk teks status file (Contoh: span.file-name) */
+    color: #6c757d; /* Warna teks yang lebih redup */
+    margin-left: 10px; /* Jarak dari tombol "Browse" */
+    /* Pastikan tidak ada margin/padding yang mengganggu kesejajaran */
+}
+
+#fileNameText {
+    /* Teks Placeholder */
+    padding-left: 10px;
+    padding-right: 12px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1; /* Penting: Mengisi ruang di antara tombol Browse dan X */
+}
+
+/* admin/assets/produk.css */
+
+.remove-image-btn {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+
+    /* background-color: rgba(0, 0, 0, 0.35) !important; ANTI DI-OVERRIDE */
+    color: rgba(0, 0, 0, 0.35) !important;
+
+    width: 40px;
+    height: 40px;
+
+    border: none !important;
+    padding: 0;
+    cursor: pointer;
+
+    font-size: 20px;
+    line-height: 30px;
+    text-align: center;
+
+    border-radius: 4px;
+    z-index: 100;
+}
+
+.form-grid .remove-image-btn {
+    all: unset; /* hapus semua style default + style warisan */
+    position: absolute;
+    right: 7px; /* Jarak dari sisi kanan */
+    top: 50%; /* Pindahkan titik tengah tombol ke tengah vertikal */
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    /* background-color: rgba(0,0,0,0.35); */
+    color: #fff;
+    font-size: 24px;
+    line-height: 24px;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* CSS Tambahan untuk Toast Positioning */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999; 
+    width: 300px;
+}
+.toast {
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+    /* 🚨 Kunci: Opacity awal harus 1 agar terlihat */
+    opacity: 1; 
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out; 
+}
+.alert.error {
+    background-color: #fdd;
+    color: #c00;
+    border: 1px solid #e7c3c3;
+}
+.alert.success {
+    background-color: #e8f7e8;
+    color: #1a7d1a;
+    border: 1px solid #c9e8c9;
+}
+/* 🚨 Kunci: Kelas untuk transisi keluar */
+.toast.hide { 
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+/* --- Styling untuk Notifikasi Warning/Loading --- */
+.alert.warning {
+    background-color: #fdd;
+    color: #c00;
+    border: 1px solid #e7c3c3;
+}
+
+/* Pastikan semua alert styling ada di sini */
+.alert.error {
+    background-color: #fdd;
+    color: #c00;
+    border: 1px solid #e7c3c3;
+}
