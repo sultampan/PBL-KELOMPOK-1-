@@ -12,14 +12,14 @@
     <?php endif; ?>
 
     <div class="mb-3">
-        <label class="form-label">Nama Fasilitas</label>
-        <input type="text" name="judul" class="form-control"
+        <label class="form-label">Nama Fasilitas <span style="color: red;">*</span></label>
+        <input type="text" name="judul" id="judulInput" class="form-control"
                value="<?= $formData['judul'] ?? '' ?>" required>
     </div>
     
     <div class="mb-3">
-        <label class="form-label">Deskripsi</label>
-        <textarea name="deskripsi" rows="4" class="form-control" required><?= $formData['deskripsi'] ?? '' ?></textarea>
+        <label class="form-label">Deskripsi <span style="color: red;">*</span></label>
+        <textarea name="deskripsi" id="deskripsiInput" rows="4" class="form-control" required><?= $formData['deskripsi'] ?? '' ?></textarea>
     </div>
 
     <div class="mb-3">
@@ -32,7 +32,9 @@
             
             <label for="inputGambar" class="file-label" id="fileLabel">
                 <span class="file-button">Browse</span> 
-                <span id="fileNameText" class="placeholder-text">Tidak ada file yang dipilih...</span>
+                <span id="fileNameText" class="placeholder-text">
+                    <?= !empty($initialSrc) ? ($editData['gambar'] ?? 'Gambar terpilih') : 'Tidak ada file yang dipilih...' ?>
+                </span>
             </label>
             
             <button type="button" 
@@ -47,21 +49,33 @@
         
         <div id="fileError" style="margin-top: 10px;"></div>
         
-        <div class="preview mt-2">
+        <div class="form-preview-box" 
+             id="previewContainer" 
+             style="<?= empty($initialSrc) ? 'display: none;' : '' ?>">
+            
             <img src="<?= $initialSrc ?>"
-                 class="img-thumbnail" alt="Preview Gambar" width="auto"
-                 id="imgPreview" style="<?= $initialStyle ?>">
+                 alt="Preview Gambar"
+                 id="imgPreview">
         </div>
-        <input type="hidden" name="remove_existing_image" id="removeExistingImage" value="0">
 
+        <input type="hidden" name="remove_existing_image" id="removeExistingImage" value="0">
     </div>
+    
     <div class="mb-3 button-group">
+        <button type="button" 
+                id="btnCancel" 
+                class="btn btn-secondary" 
+                onclick="cancelFasilitasForm()"
+                <?= !$editData ? 'disabled' : '' ?>> 
+            Batal
+        </button>
+        
         <button type="submit" id="submitBtn" class="btn btn-primary">
             <?= $editData ? "Update" : "Simpan" ?>
         </button>
-        
-        <button type="button" class="btn btn-secondary" onclick="cancelFasilitasForm()">
-            Batal
-        </button>
     </div>
 </form>
+
+<script>
+    if(typeof initFormListener === 'function') { initFormListener(); }
+</script>

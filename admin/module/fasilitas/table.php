@@ -1,135 +1,130 @@
 <div id="fasilitas-list-container">
-    <div class="card">
-        <h3>Daftar Fasilitas</h3>
+    
+    <?php
+    global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
+    
+    // Fallback data jika variabel controller belum ada
+    if (isset($paginationData) && is_array($paginationData)) {
+        extract($paginationData);
+    } else {
+        $currentPage = 1; $totalPages = 1; $searchKeyword = null; $limit = 10;
+        $list = [];
+    }
+    ?>
 
-        <?php
-        global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
-        
-        if (isset($paginationData) && is_array($paginationData)) {
-            extract($paginationData);
-        } else {
-            $currentPage = 1;
-            $totalPages = 1;
-            $searchKeyword = null;
-            $limit = 10;
-            // GANTI id_galery JADI id_fasilitas
-            $currentSortBy = 'id_fasilitas';
-            $currentSortOrder = 'ASC';
-        }
-
-        function getSortLink($column, $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage)
-        {
-            $newOrder = 'ASC';
-            if ($currentSortBy === $column) {
-                $newOrder = $currentSortOrder === 'ASC' ? 'DESC' : 'ASC';
-            }
-
-            $icon = '';
-            if ($currentSortBy === $column) {
-                $icon = $currentSortOrder === 'ASC' ? ' ▲' : ' ▼';
-            }
-
-            $queryString = '?page=fasilitas&sort=' . $column . '&order=' . $newOrder;
-            if ($searchKeyword) {
-                $queryString .= '&keyword=' . urlencode($searchKeyword);
-            }
-            $queryString .= '&p=' . $currentPage;
-
-            return '<a href="' . $queryString . '" style="text-decoration: none; color: inherit;">' . ucfirst($column) . $icon . '</a>';
-        }
-        ?>
-
-        <div style="overflow-x: auto;">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th><?= getSortLink('judul', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
-                        <th><?= getSortLink('deskripsi', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
-                        <th>Gambar</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $no = (($currentPage - 1) * $limit) + 1;
-
-                    if ($list):
-                        foreach ($list as $row):
-                    ?>
-                            <tr>
-                                <td><?= $no++ ?></td>
-                                <td><?= htmlspecialchars($row['judul']) ?></td>
-
-                                <td>
-                                    <?php
-                                    $deskripsi_lengkap = htmlspecialchars($row['deskripsi']);
-                                    if (strlen($deskripsi_lengkap) > 90) {
-                                        echo substr($deskripsi_lengkap, 0, 90) . '...';
-                                    } else {
-                                        echo $deskripsi_lengkap;
-                                    }
-                                    ?>
-                                </td>
-
-                                <td>
-                                    <?php if ($row['gambar']):
-                                        $original_filename = $row['gambar'];
-                                        $ext = pathinfo($original_filename, PATHINFO_EXTENSION);
-                                        $base_name = pathinfo($original_filename, PATHINFO_FILENAME);
-                                        $thumbnail_filename = $base_name . '-thumb.' . $ext;
-
-                                        $server_thumb_path = $serverThumbDir . $thumbnail_filename;
-                                        $server_original_path = $serverUploadDir . $original_filename;
-
-                                        if (is_file($server_thumb_path)) {
-                                            $image_path = $webThumbDir . $thumbnail_filename;
-                                            $path_for_mtime = $server_thumb_path;
-                                        } else {
-                                            $image_path = $webUploadDir . $original_filename;
-                                            $path_for_mtime = $server_original_path;
-                                        }
-
-                                        if (is_file($path_for_mtime)) {
-                                            $timestamp = filemtime($path_for_mtime);
-                                            $image_path .= '?' . $timestamp; 
-                                        }
-                                    ?>
-                                        <img src="<?= $image_path ?>" style="max-width: 120px; height: auto;" alt="Thumb">
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?>
-                                </td>
-
-                                <td>
-                                    <a href="?page=fasilitas&edit=<?= $row['id_fasilitas'] ?>">Edit</a>
-                                    <a href="javascript:void(0)" onclick="deleteFasilitas(<?= (int)$row['id_fasilitas'] ?>)" class="del" title="Hapus"> Hapus</a>
-                                </td>
-                            </tr>
-                        <?php endforeach;
-                    else: ?>
-                        <tr>
-                            <td colspan="5" class="text-center">Belum ada fasilitas.</td>
-                        </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+    <div class="toolbar-header">
+        <div class="header-title">
+            Daftar Fasilitas
         </div>
+        
+        <div class="search-form">
+            <div class="search-group">
+                <input type="text" id="searchFasilitasInput" class="search-input" 
+                       placeholder="Cari Nama atau Deskripsi..." 
+                       value="<?= htmlspecialchars($searchKeyword ?? '') ?>">
+                
+                <button type="button" onclick="searchFasilitas()" class="btn-cari">
+                    <i class="fa fa-search"></i> Cari
+                </button>
+            </div>
+        </div>
+    </div>
 
-        <?php if ($totalPages > 1): ?>
-            <div class="pagination" style="margin-top: 20px; text-align: center;">
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <?php
-                    $queryString = '?page=fasilitas&p=' . $i;
-                    if ($searchKeyword) $queryString .= '&keyword=' . urlencode($searchKeyword);
-                    if ($currentSortBy) $queryString .= '&sort=' . $currentSortBy . '&order=' . $currentSortOrder;
-                    ?>
-                    <a href="<?= $queryString ?>"
-                        style="padding: 8px 12px; margin: 0 4px; border: 1px solid <?= ($i == $currentPage ? '#3498db' : '#ccc'); ?>; background-color: <?= ($i == $currentPage ? '#3498db' : '#fff'); ?>; color: <?= ($i == $currentPage ? '#fff' : '#3498db'); ?>; text-decoration: none; border-radius: 4px;">
-                        <?= $i ?>
-                    </a>
-                <?php endfor; ?>
+    <div class="fasilitas-grid">
+        <?php if ($list): ?>
+            <?php foreach ($list as $row): ?>
+                
+                <div class="fasilitas-card">
+                    <div class="fasilitas-img-wrapper">
+                        <?php 
+                            $image_path = '';
+                            if ($row['gambar']) {
+                                $original_filename = $row['gambar'];
+                                $ext = pathinfo($original_filename, PATHINFO_EXTENSION);
+                                $base_name = pathinfo($original_filename, PATHINFO_FILENAME);
+                                $thumbnail_filename = $base_name . '-thumb.' . $ext;
+
+                                $server_thumb_path = $serverThumbDir . $thumbnail_filename;
+                                $server_original_path = $serverUploadDir . $original_filename;
+
+                                // Prioritas: Thumbnail -> Asli
+                                if (is_file($server_thumb_path)) {
+                                    $image_path = $webThumbDir . $thumbnail_filename;
+                                    $path_for_mtime = $server_thumb_path;
+                                } elseif (is_file($server_original_path)) {
+                                    $image_path = $webUploadDir . $original_filename;
+                                    $path_for_mtime = $server_original_path;
+                                }
+
+                                // Cache busting
+                                if (!empty($image_path) && is_file($path_for_mtime)) {
+                                    $image_path .= '?' . filemtime($path_for_mtime); 
+                                }
+                            }
+                        ?>
+
+                        <?php if (!empty($image_path)): ?>
+                            <img src="<?= $image_path ?>" alt="<?= htmlspecialchars($row['judul']) ?>" loading="lazy">
+                        <?php else: ?>
+                            <div class="no-image-placeholder">
+                                <i class="fa fa-image" style="font-size:24px; margin-right:5px;"></i> Tidak ada gambar
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="fasilitas-content">
+                        <div class="fasilitas-title">
+                            <?= htmlspecialchars($row['judul']) ?>
+                        </div>
+                        <div class="fasilitas-desc" title="<?= htmlspecialchars($row['deskripsi']) ?>">
+                            <?= htmlspecialchars($row['deskripsi']) ?>
+                        </div>
+                    </div>
+
+                    <div class="card-action-buttons">
+                        <a href="?page=fasilitas&edit=<?= $row['id_fasilitas'] ?>" class="btn-card btn-card-edit">
+                            Edit
+                        </a>
+                        <button type="button" onclick="deleteFasilitas(<?= (int)$row['id_fasilitas'] ?>)" class="btn-card btn-card-delete">
+                            Hapus
+                        </button>
+                    </div>
+                </div>
+
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div style="grid-column: 1 / -1; text-align: center; padding: 50px; background: #fff; border-radius: 8px; border: 1px dashed #ccc;">
+                <h4 style="color: #999;">Belum ada data fasilitas.</h4>
+                <p style="color: #aaa;">Silakan tambahkan data baru melalui form di atas.</p>
             </div>
         <?php endif; ?>
     </div>
+
+    <?php if ($totalPages > 1): ?>
+        <div class="pagination">
+            <?php 
+                function getPageLink($pageNum, $keyword) {
+                    $link = "?page=fasilitas&p=" . $pageNum;
+                    if ($keyword) $link .= "&keyword=" . urlencode($keyword);
+                    return $link;
+                }
+            ?>
+
+            <?php if ($currentPage > 1): ?>
+                <a href="<?= getPageLink($currentPage - 1, $searchKeyword) ?>" class="page-link page-arrow">&laquo;</a>
+            <?php endif; ?>
+
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <a href="<?= getPageLink($i, $searchKeyword) ?>" 
+                   class="page-link page-num <?= ($i == $currentPage) ? 'active' : '' ?>">
+                    <?= $i ?>
+                </a>
+            <?php endfor; ?>
+
+            <?php if ($currentPage < $totalPages): ?>
+                <a href="<?= getPageLink($currentPage + 1, $searchKeyword) ?>" class="page-link page-arrow">&raquo;</a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
 </div>
