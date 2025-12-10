@@ -45,9 +45,6 @@
   box-sizing: border-box;
   font-family: sans-serif;
 }
-.form-control.input-url {
-  margin-bottom: 15px;
-}
 
 .form-grid input[type="text"], .form-grid input[type="date"],
 .form-grid input[type="file"], .form-grid textarea, .form-grid select,
