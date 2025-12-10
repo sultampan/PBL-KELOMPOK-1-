@@ -1,6 +1,6 @@
 <header id="site-header" class="fixed-top">
     <div class="container">
-        <nav class="navbar navbar-expand-lg navbar-light stroke py-lg-0">
+        <nav class="navbar navbar-expand-lg navbar-dark stroke py-lg-0">
 
             <h1>
                 <a class="navbar-brand" href="index.php?page=home">
