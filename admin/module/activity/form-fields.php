@@ -1,9 +1,14 @@
 <?php
 // admin/module/activity/form-fields.php
+// 1. Ambil Opsi Member untuk Dropdown
+$memberOptions = getAllMembersOption($pdo);
+
+// 2. Ambil Data Tim yang sudah ada (Kalau lagi Edit)
+$existingTeam = $editData['team'] ?? [];
 ?>
 <h2><?= $editData ? "Edit Activity" : "Tambah Activity Baru" ?></h2>
 
-<form id="activityForm" method="POST" class="form-grid"> 
+<form id="activityForm" method="POST" enctype="multipart/form-data" class="form-grid"> 
     
     <?php if ($editData): ?>
         <input type="hidden" name="id_activity" value="<?= $editData['id_activity'] ?>">
@@ -26,6 +31,54 @@
         <label class="form-label">Deskripsi</label>
         <textarea name="deskripsi" rows="4" class="form-control" required><?= $formData['deskripsi'] ?? '' ?></textarea>
     </div>
+
+    <div class="mb-3 link-section-box">
+    <label class="form-label link-section-title">Partisipasi Member</label>
+    <small style="display:block; margin-bottom:10px; color:#666;">Member yang terlibat dalam proyek ini.</small>
+    
+    <div id="team-container">
+        <?php 
+        // A. JIKA MODE EDIT: Tampilkan baris yang sudah ada
+        if (!empty($existingTeam)) {
+            foreach ($existingTeam as $tm) {
+                ?>
+                <div class="link-row">
+                    <select name="member_ids[]" class="form-control" style="flex: 1;" required>
+                        <option value="">-- Pilih Member --</option>
+                        <?php foreach ($memberOptions as $opt): ?>
+                            <option value="<?= $opt['id_member'] ?>" 
+                                <?= ($tm['id_member'] == $opt['id_member']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($opt['nama_member']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <button type="button" class="btn-remove-link" onclick="removeTeamRow(this)">Batal</button>
+                </div>
+                <?php
+            }
+        }
+        ?>
+    </div>
+
+    <button type="button" class="btn-add-link" onclick="addTeamRow()">
+        +
+    </button>
+
+    <template id="teamRowTemplate">
+        <div class="link-row">
+            <select name="member_ids[]" class="form-control" style="flex: 1;" required>
+                <option value="">-- Pilih Member --</option>
+                <?php foreach ($memberOptions as $opt): ?>
+                    <option value="<?= $opt['id_member'] ?>">
+                        <?= htmlspecialchars($opt['nama_member']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <button type="button" class="btn-remove-link" onclick="removeTeamRow(this)">Batal</button>
+        </div>
+    </template>
+</div>
 
     <div class="mb-3">
         <label class="form-label">Gambar Activity</label>
@@ -59,12 +112,8 @@
         <input type="hidden" name="remove_existing_image" id="removeExistingImage" value="0">
     </div>
 
-    <div class="mb-3 button-group">
-        <button type="submit" id="submitBtn" class="btn btn-primary">
-            <?= $editData ? "Update" : "Simpan" ?>
-        </button>
-        <button type="button" class="btn btn-secondary" onclick="cancelActivityForm()">
-            Batal
-        </button>
+     <div class="mb-3 button-group">
+        <button type="button" class="btn btn-secondary" onclick="cancelMemberForm()">Batal</button>
+        <button type="submit" id="submitBtn" class="btn btn-primary"><?= $editData ? "Update" : "Simpan" ?></button>
     </div>
 </form>
