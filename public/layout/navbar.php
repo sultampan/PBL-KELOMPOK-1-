@@ -3,10 +3,13 @@
         <nav class="navbar navbar-expand-lg navbar-light stroke py-lg-0">
 
             <h1>
-                <a class="navbar-brand" href="index.php?page=home">
-                    <span class="sub-color">APPLIED</span> INFORMATICS
+                <a class="navbar-brand position-absolute logo-fixed" href="index.php?page=home">
+                    <img src="assets/images/logo.png" alt="Applied Informatics Lab">
                 </a>
             </h1>
+
+            <!-- Tambahkan kotak putih transparan -->
+            <div class="navbar-white-overlay"></div>
 
             <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false"
@@ -17,39 +20,30 @@
 
             <div class="collapse navbar-collapse" id="navbarScroll">
                 <ul class="navbar-nav mx-lg-auto my-2 my-lg-0 navbar-nav-scroll">
-
                     <li class="nav-item">
                         <a class="nav-link" href="index.php?page=home">Home</a>
                     </li>
-
                     <li class="nav-item">
                         <a class="nav-link" href="index.php?page=product">Product</a>
                     </li>
-
                     <li class="nav-item">
                         <a class="nav-link" href="index.php?page=member">Member</a>
                     </li>
-
                     <li class="nav-item">
                         <a class="nav-link" href="index.php?page=facility">Facility</a>
                     </li>
-
                     <li class="nav-item">
                         <a class="nav-link" href="index.php?page=activity">Activity</a>
                     </li>
-
                     <li class="nav-item">
                         <a class="nav-link" href="index.php?page=contact">Contact</a>
                     </li>
-
                 </ul>
 
-                <!-- Search button -->
                 <button id="trigger-overlay" class="searchw3-icon me-xl-4 me-lg-3" type="button">
                     <i class="fas fa-search"></i>
                 </button>
 
-                <!-- search overlay -->
                 <div class="overlay overlay-slidedown">
                     <button type="button" class="overlay-close">
                         <i class="fas fa-times"></i>
@@ -61,10 +55,8 @@
                         </form>
                     </nav>
                 </div>
-
             </div>
 
-            <!-- Theme button -->
             <div class="mobile-position">
                 <nav class="navigation">
                     <div class="theme-switch-wrapper">
