@@ -334,22 +334,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then((response) => response.json())
                 .then((data) => {
                     if (data.status === "success") {
+
+                        // 🔥 CHECK REDIRECT
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                            return;
+                        }
+
                         loadProductList();
-                        
+                                        
                         const isUpdate = formData.get("id_produk");
                         if (isUpdate) {
-                            // Jika Update, perbarui snapshot
                             alert("Data berhasil diperbarui!");
-                            
-                            // Reset input file visual
                             updateFileName(document.getElementById('inputGambar'));
-                            
                             captureInitialState();
                             validateFormState();
                         } else {
-                            // Jika Tambah Baru, reset form
                             loadEmptyForm(data.message);
                         }
+
                     } else {
                         displayAlert(data.message, "error");
                     }
@@ -398,4 +401,54 @@ function getFormString() {
     // FormData otomatis menghandle array member_ids[] dan member_roles[]
     // Jadi kalau ada perubahan dropdown/role, string ini akan berubah
     return new URLSearchParams(formData).toString();
+}
+
+function addTeamToTable() {
+    const select = document.getElementById("memberSelect");
+    const roleInput = document.getElementById("roleInput");
+    const tableBody = document.querySelector("#teamTable tbody");
+
+    const memberId = select.value;
+    const memberName = select.options[select.selectedIndex].text;
+    const role = roleInput.value.trim();
+
+    if (!memberId) {
+        alert("Pilih member terlebih dahulu!");
+        return;
+    }
+    if (role === "") {
+        alert("Role tidak boleh kosong!");
+        return;
+    }
+
+    // Tambahkan baris ke tabel
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td>
+            ${memberName}
+            <input type="hidden" name="member_ids[]" value="${memberId}">
+        </td>
+        <td>
+            ${role}
+            <input type="hidden" name="member_roles[]" value="${role}">
+        </td>
+        <td style="text-align:center;">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeTeamRowTable(this)">✕</button>
+        </td>
+    `;
+
+    tableBody.appendChild(row);
+
+    // Reset input
+    select.value = "";
+    roleInput.value = "";
+
+    // Supaya tombol simpan aktif
+    if (typeof validateFormState === "function") validateFormState();
+}
+
+function removeTeamRowTable(btn) {
+    btn.closest("tr").remove();
+
+    if (typeof validateFormState === "function") validateFormState();
 }
