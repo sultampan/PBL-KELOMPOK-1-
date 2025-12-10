@@ -62,16 +62,16 @@
     </div>
     
     <div class="mb-3 button-group">
-        <button type="submit" id="submitBtn" class="btn btn-primary">
-            <?= $editData ? "Update" : "Simpan" ?>
-        </button>
-        
         <button type="button" 
                 id="btnCancel" 
                 class="btn btn-secondary" 
                 onclick="cancelFasilitasForm()"
                 <?= !$editData ? 'disabled' : '' ?>> 
             Batal
+        </button>
+        
+        <button type="submit" id="submitBtn" class="btn btn-primary">
+            <?= $editData ? "Update" : "Simpan" ?>
         </button>
     </div>
 </form>

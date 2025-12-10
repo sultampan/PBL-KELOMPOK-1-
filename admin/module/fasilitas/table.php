@@ -3,49 +3,34 @@
     <?php
     global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
     
-    // Fallback variable jika tidak ada data dari controller
+    // Fallback data jika variabel controller belum ada
     if (isset($paginationData) && is_array($paginationData)) {
         extract($paginationData);
     } else {
         $currentPage = 1; $totalPages = 1; $searchKeyword = null; $limit = 10;
-        $currentSortBy = 'id_fasilitas'; $currentSortOrder = 'ASC';
         $list = [];
-    }
-
-    // Helper function untuk sorting link
-    function getSortLink($column, $label, $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) {
-        $newOrder = 'ASC';
-        $activeStyle = '';
-        $icon = '';
-
-        if ($currentSortBy === $column) {
-            $newOrder = $currentSortOrder === 'ASC' ? 'DESC' : 'ASC';
-            $activeStyle = 'style="color: #F28C28; font-weight:bold; text-decoration:underline;"'; 
-            $icon = $currentSortOrder === 'ASC' ? ' &#9650;' : ' &#9660;'; // Panah atas/bawah
-        }
-        
-        $queryString = '?page=fasilitas&sort=' . $column . '&order=' . $newOrder;
-        if ($searchKeyword) $queryString .= '&keyword=' . urlencode($searchKeyword);
-        $queryString .= '&p=' . $currentPage;
-
-        return '<a href="' . $queryString . '" ' . $activeStyle . '>' . $label . $icon . '</a>';
     }
     ?>
 
     <div class="toolbar-header">
-        <div>
-            <strong>Total:</strong> <?= $totalRecords ?? 0 ?> Fasilitas
+        <div class="header-title">
+            Daftar Fasilitas
         </div>
-        <div class="sort-links">
-            Urutkan: 
-            <?= getSortLink('judul', 'Nama', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?> 
-            <span style="color:#ccc; margin:0 5px;">|</span>
-            <?= getSortLink('id_fasilitas', 'Terbaru', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?>
+        
+        <div class="search-form">
+            <div class="search-group">
+                <input type="text" id="searchFasilitasInput" class="search-input" 
+                       placeholder="Cari Nama atau Deskripsi..." 
+                       value="<?= htmlspecialchars($searchKeyword ?? '') ?>">
+                
+                <button type="button" onclick="searchFasilitas()" class="btn-cari">
+                    <i class="fa fa-search"></i> Cari
+                </button>
+            </div>
         </div>
     </div>
 
     <div class="fasilitas-grid">
-        
         <?php if ($list): ?>
             <?php foreach ($list as $row): ?>
                 
@@ -113,23 +98,31 @@
                 <p style="color: #aaa;">Silakan tambahkan data baru melalui form di atas.</p>
             </div>
         <?php endif; ?>
-
     </div>
+
     <?php if ($totalPages > 1): ?>
         <div class="pagination">
+            <?php 
+                function getPageLink($pageNum, $keyword) {
+                    $link = "?page=fasilitas&p=" . $pageNum;
+                    if ($keyword) $link .= "&keyword=" . urlencode($keyword);
+                    return $link;
+                }
+            ?>
+
             <?php if ($currentPage > 1): ?>
-                <a href="?page=fasilitas&p=<?= ($currentPage - 1) . ($searchKeyword ? '&keyword='.urlencode($searchKeyword) : '') . ($currentSortBy ? '&sort='.$currentSortBy.'&order='.$currentSortOrder : '') ?>" class="page-link page-arrow">&laquo;</a>
+                <a href="<?= getPageLink($currentPage - 1, $searchKeyword) ?>" class="page-link page-arrow">&laquo;</a>
             <?php endif; ?>
 
             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                <a href="?page=fasilitas&p=<?= $i . ($searchKeyword ? '&keyword='.urlencode($searchKeyword) : '') . ($currentSortBy ? '&sort='.$currentSortBy.'&order='.$currentSortOrder : '') ?>" 
+                <a href="<?= getPageLink($i, $searchKeyword) ?>" 
                    class="page-link page-num <?= ($i == $currentPage) ? 'active' : '' ?>">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>
 
             <?php if ($currentPage < $totalPages): ?>
-                <a href="?page=fasilitas&p=<?= ($currentPage + 1) . ($searchKeyword ? '&keyword='.urlencode($searchKeyword) : '') . ($currentSortBy ? '&sort='.$currentSortBy.'&order='.$currentSortOrder : '') ?>" class="page-link page-arrow">&raquo;</a>
+                <a href="<?= getPageLink($currentPage + 1, $searchKeyword) ?>" class="page-link page-arrow">&raquo;</a>
             <?php endif; ?>
         </div>
     <?php endif; ?>

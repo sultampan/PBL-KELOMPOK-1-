@@ -47,10 +47,9 @@ if (isset($_GET['edit'])) {
 }
 ?>
 
-<link rel="stylesheet" href="assets/css/components.css">
-<link rel="stylesheet" href="assets/css/forms.css">
 <link rel="stylesheet" href="assets/css/fasilitas.css">
-
+<link rel="stylesheet" href="assets/css/forms.css">
+<link rel="stylesheet" href="assets/css/components.css">
 
 <div class="header-title" style="margin-bottom: 20px;">
     <!-- <h2>Manajemen Fasilitas</h2> -->

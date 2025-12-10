@@ -44,8 +44,6 @@ function resetSearchMember() {
 function previewMemberImage(event) {
     const input = event.target;
     const imgPreview = document.getElementById("imgPreview");
-    const previewBox = document.getElementById("previewBox"); // <--- AMBIL ELEMENT KOTAK
-    
     const MAX_FILE_SIZE = 5 * 1024 * 1024; 
     const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp']; 
 
@@ -57,43 +55,26 @@ function previewMemberImage(event) {
         const fileName = file.name;
         const fileExt = fileName.split('.').pop().toLowerCase();
 
-        // Validasi Ekstensi
         if (!ALLOWED_EXT.includes(fileExt)) {
             errorContainer.textContent = `Ekstensi tidak diizinkan.`; errorContainer.style.display = "block";
-            input.value = ""; 
-            
-            // Sembunyikan kotak kalau error
-            if(previewBox) previewBox.style.display = "none"; 
-            
-            updateMemberFileName(input); return;
+            input.value = ""; imgPreview.style.display = "none"; updateMemberFileName(input); return;
         }
-        
-        // Validasi Size
         if (file.size > MAX_FILE_SIZE) {
             errorContainer.textContent = "File terlalu besar (Max 5MB)."; errorContainer.style.display = "block";
-            input.value = ""; 
-            
-            // Sembunyikan kotak kalau error
-            if(previewBox) previewBox.style.display = "none"; 
-            
-            updateMemberFileName(input); return;
+            input.value = ""; imgPreview.style.display = "none"; updateMemberFileName(input); return;
         }
 
         const reader = new FileReader();
         reader.onload = function (e) { 
             imgPreview.src = e.target.result; 
-            
-            // MUNCULKAN KOTAK SAAT BERHASIL LOAD
-            // Pakai 'flex' karena biasanya di CSS .form-preview-box pakai display: flex untuk center
-            if(previewBox) previewBox.style.display = "flex"; 
-            
+            imgPreview.style.display = "block";
+            // [BARU] Panggil validasi saat gambar berubah agar tombol simpan nyala
             validateFormState(); 
         };
         reader.readAsDataURL(file); 
     } else {
-        // Kalau batal pilih file
-        imgPreview.src = ""; 
-        if(previewBox) previewBox.style.display = "none"; // Sembunyikan lagi
+        imgPreview.src = ""; imgPreview.style.display = "none";
+        // [BARU] Validasi saat batal pilih gambar
         validateFormState();
     }
 }
@@ -101,22 +82,18 @@ function previewMemberImage(event) {
 function removeMemberImage() {
   const input = document.getElementById("inputGambar");
   const img = document.getElementById("imgPreview");
-  const previewBox = document.getElementById("previewBox"); // <--- AMBIL ELEMENT KOTAK
   const removeBtn = document.getElementById("removeImageBtn");
   const fileNameText = document.getElementById("fileNameText");
 
   if (input) input.value = "";
-  if (img) img.src = "";
-  
-  // SEMBUNYIKAN KOTAK SAAT DIHAPUS
-  if (previewBox) previewBox.style.display = "none"; 
-
+  if (img) { img.src = ""; img.style.display = "none"; }
   if (fileNameText) fileNameText.textContent = "Tidak ada file yang dipilih...";
   if (removeBtn) removeBtn.style.display = "none";
 
   const removeExisting = document.getElementById("removeExistingImage");
   if (removeExisting) removeExisting.value = "1";
 
+  // [BARU] Panggil validasi saat gambar dihapus
   validateFormState();
 }
 
@@ -303,41 +280,18 @@ function cancelMemberForm() {
     });
 }
 
-// --- GANTI FUNGSI deleteMember DENGAN INI ---
-
 function deleteMember(id) {
-    // 1. Konfirmasi
-    if (!confirm("Anda yakin ingin menghapus member ini?")) return;
+  if (!confirm("Anda yakin ingin menghapus member ini?")) return;
+  const url = "module/member/delete.php"; 
+  const formData = new FormData();
+  formData.append("id", id); 
+  displayAlert("Menghapus data...", "warning");
 
-    const url = "module/member/delete.php";
-    const formData = new FormData();
-    formData.append("id", id);
-
-    // (Opsional) Tampilkan pesan loading kuning/abu
-    // displayAlert("Memproses penghapusan...", "warning");
-
-    fetch(url, {
-        method: "POST",
-        body: formData
-    })
-    .then((response) => response.json())
-    .then((data) => {
-        if (data.status === "success") {
-            // [FIX] Tampilkan Notif Hijau (Sukses)
-            displayAlert(data.message || "Member berhasil dihapus.", "success");
-
-            // Refresh tampilan grid
-            loadMemberList();
-        } else {
-            // Error dari PHP (Merah)
-            displayAlert(data.message, "error");
-        }
-    })
-    .catch((error) => {
-        console.error("AJAX Delete Error:", error);
-        // Pesan error jaringan (Merah)
-        displayAlert("Terjadi kesalahan sistem saat menghapus member.", "error");
-    });
+  fetch(url, { method: "POST", body: formData })
+    .then((response) => response.json()).then((data) => {
+      if (data.status === "success") loadMemberList(); 
+      else displayAlert(data.message, "error");
+    }).catch((error) => { console.error("AJAX Delete Error:", error); displayAlert("Terjadi kesalahan jaringan.", "error"); });
 }
 
 // =========================================================
@@ -370,69 +324,71 @@ function captureInitialState() {
 }
 
 // FUNGSI UTAMA: CEK TOMBOL
-// admin/assets/js/member.js
 function validateFormState() {
     const btnSimpan = document.getElementById("submitBtn");
     const btnBatal = document.querySelector(".button-group .btn-secondary");
-
     if (!btnSimpan) return;
 
-    // 1. CEK MODE (EDIT ATAU TAMBAH) -- (Kita pindah ke atas biar bisa dipake di logika Batal)
+    // 1. Ambil Input Wajib
+    const nama = document.querySelector('input[name="nama_member"]').value.trim();
+    const jabatanInput = document.querySelector('[name="jabatan"]');
+    const jabatan = jabatanInput ? jabatanInput.value.trim() : '';
+
+    // 2. Cek Mode (Edit atau Tambah)
     const idMemberInput = document.querySelector('input[name="id_member"]');
-    // Dianggap Mode Edit kalau input ID ada isinya
     const isEditMode = idMemberInput && idMemberInput.value !== "";
 
-    // 2. DETEKSI PERUBAHAN (DIRTY CHECK)
+    // 3. Deteksi Perubahan (Dirty Check)
     let hasChanges = false;
-
-    // A. Cek Input Teks/Select/Hidden
-    const currentString = getFormString();
-    if (currentString !== initialFormString) {
-        hasChanges = true;
-    }
-
-    // B. Cek Input File
-    const fileInput = document.getElementById('inputGambar');
-    if (fileInput && fileInput.files.length > 0) {
-        hasChanges = true;
-    }
-
-    // 3. ATUR TOMBOL BATAL (LOGIKA BARU)
-    if (btnBatal) {
-        if (isEditMode) {
-            // [FIX] Kalau Mode Edit, Batal HARUS SELALU NYALA
-            // (Supaya user bisa cancel editing walaupun belum ubah apa-apa)
-            enableBtn(btnBatal);
-        } else {
-            // Kalau Mode Tambah, Batal baru nyala kalau form sudah "kotor" (ada isinya)
-            if (hasChanges) enableBtn(btnBatal);
-            else disableBtn(btnBatal);
+    
+    if (isEditMode) {
+        // --- LOGIKA MODE EDIT ---
+        
+        // A. Cek apakah ada file gambar baru yg dipilih?
+        const fileInput = document.getElementById('inputGambar');
+        if (fileInput && fileInput.files.length > 0) {
+            hasChanges = true;
         }
+
+        // B. Cek apakah form teks/array berubah? (Bandingkan string snapshot)
+        if (!hasChanges) {
+            const currentString = getFormString();
+            if (currentString !== initialFormString) {
+                hasChanges = true;
+            }
+        }
+    } else {
+        // --- LOGIKA MODE TAMBAH ---
+        // Dianggap "berubah" kalau field wajib sudah diisi
+        // Ini agar tombol nyala ketika user mulai mengisi data
+        hasChanges = true; 
     }
 
-    // 4. ATUR TOMBOL SIMPAN (LOGIKA WAJIB 3 KOLOM)
-    const namaInput = document.querySelector('input[name="nama_member"]');
-    const nidnInput = document.querySelector('input[name="nidn"]');
-    const jabatanInput = document.querySelector('[name="jabatan"]');
+    // 4. ATUR TOMBOL SIMPAN
+    const isRequiredFilled = (nama !== "" && jabatan !== ""); // NIDN opsional
     
-    const nama = namaInput ? namaInput.value.trim() : "";
-    const nidn = nidnInput ? nidnInput.value.trim() : "";
-    const jabatan = jabatanInput ? jabatanInput.value.trim() : "";
-    
-    // Syarat Wajib: 3 Kolom ini harus terisi
-    const isRequiredFilled = (nama !== "" && nidn !== "" && jabatan !== "");
-
-    // Tombol Simpan Nyala Jika: (Data Lengkap) DAN (Ada Perubahan)
+    // Syarat Tombol Nyala: Data Wajib Terisi DAN (Mode Tambah ATAU (Mode Edit & Ada Perubahan))
     if (isRequiredFilled && hasChanges) {
         enableBtn(btnSimpan);
         btnSimpan.textContent = isEditMode ? "Update" : "Simpan";
     } else {
         disableBtn(btnSimpan);
-        
+        // Teks feedback hanya untuk Mode Edit yang belum diubah
         if (isEditMode && !hasChanges) {
             btnSimpan.textContent = "Tidak ada perubahan";
+        }
+    }
+
+    // 5. ATUR TOMBOL BATAL (Opsional)
+    if (btnBatal) {
+        if (isEditMode) {
+            enableBtn(btnBatal);
         } else {
-            btnSimpan.textContent = isEditMode ? "Update" : "Simpan";
+            // Kalau mode tambah, tombol batal nyala kalau ada isinya dikit
+            const isDirty = (nama || jabatan || hasChanges); 
+            // hasChanges di mode tambah selalu true, jadi cek manual isi field
+            const anythingFilled = (nama !== "" || jabatan !== "");
+            if(anythingFilled) enableBtn(btnBatal); else disableBtn(btnBatal);
         }
     }
 }
