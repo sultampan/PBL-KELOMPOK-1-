@@ -1,0 +1,311 @@
+/* --- FORM LAYOUT --- */
+.form-content-wrapper {
+    position: relative;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .form-grid div {
+    display: flex;
+    flex-direction: column;
+  }
+  .form-grid label {
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #34495e;
+  }
+  .form-label.link-section-title {
+    font-size: 18px; /* <--- INI KUNCINYA (Ganti 18px, 20px, dst sesuai selera) */
+    font-weight: 700; /* Tambah ini biar tebal (bold) */
+    color: #2c3e50; /* Opsional: Biar warnanya agak gelap tegas */
+    margin-bottom: 20px; /* Jarak ke bawah */
+    display: block; /* Pastikan dia mengisi satu baris penuh */
+  }
+  /* --- INPUTS --- */
+  .form-control {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+    background-color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: sans-serif;
+  }
+  .form-control.input-judul {
+    margin-bottom: 15px;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+    background-color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: sans-serif;
+  }
+  
+  .form-grid input[type="text"], .form-grid input[type="date"],
+  .form-grid input[type="file"], .form-grid textarea, .form-grid select,
+  
+  /* Fix Autocomplete Color */
+  .form-grid input:-webkit-autofill, .form-grid textarea:-webkit-autofill, .form-grid select:-webkit-autofill {
+    -webkit-text-fill-color: #333;
+    -webkit-box-shadow: 0 0 0px 1000px #fff inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+  
+  /* --- CUSTOM SELECT --- */
+  .form-grid select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2302406C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+    cursor: pointer;
+    color: #333;
+  }
+  .form-grid select:focus {
+    border-color: #333;
+    outline: none;
+  }
+  
+  /* --- BUTTONS --- */
+  .form-grid .button-group {
+    display: flex;
+    flex-direction: row !important;
+    gap: 10px;
+    width: 100%;
+    order: 2 !important;
+  }
+  .form-grid .button-group button,
+  .form-grid .button-group a.btn-secondary {
+    width: auto;
+    flex: 1;
+    order: 1 !important;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  /* Primary (Tosca) */
+  .form-grid button[type="submit"],
+  .button-group button.btn-primary {
+    background-color: #01b5b8 !important;
+    color: #fff !important;
+    border: none !important;
+    transition: background-color 0.2s ease;
+  }
+  .form-grid button[type="submit"]:hover,
+  .button-group button.btn-primary:hover {
+    background-color: #018c8e !important;
+  }
+  /* Secondary (Batal) */
+  .button-group button.btn-secondary {
+    background-color: #95a5a6 !important;
+    color: #fff !important;
+    border: none !important;
+    text-decoration: none;
+    text-align: center;
+    line-height: normal;
+    box-sizing: border-box;
+  }
+  .button-group button.btn-secondary:hover {
+    background-color: #7f8c8d !important;
+  }
+  
+  /* --- FILE UPLOAD CUSTOM --- */
+  .custom-file-upload {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 40px;
+    background-color: transparent;
+  }
+  .custom-file-upload .form-control {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+  }
+  .file-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .file-label .file-button {
+    background: #01b5b8;
+    color: #fff;
+    border-radius: 8px 0 0 8px;
+    font-weight: 600;
+    height: auto;
+    padding: 10px 14px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .file-button:hover {
+    background-color: #018c8e;
+  }
+  .file-label .file-name,
+  #fileNameText {
+    padding-left: 10px;
+    padding-right: 12px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+  }
+  .remove-image-btn {
+    all: unset;
+    position: absolute;
+    right: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    color: rgba(0, 0, 0, 0.35) !important;
+    font-size: 24px;
+    line-height: 24px;
+    text-align: center;
+    cursor: pointer;
+    z-index: 100;
+  }
+  .preview img {
+    max-width: 300px;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 6px;
+  }
+  #fileError {
+    color: red;
+    margin-top: 10px;
+  }
+  
+  /* --- LINK SECTION (Dynamic) --- */
+  
+  .link-section-box {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    margin-bottom: 20px;
+  }
+  .link-section-title {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #34495e;
+  }
+  .link-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  .link-row select,
+  .link-row input {
+    height: 38px;
+  }
+  
+  .btn-remove-link {
+    background-color: #ffdddd;
+    color: #c00;
+    border: 1px solid #e7c3c3;
+    width: 38px;
+    height: 38px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-remove-link:hover {
+    background-color: #c00;
+    color: white;
+  }
+  
+  .btn-add-link {
+    width: 100%;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px dashed #01b5b8;
+    color: #01b5b8;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 5px;
+  }
+  .btn-add-link:hover {
+    background-color: #e0fbfb;
+  }
+  
+  @media (max-width: 600px) {
+    .link-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .btn-remove-link {
+      width: 100%;
+      height: 30px;
+    }
+  }
+  
+  /* --- STYLE PREVIEW GAMBAR (KOTAK PEMBATAS) --- */
+  .form-preview-box {
+      margin-top: 15px;
+      width: 100%;
+      /* INI KUNCINYA: Tinggi dibatasi jadi 200px */
+      height: 300px; 
+      
+      /* Style Kotak */
+      border: 2px dashed #ddd; 
+      border-radius: 8px;
+      background-color: #fafafa;
+      
+      /* Posisi Gambar di tengah */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+  }
+  
+  .form-preview-box img {
+      /* Gambar menyesuaikan kotak, tidak akan lebih besar */
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain; /* Gambar utuh, tidak terpotong */
+      display: block;
+  }
+  
+  /* --- FIX PLACEHOLDER WARNA (OVERRIDE WEBKIT FILL) --- */
+  
+  .form-control::placeholder,
+  .input-judul::placeholder,
+  .input-url::placeholder,
+  .form-grid input::placeholder {
+      /* Ini kuncinya: Reset fill color biar ngikutin color biasa */
+      -webkit-text-fill-color: #ccc !important; 
+      
+      color: #ccc !important; 
+  }
