@@ -23,7 +23,6 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 
     session_start();
 
     $_SESSION['login_error'] = $timeout_message;
-
     header("Location: login.php");
     exit;
 }
@@ -44,24 +43,24 @@ $page = $_GET['page'] ?? 'dashboard';
 // ============================
 //  LAYOUT START
 // ============================
-
-include __DIR__ . '/layout/header.php';      // <html><body><div class="container">
-include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
-
-// ============================
-//  MAIN WRAPPER DIMULAI
-// ============================
+include __DIR__ . '/layout/header.php';
+include __DIR__ . '/layout/sidebar.php';
 ?>
+
 <div class="main" id="main">
 
-    <!-- ====================== HEADER ADMIN ADA DI DALAM MAIN ====================== -->
+    <!-- ====================== HEADER TITLE DINAMIS ====================== -->
+    <?php
+    $judul = ucfirst(str_replace("_", " ", $page));
+    if ($judul == 'Dashboard') $judul = 'Dashboard Admin';
+    ?>
     <div class="header-top" style="
         display:flex;
         justify-content:space-between;
         align-items:center;
         margin-bottom:10px;
     ">
-        <h3>Dashboard Admin</h3>
+        <h3><?= $judul ?></h3>
 
         <div style="color:#7f8c8d;">
             Selamat datang, <?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?>
@@ -71,6 +70,7 @@ include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
     <!-- ========================= ISI HALAMAN ========================== -->
     <?php
     switch ($page) {
+
         case 'dashboard':
             try {
                 $countActivity = (int) $pdo->query("SELECT COUNT(*) FROM activity")->fetchColumn();
@@ -100,6 +100,24 @@ include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
             include __DIR__ . '/module/activity/index.php';
             break;
 
+        /* 🔥 CONTACT CRUD */
+        case 'contact':
+            include __DIR__ . '/module/contact/index.php';
+            break;
+
+        case 'contact_edit':
+            include __DIR__ . '/module/contact/edit.php';
+            break;
+
+        case 'contact_reply':
+            include __DIR__ . '/module/contact/reply.php';
+            break;
+
+        case 'contact_delete':
+            include __DIR__ . '/module/contact/delete.php';
+            break;
+        /* ===================================================== */
+
         default:
             echo "<h3>Halaman tidak ditemukan.</h3>";
             break;
@@ -108,6 +126,4 @@ include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
 
 </div> <!-- END MAIN -->
 
-<?php 
-include __DIR__ . '/layout/footer.php'; 
-?>
+<?php include __DIR__ . '/layout/footer.php'; ?>

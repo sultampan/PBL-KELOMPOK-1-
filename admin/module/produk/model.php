@@ -170,4 +170,42 @@ function createSlug($text) {
     return $text ?: 'file';
 }
 
+//tambah fungsi insert produk member
+function insertProdukMember($pdo, $id_produk, $id_member, $role) {
+    checkPdo($pdo);
+    $sql = "INSERT INTO produk_member (id_produk, id_member, role)
+            VALUES (:id_produk, :id_member, :role)";
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute([
+        ':id_produk' => $id_produk,
+        ':id_member' => $id_member,
+        ':role' => $role
+    ]);
+}
+
+function getProdukTeam($pdo, $id_produk) {
+    $sql = "SELECT pm.id_produk_member, pm.id_member, pm.role, m.nama_member
+            FROM produk_member pm
+            JOIN member m ON m.id_member = pm.id_member
+            WHERE pm.id_produk = :id_produk";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':id_produk' => $id_produk]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getTeamByProduk($pdo, $id_produk) {
+    $sql = "SELECT pm.role, m.nama_member 
+            FROM produk_member pm
+            JOIN member m ON pm.id_member = m.id_member
+            WHERE pm.id_produk = :id_produk
+            ORDER BY m.nama_member ASC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':id_produk' => $id_produk]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+
 ?>
