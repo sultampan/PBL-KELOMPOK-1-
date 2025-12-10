@@ -15,7 +15,6 @@ $existingTeam = $editData['team'] ?? [];
         <input type="hidden" name="gambar_lama" value="<?= htmlspecialchars($editData['gambar'] ?? '') ?>">
     <?php endif; ?>
 
-
     <!-- Nama Produk -->
     <div class="mb-3">
         <label class="form-label">Nama Produk</label>
@@ -37,75 +36,90 @@ $existingTeam = $editData['team'] ?? [];
         <textarea name="deskripsi" rows="4" class="form-control" required><?= htmlspecialchars($formData['deskripsi'] ?? '') ?></textarea>
     </div>
 
+<!-- =============================== -->
+<!--         TIM PENGEMBANG          -->
+<!-- =============================== -->
+<div class="mb-3 link-section-box">
+    <div class="card-section">
 
+        <h4>Tim Pengembang Produk</h4>
+        <p class="text-muted">Tambahkan member dan role untuk produk ini.</p>
 
-    <!-- =============================== -->
-    <!--         TIM PENGEMBANG          -->
-    <!-- =============================== -->
-    <div class="mb-3 link-section-box">
-        <label class="form-label link-section-title">Tim Pengembang (Member & Role)</label>
-        <small style="display:block; margin-bottom:10px; color:#666;">Tambah anggota & role untuk produk ini.</small>
-
-        <div id="team-container">
-            <!-- JIKA MODE EDIT: TAMPILKAN DATA TIM YANG ADA -->
-            <?php if (!empty($existingTeam)): ?>
-                <?php foreach ($existingTeam as $tm): ?>
-                    <div class="link-row">
-                        
-                        <!-- Dropdown Member -->
-                        <select name="member_ids[]" class="form-control" style="flex:1;" required>
-                            <option value="">-- Pilih Member --</option>
-                            <?php foreach ($memberOptions as $opt): ?>
-                                <option value="<?= $opt['id_member'] ?>"
-                                    <?= ($tm['id_member'] == $opt['id_member']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($opt['nama_member']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-
-                        <!-- Role -->
-                        <input type="text"
-                               name="member_roles[]"
-                               class="form-control"
-                               placeholder="Role (ex: Frontend Dev)"
-                               value="<?= htmlspecialchars($tm['role']) ?>"
-                               style="flex:1;" required>
-
-                        <button type="button" class="btn-remove-link" onclick="removeTeamRow(this)">&times;</button>
-                    </div>
+        <!-- Input Tambah Tim -->
+        <div class="team-input-row">
+            <select id="memberSelect" class="form-control">
+                <option value="">-- Pilih Member --</option>
+                <?php foreach ($memberOptions as $m): ?>
+                    <option value="<?= $m['id_member'] ?>">
+                        <?= htmlspecialchars($m['nama_member']) ?>
+                    </option>
                 <?php endforeach; ?>
-            <?php endif; ?>
+            </select>
+
+            <input id="roleInput" type="text" class="form-control" placeholder="Role (ex: Backend Dev)">
+
+            <button type="button" class="btn btn-success" onclick="addTeamToTable()">Tambah</button>
         </div>
 
-        <!-- Tombol Tambah Baris -->
-        <button type="button" class="btn-add-link" onclick="addTeamRow()">+ Tambah Anggota Tim</button>
+        <!-- Tabel Tim -->
+        <table class="table table-bordered mt-3" id="teamTable">
+            <thead>
+                <tr>
+                    <th style="width:35%;">Member</th>
+                    <th style="width:45%;">Role</th>
+                    <th style="width:20%; text-align:center;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
 
-        <!-- TEMPLATE ROW -->
-        <template id="teamRowTemplate">
-            <div class="link-row">
-
-                <select name="member_ids[]" class="form-control" style="flex:1;" required>
-                    <option value="">-- Pilih Member --</option>
-                    <?php foreach ($memberOptions as $opt): ?>
-                        <option value="<?= $opt['id_member'] ?>">
-                            <?= htmlspecialchars($opt['nama_member']) ?>
-                        </option>
+                <?php if (!empty($existingTeam)): ?>
+                    <?php foreach ($existingTeam as $tm): ?>
+                        <tr>
+                            <td>
+                                <?= htmlspecialchars($tm['nama_member']) ?>
+                                <input type="hidden" name="member_ids[]" value="<?= $tm['id_member'] ?>">
+                            </td>
+                            <td>
+                                <?= htmlspecialchars($tm['role']) ?>
+                                <input type="hidden" name="member_roles[]" value="<?= $tm['role'] ?>">
+                            </td>
+                            <td style="text-align:center;">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeTeamRowTable(this)">✕</button>
+                            </td>
+                        </tr>
                     <?php endforeach; ?>
-                </select>
+                <?php endif; ?>
 
-                <input type="text" 
-                       name="member_roles[]" 
-                       class="form-control" 
-                       placeholder="Role (ex: Backend Dev)" 
-                       style="flex:1;" 
-                       required>
+            </tbody>
+        </table>
 
-                <button type="button" class="btn-remove-link" onclick="removeTeamRow(this)">&times;</button>
-            </div>
-        </template>
     </div>
+</div>
 
+<!-- TEMPLATE UNTUK ROW BARU (TIDAK ADA DIV NGESOT) -->
+<template id="teamRowTemplate">
+    <tr>
+        <td>
+            <select name="member_ids[]" class="form-control" required>
+                <option value="">-- Pilih Member --</option>
+                <?php foreach ($memberOptions as $opt): ?>
+                    <option value="<?= $opt['id_member'] ?>">
+                        <?= htmlspecialchars($opt['nama_member']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </td>
 
+        <td>
+            <input type="text" name="member_roles[]" class="form-control"
+                   placeholder="Role (ex: Backend Dev)" required>
+        </td>
+
+        <td style="text-align:center;">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeTeamRowTable(this)">✕</button>
+        </td>
+    </tr>
+</template>
 
     <!-- =============================== -->
     <!--            GAMBAR               -->
@@ -139,7 +153,6 @@ $existingTeam = $editData['team'] ?? [];
 
         <input type="hidden" name="remove_existing_image" id="removeExistingImage" value="0">
     </div>
-
 
     <!-- Buttons -->
     <div class="mb-3 button-group">

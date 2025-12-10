@@ -4,8 +4,10 @@
         <h3>Daftar Produk</h3>
 
         <?php
-        global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
+        // FIX WAJIB: agar variabel path dikenali table-load.php
+        global $serverUploadDir, $serverThumbDir, $webUploadDir, $webThumbDir;
 
+        // Pagination data
         if (isset($paginationData) && is_array($paginationData)) {
             extract($paginationData);
         } else {
@@ -17,6 +19,7 @@
             $currentSortOrder = 'ASC';
         }
 
+        // Sorting helper
         function getSortLink($column, $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage)
         {
             $newOrder = ($currentSortBy === $column && $currentSortOrder === 'ASC') ? 'DESC' : 'ASC';
@@ -34,119 +37,114 @@
         }
         ?>
 
-        <div style="overflow-x:auto;">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th><?= getSortLink('nama', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
-                        <th><?= getSortLink('deskripsi', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
+        <!-- ================================ -->
+        <!--  GRID CARD PRODUK DIMULAI DI SINI -->
+        <!-- ================================ -->
 
-                        <!-- 🟩 KOLOM TIM BARU -->
-                        <th>Tim</th>
+        <div class="product-grid">
 
-                        <th>Gambar</th>
-                        <th>Link</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
+        <?php foreach ($list as $row): ?>
 
-                <tbody>
+            <div class="product-card">
+
+                <!-- Gambar Produk -->
+                <?php 
+                    $image_path = "-";
+                    if (!empty($row['gambar'])) {
+
+                        $original = $row['gambar'];
+                        $ext = pathinfo($original, PATHINFO_EXTENSION);
+                        $base = pathinfo($original, PATHINFO_FILENAME);
+                        $thumb = $base . '-thumb.' . $ext;
+
+                        $serverThumb = $serverThumbDir . $thumb;
+                        $serverOriginal = $serverUploadDir . $original;
+
+                        if (is_file($serverThumb)) {
+                            $image_path = $webThumbDir . $thumb;
+                            $mtimePath = $serverThumb;
+                        } else {
+                            $image_path = $webUploadDir . $original;
+                            $mtimePath = $serverOriginal;
+                        }
+
+                        if (is_file($mtimePath)) {
+                            $image_path .= '?' . filemtime($mtimePath);
+                        }
+                    }
+                ?>
+
+                <img src="<?= $image_path ?>" class="product-thumb" alt="Gambar Produk">
+
+                <!-- Nama Produk -->
+                <div class="product-title">
+                    <?= htmlspecialchars($row['nama']) ?>
+                </div>
+
+                <!-- Deskripsi Produk -->
+                <div class="product-desc">
                     <?php
-                    $no = (($currentPage - 1) * $limit) + 1;
-
-                    if ($list):
-                        foreach ($list as $row):
+                    $desc = htmlspecialchars($row['deskripsi']);
+                    echo strlen($desc) > 120 ? substr($desc, 0, 120) . '...' : $desc;
                     ?>
-                            <tr>
-                                <td><?= $no++ ?></td>
+                </div>
 
-                                <td><?= htmlspecialchars($row['nama']) ?></td>
+                <hr>
 
-                                <td>
-                                    <?php
-                                    $desc = htmlspecialchars($row['deskripsi']);
-                                    echo strlen($desc) > 90 ? substr($desc, 0, 90) . '...' : $desc;
-                                    ?>
-                                </td>
+                <!-- TIM PRODUK (STYLE C PREMIUM) -->
+                <?php if (!empty($row['team'])): ?>
+                    <?php foreach ($row['team'] as $tm): ?>
+                        <div class="team-card-item">
+                            <div class="team-name">
+                                <i class="fas fa-user"></i>
+                                <?= htmlspecialchars($tm['nama_member']) ?>
+                            </div>
+                            <div class="team-role">
+                                Role: <?= htmlspecialchars($tm['role']) ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="team-card-item">
+                        <div class="team-name"><i class="fas fa-user"></i> Belum ada member</div>
+                    </div>
+                <?php endif; ?>
 
-                                <!--  KOLOM TIM PRODUK -->
-                                <td>
-                                    <?php if (!empty($row['team'])): ?>
+                <hr>
 
-                                        <?php foreach ($row['team'] as $tm): ?>
-                                            <div class="team-card-item">
-                                                <div class="team-name"><i class="fas fa-user"></i> <?= htmlspecialchars($tm['nama_member']) ?></div>
-                                                <div class="team-role">Role: <?= htmlspecialchars($tm['role']) ?></div>
-                                            </div>
-                                        <?php endforeach; ?>
-
-                                    <?php else: ?>
-                                        <span style="color:#888">Belum ada member</span>
-                                    <?php endif; ?>
-                                </td>
-
-                                <td>
-                                    <?php if ($row['gambar']):
-
-                                        $original = $row['gambar'];
-                                        $ext = pathinfo($original, PATHINFO_EXTENSION);
-                                        $base = pathinfo($original, PATHINFO_FILENAME);
-                                        $thumb = $base . '-thumb.' . $ext;
-
-                                        $serverThumb = $serverThumbDir . $thumb;
-                                        $serverOriginal = $serverUploadDir . $original;
-
-                                        if (is_file($serverThumb)) {
-                                            $image_path = $webThumbDir . $thumb;
-                                            $mtimePath = $serverThumb;
-                                        } else {
-                                            $image_path = $webUploadDir . $original;
-                                            $mtimePath = $serverOriginal;
-                                        }
-
-                                        if (is_file($mtimePath)) {
-                                            $image_path .= '?' . filemtime($mtimePath);
-                                        }
-                                    ?>
-                                        <img src="<?= $image_path ?>" style="max-width:120px;height:auto;">
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?>
-                                </td>
-
-                                <td>
-                                    <?php if ($row['link_produk']): ?>
-                                        <?php
-                                        $url = htmlspecialchars($row['link_produk']);
-                                        $url = (!preg_match('/^https?:\/\//', $url)) ? "https://$url" : $url;
-                                        ?>
-                                        <a href="<?= $url ?>" target="_blank">Lihat</a>
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?>
-                                </td>
-
-                                <td>
-                                    <a href="?page=produk&edit=<?= $row['id_produk'] ?>">Edit</a>
-                                    <a href="javascript:void(0)"
-                                       onclick="deleteProduct(<?= (int)$row['id_produk'] ?>)"
-                                       class="del">
-                                       Hapus
-                                    </a>
-                                </td>
-                            </tr>
-
-                        <?php endforeach; ?>
+                <!-- Link Produk -->
+                <div style="margin-bottom:8px;">
+                    <?php if ($row['link_produk']): ?>
+                        <?php
+                        $url = htmlspecialchars($row['link_produk']);
+                        $url = (!preg_match('/^https?:\/\//', $url)) ? "https://$url" : $url;
+                        ?>
+                        <a href="<?= $url ?>" target="_blank">🔗 Lihat Produk</a>
                     <?php else: ?>
-                        <tr>
-                            <td colspan="7" class="text-center">Belum ada produk.</td>
-                        </tr>
+                        <span style="color:#888;">Tidak ada link produk</span>
                     <?php endif; ?>
-                </tbody>
-            </table>
+                </div>
+
+                <!-- Actions -->
+                <div class="product-actions">
+                    <a href="?page=produk&edit=<?= $row['id_produk'] ?>" class="btn-edit">
+                        Edit
+                    </a>
+
+                    <a onclick="deleteProduct(<?= $row['id_produk'] ?>)" class="btn-delete">
+                        Hapus
+                    </a>
+                </div>
+
+            </div>
+
+        <?php endforeach; ?>
+
         </div>
 
+        <!-- ================================ -->
+        <!--  PAGINATION TETAP BERFUNGSI      -->
+        <!-- ================================ -->
         <?php if ($totalPages > 1): ?>
             <div class="pagination" style="margin-top:20px;text-align:center;">
                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
@@ -169,8 +167,7 @@
                             background-color: <?= ($i == $currentPage ? '#3498db' : '#fff'); ?>;
                             color: <?= ($i == $currentPage ? '#fff' : '#3498db'); ?>;
                             text-decoration:none;
-                            border-radius:4px;
-                        ">
+                            border-radius:4px;">
                         <?= $i ?>
                     </a>
                 <?php endfor; ?>

@@ -136,7 +136,10 @@ try {
     // COMMIT
     // ========================================================================
     $pdo->commit();
-    sendJson('success', $msg);
+    sendJson('success', $msg, [
+    'redirect' => 'index.php?page=produk'
+    ]);
+
 
 } catch (Exception $e) {
 

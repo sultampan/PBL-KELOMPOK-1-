@@ -6,13 +6,11 @@
     background: #02406C; /* utk hover #012B49 */
     height: 100vh;
     position: fixed;
-    padding-bottom: 40px;
     left: 0;
     top: 0;
     color: white;
     transition: 0.3s ease;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 /* Collapsed mode */

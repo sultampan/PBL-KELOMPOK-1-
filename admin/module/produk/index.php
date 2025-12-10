@@ -113,3 +113,6 @@ $paginationData = [
 require_once __DIR__ . "/form.php";
 require_once __DIR__ . "/table.php";
 ?>
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/forms.css">
+<link rel="stylesheet" href="assets/css/produk.css">

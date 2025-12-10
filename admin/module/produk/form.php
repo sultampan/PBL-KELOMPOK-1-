@@ -10,7 +10,7 @@ $memberOptions = getAllMembersOption($pdo);
 // Ambil tim produk jika mode edit
 $existingTeam = [];
 if (!empty($editData['id_produk'])) {
-    $existingTeam = getProdukTeam($pdo, $editData['id_produk']); // <-- Tambahkan fungsi ini di model
+    $existingTeam = getTeamByProduk($pdo, $editData['id_produk']); // <-- Tambahkan fungsi ini di model
     $editData['team'] = $existingTeam;
 }
 

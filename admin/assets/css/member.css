@@ -1,0 +1,76 @@
+/* --- MEMBER GRID --- */
+.member-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px; margin-top: 20px;
+}
+
+/* --- MIT CARD STYLE --- */
+.mit-card {
+    background: #fff; border: 1px solid #e0e0e0;
+    padding: 15px; border-radius: 4px;
+    transition: box-shadow 0.2s;
+    display: flex; flex-direction: column; gap: 0px;
+}
+
+.mit-card-role {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; text-transform: uppercase; color: #666; font-weight: 600;
+}
+.role-badge { background-color: #eee; padding: 2px 6px; border-radius: 3px; }
+.role-badge-head { background-color: #FE7C11; color: #fff; padding: 2px 8px; border-radius: 3px; }
+
+.mit-card-name {
+    margin: 5px 0 2px 0 !important; font-size: 18px; font-weight: 700;
+    height: 48px; display: grid; align-items: center; align-content: center;
+}
+.mit-card-name a {
+    text-decoration: none; color: #02406C; line-height: 1.2;
+    display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1;
+    -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;
+}
+.mit-card-name a:hover { color: #02406C; }
+.mit-card-title {
+    font-size: 14px; color: #444; margin-top: -25px; margin-bottom: 10px; font-weight: 500;
+}
+
+.mit-card-content {
+    display: flex; gap: 15px; align-items: flex-start; margin-top: 0px !important;
+}
+.mit-avatar img {
+    width: 80px; height: 80px; object-fit: cover;
+    border-radius: 50%; border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); background-color: #eee;
+}
+
+.mit-contact { margin-top: 10px; display: flex; flex-direction: column; font-size: 13px; gap: 5px; }
+.mit-email-row { display: flex; align-items: center; gap: 8px; }
+.mit-icon { font-weight: bold; color: #999; }
+.mit-contact a { color: #01B5B8; text-decoration: none; }
+
+.mit-bio {
+    height: 54px; overflow: hidden; margin-top: 8px; padding-top: 8px;
+    font-size: 13px; color: #555; line-height: 1.4;
+    border-top: 1px solid #f0f0f0;
+    display: -webkit-box; line-clamp: 3; -webkit-box-orient: vertical;
+    word-break: break-all; overflow-wrap: break-word;
+}
+
+/* --- CARD BUTTONS (Edit/Delete) --- */
+.card-action-buttons {
+    margin-top: auto; display: flex; gap: 10px;
+    border-top: 1px solid #eee; padding-top: 15px;
+}
+.btn-card {
+    flex: 1; text-align: center; padding: 8px 0; border-radius: 4px;
+    font-size: 13px; font-weight: 600; text-decoration: none !important;
+    cursor: pointer; border: none; color: #fff !important;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.btn-card:active { transform: translateY(1px); }
+
+.btn-card-edit { background-color: #FE7C11; }
+.btn-card-edit:hover { background-color: #e66b00; }
+
+.btn-card-delete { background-color: #e74c3c; }
+.btn-card-delete:hover { background-color: #c0392b; }
