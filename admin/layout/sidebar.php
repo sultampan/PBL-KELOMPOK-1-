@@ -1,4 +1,3 @@
-<!-- layout/sidebar.php -->
 <div class="sidebar" id="sidebar">
     <h2 class="sidebar-title"><span>LAB AI</span></h2>
 
@@ -29,12 +28,16 @@
         <span>Produk</span>
     </a>
 
+    <a href="index.php?page=contact" class="menu-item <?= ($page==='contact' || $page==='contact_reply') ? 'active' : '' ?>">
+        <i class="fas fa-envelope"></i>
+        <span>Contact</span>
+    </a>
+
     <a href="logout.php" class="menu-item" onclick="return confirm('Yakin logout?')">
         <i class="fas fa-sign-out-alt"></i>
         <span>Logout</span>
     </a>
 
-    <!-- SB Admin toggle button -->
     <div class="sidebar-toggle-wrapper">
         <button id="toggleSidebar" class="sidebar-toggle">
             <i class="fas fa-angle-left toggle-icon"></i>

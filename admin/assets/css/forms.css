@@ -308,3 +308,84 @@
     
     color: #ccc !important; 
 }
+
+
+/* --- Tambahan untuk Halaman Reply (forms.css) --- */
+
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.card-header-flex h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.reply-info-box {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.reply-info-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #34495e;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-table {
+    width: 100%;
+    font-size: 14px;
+}
+
+.info-table td {
+    padding: 6px 0;
+    vertical-align: top;
+}
+
+.info-table .label {
+    width: 100px;
+    font-weight: 600;
+    color: #7f8c8d;
+}
+
+.info-table .value {
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.message-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 6px;
+    color: #555;
+    line-height: 1.6;
+    margin-top: 5px;
+}
+
+.key-box {
+    background-color: #fff8e1; /* Kuning muda */
+    border: 1px solid #ffe082;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.key-box label {
+    color: #d35400; /* Oranye tua */
+    font-weight: 700;
+}

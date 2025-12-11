@@ -140,11 +140,30 @@ $produk = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                             <!-- ICON / GAMBAR PRODUK -->
                             <div class="icon">
-                                <img src="/uploads/produk/<?php echo htmlspecialchars($p['gambar']); ?>"
-     alt="<?php echo htmlspecialchars($p['nama']); ?>"
-     style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+    <?php 
+    // 1. Ambil nama file dari database
+    $gambar = $p['gambar']; 
+    
+    // 2. Pecah nama file untuk menyisipkan "-thumb"
+    // Misal: "foto.jpg" jadi "foto" dan "jpg"
+    $ext = pathinfo($gambar, PATHINFO_EXTENSION);
+    $base = pathinfo($gambar, PATHINFO_FILENAME);
+    
+    // 3. Susun nama thumbnail: "foto-thumb.jpg"
+    $thumbName = $base . '-thumb.' . $ext; 
 
-                            </div>
+    // 4. Set Path URL
+    // Path Thumbnail
+    $srcThumb = "uploads/thumb/produk-thumb/" . $thumbName;
+    // Path Gambar Asli (Cadangan jika thumbnail rusak/tidak ada)
+    $srcAsli  = "uploads/produk/" . $gambar;
+    ?>
+
+    <img src="<?php echo htmlspecialchars($srcThumb); ?>"
+         alt="<?php echo htmlspecialchars($p['nama']); ?>"
+         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"
+         onerror="this.onerror=null; this.src='<?php echo htmlspecialchars($srcAsli); ?>';">
+         </div>
 
                             <!-- NAMA PRODUK -->
                             <h4>
