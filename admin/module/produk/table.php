@@ -4,14 +4,13 @@
         <h3>Daftar Produk</h3>
 
         <?php
-        // 🚨 KOREKSI: Tambahkan deklarasi global di sini
-        global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
-        // LOGIKA INITIALISASI DAN EKSTRAKSI PAGINASI
-        // Ini membuat variabel $currentPage, $totalPages, $searchKeyword, $limit, $currentSortBy, $currentSortOrder tersedia.
+        // FIX WAJIB: agar variabel path dikenali table-load.php
+        global $serverUploadDir, $serverThumbDir, $webUploadDir, $webThumbDir;
+
+        // Pagination data
         if (isset($paginationData) && is_array($paginationData)) {
             extract($paginationData);
         } else {
-            // Fallback default jika variabel belum diset di controller
             $currentPage = 1;
             $totalPages = 1;
             $searchKeyword = null;
@@ -20,163 +19,155 @@
             $currentSortOrder = 'ASC';
         }
 
-        /**
-         * Fungsi pembantu untuk membuat link pengurutan
-         */
+        // Sorting helper
         function getSortLink($column, $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage)
         {
-            // Tentukan arah urutan baru
-            $newOrder = 'ASC';
-            if ($currentSortBy === $column) {
-                $newOrder = $currentSortOrder === 'ASC' ? 'DESC' : 'ASC';
-            }
+            $newOrder = ($currentSortBy === $column && $currentSortOrder === 'ASC') ? 'DESC' : 'ASC';
+            $icon = ($currentSortBy === $column) ? ($currentSortOrder === 'ASC' ? ' ▲' : ' ▼') : '';
 
-            // Ikon untuk menampilkan status
-            $icon = '';
-            if ($currentSortBy === $column) {
-                $icon = $currentSortOrder === 'ASC' ? ' ▲' : ' ▼';
-            }
+            $query = '?page=produk&sort=' . $column . '&order=' . $newOrder;
 
-            // Bangun query string (mempertahankan page dan keyword)
-            $queryString = '?page=produk&sort=' . $column . '&order=' . $newOrder;
             if ($searchKeyword) {
-                $queryString .= '&keyword=' . urlencode($searchKeyword);
+                $query .= '&keyword=' . urlencode($searchKeyword);
             }
-            // Pertahankan halaman saat ini
-            $queryString .= '&p=' . $currentPage;
 
-            return '<a href="' . $queryString . '" style="text-decoration: none; color: inherit;">' . ucfirst($column) . $icon . '</a>';
+            $query .= '&p=' . $currentPage;
+
+            return '<a href="' . $query . '" style="text-decoration:none;color:inherit;">' . ucfirst($column) . $icon . '</a>';
         }
         ?>
 
-        <div style="overflow-x: auto;">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>No</th>
+        <!-- ================================ -->
+        <!--  GRID CARD PRODUK DIMULAI DI SINI -->
+        <!-- ================================ -->
 
-                        <th><?= getSortLink('nama', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
+        <div class="product-grid">
 
-                        <th><?= getSortLink('deskripsi', $currentSortBy, $currentSortOrder, $searchKeyword, $currentPage) ?></th>
+        <?php foreach ($list as $row): ?>
 
-                        <th>Gambar</th>
-                        <th>Link</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="product-card">
+
+                <!-- Gambar Produk -->
+                <?php 
+                    $image_path = "-";
+                    if (!empty($row['gambar'])) {
+
+                        $original = $row['gambar'];
+                        $ext = pathinfo($original, PATHINFO_EXTENSION);
+                        $base = pathinfo($original, PATHINFO_FILENAME);
+                        $thumb = $base . '-thumb.' . $ext;
+
+                        $serverThumb = $serverThumbDir . $thumb;
+                        $serverOriginal = $serverUploadDir . $original;
+
+                        if (is_file($serverThumb)) {
+                            $image_path = $webThumbDir . $thumb;
+                            $mtimePath = $serverThumb;
+                        } else {
+                            $image_path = $webUploadDir . $original;
+                            $mtimePath = $serverOriginal;
+                        }
+
+                        if (is_file($mtimePath)) {
+                            $image_path .= '?' . filemtime($mtimePath);
+                        }
+                    }
+                ?>
+
+                <img src="<?= $image_path ?>" class="product-thumb" alt="Gambar Produk">
+
+                <!-- Nama Produk -->
+                <div class="product-title">
+                    <?= htmlspecialchars($row['nama']) ?>
+                </div>
+
+                <!-- Deskripsi Produk -->
+                <div class="product-desc">
                     <?php
-                    // Penyesuaian nomor urut untuk paginasi (dimulai dari offset + 1)
-                    $no = (($currentPage - 1) * $limit) + 1;
-
-                    if ($list):
-                        foreach ($list as $row):
+                    $desc = htmlspecialchars($row['deskripsi']);
+                    echo strlen($desc) > 120 ? substr($desc, 0, 120) . '...' : $desc;
                     ?>
-                            <tr>
-                                <td><?= $no++ ?></td>
-                                <td><?= htmlspecialchars($row['nama']) ?></td>
+                </div>
 
-                                <td>
-                                    <?php
-                                    // Logika Pemotongan Deskripsi
-                                    $deskripsi_lengkap = htmlspecialchars($row['deskripsi']);
-                                    if (strlen($deskripsi_lengkap) > 90) {
-                                        echo substr($deskripsi_lengkap, 0, 90) . '...';
-                                    } else {
-                                        echo $deskripsi_lengkap;
-                                    }
-                                    ?>
-                                </td>
+                <hr>
 
-                                <td>
-                                    
-                                    <?php if ($row['gambar']):
+                <!-- TIM PRODUK (STYLE C PREMIUM) -->
+                <?php if (!empty($row['team'])): ?>
+                    <?php foreach ($row['team'] as $tm): ?>
+                        <div class="team-card-item">
+                            <div class="team-name">
+                                <i class="fas fa-user"></i>
+                                <?= htmlspecialchars($tm['nama_member']) ?>
+                            </div>
+                            <div class="team-role">
+                                Role: <?= htmlspecialchars($tm['role']) ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="team-card-item">
+                        <div class="team-name"><i class="fas fa-user"></i> Belum ada member</div>
+                    </div>
+                <?php endif; ?>
 
-                                        $original_filename = $row['gambar'];
-                                        $ext = pathinfo($original_filename, PATHINFO_EXTENSION);
-                                        $base_name = pathinfo($original_filename, PATHINFO_FILENAME);
-                                        $thumbnail_filename = $base_name . '-thumb.' . $ext;
+                <hr>
 
-                                        // --- 1. Tentukan Path File Server dan Web ---
-                                        $server_thumb_path = $serverThumbDir . $thumbnail_filename; // Path server THUMBNAIL
-                                        $server_original_path = $serverUploadDir . $original_filename; // Path server ASLI
-
-                                        // --- 2. LOGIKA PENENTUAN TAMPILAN ---
-                                        if (is_file($server_thumb_path)) {
-                                            // A. TAMPILKAN THUMBNAIL (JPG/PNG/WEBP)
-                                            $image_path = $webThumbDir . $thumbnail_filename;
-                                            $path_for_mtime = $server_thumb_path;
-                                        } else {
-                                            // B. TAMPILKAN FILE ASLI (GIF atau Fallback)
-                                            $image_path = $webUploadDir . $original_filename;
-                                            $path_for_mtime = $server_original_path;
-                                        }
-
-                                        // 3. Cache Busting
-                                        if (is_file($path_for_mtime)) {
-                                            $timestamp = filemtime($path_for_mtime);
-                                            $image_path .= '?' . $timestamp; // Memaksa refresh
-                                        }
-
-                                    ?>
-                                        <img
-                                            src="<?= $image_path ?>"
-                                            style="max-width: 120px; height: auto;"
-                                            alt="<?= htmlspecialchars($row['nama']) ?> Thumbnail">
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if ($row['link_produk']): ?>
-                                        <?php
-                                        // Logika Perbaikan Link URL
-                                        $link_url = htmlspecialchars($row['link_produk']);
-                                        if (strpos($link_url, 'http://') === false && strpos($link_url, 'https://') === false) {
-                                            $link_url_fixed = 'https://' . $link_url;
-                                        } else {
-                                            $link_url_fixed = $link_url;
-                                        }
-                                        ?>
-                                        <a href="<?= $link_url_fixed ?>" target="_blank">Lihat</a>
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?>
-                                </td>
-
-                                <td>
-                                    <a href="?page=produk&edit=<?= $row['id_produk'] ?>">Edit</a>
-                                    <a href="javascript:void(0)" onclick="deleteProduct(<?= (int)$row['id_produk'] ?>)" class="del" title="Hapus Produk"> Hapus</a>
-                                </td>
-                            </tr>
-                        <?php endforeach;
-                    else: ?>
-                        <tr>
-                            <td colspan="6" class="text-center">Belum ada produk.</td>
-                        </tr>
+                <!-- Link Produk -->
+                <div style="margin-bottom:8px;">
+                    <?php if ($row['link_produk']): ?>
+                        <?php
+                        $url = htmlspecialchars($row['link_produk']);
+                        $url = (!preg_match('/^https?:\/\//', $url)) ? "https://$url" : $url;
+                        ?>
+                        <a href="<?= $url ?>" target="_blank">🔗 Lihat Produk</a>
+                    <?php else: ?>
+                        <span style="color:#888;">Tidak ada link produk</span>
                     <?php endif; ?>
-                </tbody>
-            </table>
+                </div>
+
+                <!-- Actions -->
+                <div class="product-actions">
+                    <a href="?page=produk&edit=<?= $row['id_produk'] ?>" class="btn-edit">
+                        Edit
+                    </a>
+
+                    <a onclick="deleteProduct(<?= $row['id_produk'] ?>)" class="btn-delete">
+                        Hapus
+                    </a>
+                </div>
+
+            </div>
+
+        <?php endforeach; ?>
+
         </div>
 
-        <?php
-        // LOGIKA PAGINASI DISPLAY
-        if ($totalPages > 1):
-        ?>
-            <div class="pagination" style="margin-top: 20px; text-align: center;">
+        <!-- ================================ -->
+        <!--  PAGINATION TETAP BERFUNGSI      -->
+        <!-- ================================ -->
+        <?php if ($totalPages > 1): ?>
+            <div class="pagination" style="margin-top:20px;text-align:center;">
                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                     <?php
-                    // Membangun URL dengan mempertahankan sorting dan keyword
-                    $queryString = '?page=produk&p=' . $i;
+                    $query = '?page=produk&p=' . $i;
+
                     if ($searchKeyword) {
-                        $queryString .= '&keyword=' . urlencode($searchKeyword);
+                        $query .= '&keyword=' . urlencode($searchKeyword);
                     }
+
                     if ($currentSortBy) {
-                        $queryString .= '&sort=' . $currentSortBy . '&order=' . $currentSortOrder;
+                        $query .= '&sort=' . $currentSortBy . '&order=' . $currentSortOrder;
                     }
                     ?>
-                    <a href="<?= $queryString ?>"
-                        style="padding: 8px 12px; margin: 0 4px; border: 1px solid <?= ($i == $currentPage ? '#3498db' : '#ccc'); ?>; background-color: <?= ($i == $currentPage ? '#3498db' : '#fff'); ?>; color: <?= ($i == $currentPage ? '#fff' : '#3498db'); ?>; text-decoration: none; border-radius: 4px;">
+                    <a href="<?= $query ?>"
+                        style="
+                            padding:8px 12px;
+                            margin:0 4px;
+                            border:1px solid <?= ($i == $currentPage ? '#3498db' : '#ccc'); ?>;
+                            background-color: <?= ($i == $currentPage ? '#3498db' : '#fff'); ?>;
+                            color: <?= ($i == $currentPage ? '#fff' : '#3498db'); ?>;
+                            text-decoration:none;
+                            border-radius:4px;">
                         <?= $i ?>
                     </a>
                 <?php endfor; ?>

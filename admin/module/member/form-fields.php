@@ -98,6 +98,11 @@ $link3 = $links[2] ?? null; // Slot 3
             if (!empty($editData['gambar'])) {
                 $labelTeks = htmlspecialchars($editData['gambar']);
             }
+
+            // LOGIKA BARU: Tentukan nasib kotak preview
+            // Kalau tidak ada gambar awal ($initialSrc kosong), kotak disembunyikan (display: none)
+            // Kalau ada gambar, kotak dimunculkan (display: flex)
+            $boxStyle = empty($initialSrc) ? 'display: none;' : 'display: flex;';
         ?>
         <div class="custom-file-upload">
             <input type="file" name="gambar" class="form-control" accept="image/*" id="inputGambar" 
@@ -114,9 +119,11 @@ $link3 = $links[2] ?? null; // Slot 3
         </div>
         
         <div id="fileError" style="margin-top: 10px;"></div>
-        <div class="preview mt-2">
-            <img src="<?= $initialSrc ?>" class="img-thumbnail" id="imgPreview" style="<?= $initialStyle ?>">
+
+        <div class="form-preview-box" id="previewBox" style="<?= $boxStyle ?>">
+            <img src="<?= $initialSrc ?>" class="img-thumbnail" id="imgPreview">
         </div>
+
         <input type="hidden" name="remove_existing_image" id="removeExistingImage" value="0">
     </div>
 
