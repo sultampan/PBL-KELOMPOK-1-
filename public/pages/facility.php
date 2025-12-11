@@ -136,7 +136,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         
         /* Teknik Line Clamp */
         display: -webkit-box;
-        -webkit-line-clamp: 2; /* Batas jumlah baris judul */
+        line-clamp: 2; /* Batas jumlah baris judul */
         -webkit-box-orient: vertical;
         overflow: hidden;
         word-break: break-word; /* Memaksa kata super panjang putus */
@@ -152,7 +152,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         
         /* Teknik Line Clamp */
         display: -webkit-box;
-        -webkit-line-clamp: 3; /* Batas jumlah baris deskripsi (bisa diubah jadi 2 kalau mau) */
+        line-clamp: 3; /* Batas jumlah baris deskripsi (bisa diubah jadi 2 kalau mau) */
         -webkit-box-orient: vertical;
         overflow: hidden;
         word-break: break-word; /* Memaksa kata super panjang putus */
