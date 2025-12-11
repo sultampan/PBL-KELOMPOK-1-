@@ -4,8 +4,8 @@
                 <div class="right-side">
                     <div class="row footer-hny-grids sub-columns">
                         <div class="col-lg-3 sub-one-left">
-                            <h6>About </h6>
-                            <p class="footer-phny pe-lg-5">Since 1960,. has built a reputation for producing high quality precision fabricated products for use in a variety of industries.</p>
+                            <h6>Laboratory </h6>
+                            <p class="footer-phny pe-lg-5">2nd Floor of the Postgraduate Building of Malang State Polytechnic.</p>
                             <div class="columns-2 mt-lg-5 mt-4">
                                 <ul class="social">
                                     <li><a href="#facebook"><span class="fab fa-facebook-f"></span></a>
@@ -21,7 +21,7 @@
                             </div>
                         </div>
                         <div class="col-lg-3 sub-two-right">
-                            <h6>Services</h6>
+                            <h6>Company</h6>
                             <ul>
                                 <li><a href="#processing"><i class="fas fa-angle-right"></i> Agriculture Processing</a>
                                 </li>
