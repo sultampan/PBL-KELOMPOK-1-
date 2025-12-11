@@ -20793,3 +20793,180 @@ section.footer-inner-main {
 
 /*--//Footer-9--*/
 /*# sourceMappingURL=style-freedom.css.map */
+/* ============================================
+   SCROLL ANIMATION CSS
+   Taruh di file CSS utama kamu (style.css atau custom.css)
+   ============================================ */
+
+/* Animasi Fade In dari bawah */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animasi Fade In dari kiri */
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animasi Fade In dari kanan */
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animasi Zoom In */
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Class untuk elemen yang akan di-animasi */
+.scroll-animate {
+    opacity: 0;
+    transition: all 0.6s ease-out;
+}
+
+/* Class saat elemen terlihat */
+.scroll-animate.animate-active {
+    opacity: 1;
+}
+
+/* Variasi animasi */
+.fade-up {
+    transform: translateY(50px);
+}
+
+.fade-up.animate-active {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.fade-left {
+    transform: translateX(-50px);
+}
+
+.fade-left.animate-active {
+    animation: fadeInLeft 0.8s ease-out forwards;
+}
+
+.fade-right {
+    transform: translateX(50px);
+}
+
+.fade-right.animate-active {
+    animation: fadeInRight 0.8s ease-out forwards;
+}
+
+.zoom-in {
+    transform: scale(0.8);
+}
+
+.zoom-in.animate-active {
+    animation: zoomIn 0.8s ease-out forwards;
+}
+
+/* Delay untuk animasi berurutan */
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
+.delay-6 { animation-delay: 0.6s; }
+
+/* Smooth scroll untuk seluruh halaman */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Animasi hover untuk card/box */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* Animasi untuk tombol */
+.btn-animate {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-animate::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-animate:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-animate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Animasi untuk gambar */
+.image-animate {
+    transition: transform 0.5s ease;
+    overflow: hidden;
+}
+
+.image-animate img {
+    transition: transform 0.5s ease;
+}
+
+.image-animate:hover img {
+    transform: scale(1.1);
+}
+
+/* Parallax effect untuk background */
+.parallax-section {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+/* Loading animation untuk konten */
+.content-loading {
+    opacity: 0;
+    animation: fadeInUp 1s ease-out 0.3s forwards;
+}
