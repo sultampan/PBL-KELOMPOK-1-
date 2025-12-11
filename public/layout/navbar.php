@@ -5,7 +5,7 @@
             <h1>
                 <a class="navbar-brand" href="index.php?page=home" style="display: flex; align-items: center;">
                     
-                    <img src="assets/images/logo labai separo.png" alt="Logo Lab" 
+                    <img src="assets/images/logo-separo.png" alt="Logo Lab" 
                          style="height: 40px; width: auto; margin-right: 10px;">
                     
                     <span style="line-height: 1.2;">
