@@ -1,0 +1,108 @@
+/* public/assets/css/facility.css */
+
+/* --- CSS UNTUK BANNER (HERO SECTION) --- */
+.inner-banner.facility-banner {
+    /* Pastikan path gambar ini benar relatif dari file CSS atau root */
+    background: url('../images/header-facility.jpeg') no-repeat center; 
+    /* Catatan: Kalau folder images ada di assets/images, dan css di assets/css, naik satu level (..) baru ke images */
+    background-size: cover;
+    position: relative;
+    z-index: 0;
+    min-height: 350px;
+    display: grid;
+    align-items: center;
+}
+
+.inner-banner.facility-banner:before {
+    content: "";
+    background: rgba(0, 0, 0, 0.6);
+    position: absolute;
+    top: 0; bottom: 0; left: 0; right: 0;
+    z-index: -1;
+}
+
+/* --- KONTEN FASILITAS --- */
+.facility-section-bg {
+    background-color: var(--bg-color, #fff); /* Fallback ke putih jika var belum ada */
+    transition: background-color 0.3s ease;
+}
+
+ul.gallery_agile {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)); 
+    gap: 30px;
+    padding: 0 !important;
+    margin: 0 !important;
+    list-style: none !important;
+    width: 100%;
+    align-items: start;
+}
+
+.facility-card {
+    width: 100%;
+    margin-bottom: 30px;
+    max-width: 100%; 
+    box-sizing: border-box;
+}
+
+.facility-img-wrap {
+    width: 100%;
+    height: 250px;
+    border-radius: var(--border-radius, 8px);
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+    background-color: var(--bg-grey, #f4f4f4); 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.facility-img-wrap a { display: block; width: 100%; height: 100%; }
+
+.facility-img-wrap img {
+    width: 100% !important;  
+    height: 100% !important; 
+    object-fit: cover;
+    object-position: center; 
+    transition: transform 0.5s ease;
+    display: block;
+}
+    
+.facility-img-wrap:hover img { transform: scale(1.05); }
+
+.no-image-box {
+    width: 100%; height: 100%;
+    background-color: var(--bg-lightgrey, #eee);
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    color: var(--font-color, #555);
+    text-align: center; user-select: none;
+}
+.no-image-box i { font-size: 48px; margin-bottom: 10px; }
+.no-image-box span { font-size: 18px; font-weight: 600; font-family: 'Source Sans Pro', sans-serif; }
+
+.facility-text { padding: 0 5px; }
+
+.facility-title {
+    font-size: 22px; font-weight: 800;
+    text-transform: uppercase;
+    color: var(--heading-color, #333); 
+    display: block; margin-bottom: 10px;
+    line-height: 1.4; word-wrap: break-word; cursor: text; 
+}
+
+.facility-desc {
+    font-size: 16px; color: var(--font-color, #666);
+    line-height: 1.6; margin: 0;
+    text-align: justify; word-wrap: break-word;
+}
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+    ul.gallery_agile { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 768px) {
+    ul.gallery_agile { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .facility-img-wrap { height: 250px; }
+    .facility-title { font-size: 20px; }
+}
