@@ -29,20 +29,18 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 <style>
     /* --- CSS UNTUK BANNER (HERO SECTION) --- */
     .inner-banner.facility-banner {
-        /* Ganti path ini sesuai lokasi kamu menyimpan gambar */
         background: url('assets/images/header-facility.jpeg') no-repeat center;
         background-size: cover;
         position: relative;
         z-index: 0;
-        min-height: 350px; /* Tinggi banner */
+        min-height: 350px; 
         display: grid;
         align-items: center;
     }
 
-    /* Lapisan Gelap (Overlay) agar tulisan putih terbaca */
     .inner-banner.facility-banner:before {
         content: "";
-        background: rgba(0, 0, 0, 0.6); /* Hitam transparan 60% */
+        background: rgba(0, 0, 0, 0.6); 
         position: absolute;
         top: 0;
         bottom: 0;
@@ -51,7 +49,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         z-index: -1;
     }
 
-    /* --- CSS UNTUK KONTEN FASILITAS (DARK MODE SUPPORT) --- */
+    /* --- CSS UNTUK KONTEN FASILITAS --- */
     .facility-section-bg {
         background-color: var(--bg-color); 
         transition: background-color 0.3s ease;
@@ -60,9 +58,8 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
     /* Grid Layout: 3 Kolom */
     ul.gallery_agile {
         display: grid;
-        /* UBAH DISINI: repeat(3, ...) artinya 3 kolom */
         grid-template-columns: repeat(3, minmax(0, 1fr)); 
-        gap: 30px; /* Gap sedikit diperkecil agar muat 3 kolom */
+        gap: 30px; 
         padding: 0 !important;
         margin: 0 !important;
         list-style: none !important;
@@ -75,11 +72,12 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         margin-bottom: 30px;
         max-width: 100%; 
         box-sizing: border-box;
+        overflow: hidden;
     }
 
     .facility-img-wrap {
         width: 100%;
-        height: 250px; /* Tinggi disesuaikan sedikit agar proporsional dengan lebar 3 kolom */
+        height: 250px; 
         border-radius: var(--border-radius);
         overflow: hidden;
         margin-bottom: 20px;
@@ -124,37 +122,49 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 
     .facility-text { padding: 0 5px; }
 
+    /* --- PERBAIKAN UTAMA DI SINI --- */
+
+    /* CSS Agar Judul Max 2 Baris + Titik-titik */
     .facility-title {
-        font-size: 22px; /* Font sedikit diperkecil agar pas di 3 kolom */
+        font-size: 22px; 
         font-weight: 800;
         text-transform: uppercase;
         color: var(--heading-color); 
-        display: block;
         margin-bottom: 10px;
         line-height: 1.4;
-        word-wrap: break-word;
         cursor: text; 
+        
+        /* Teknik Line Clamp */
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Batas jumlah baris judul */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word; /* Memaksa kata super panjang putus */
     }
 
+    /* CSS Agar Deskripsi Max 3 Baris + Titik-titik */
     .facility-desc {
         font-size: 16px;
         color: var(--font-color);
         line-height: 1.6;
         margin: 0;
-        text-align: justify;
-        word-wrap: break-word;
+        text-align: left; 
+        
+        /* Teknik Line Clamp */
+        display: -webkit-box;
+        -webkit-line-clamp: 3; /* Batas jumlah baris deskripsi (bisa diubah jadi 2 kalau mau) */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word; /* Memaksa kata super panjang putus */
     }
 
     /* RESPONSIVE BREAKPOINTS */
-    
-    /* Tablet (Layar sedang): Jadi 2 Kolom */
     @media (max-width: 992px) {
         ul.gallery_agile {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
-    /* Mobile (Layar kecil): Jadi 1 Kolom */
     @media (max-width: 768px) {
         ul.gallery_agile { 
             grid-template-columns: repeat(1, minmax(0, 1fr)); 
