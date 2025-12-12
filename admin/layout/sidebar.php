@@ -28,6 +28,11 @@
         <span>Produk</span>
     </a>
 
+    <a href="index.php?page=partner" class="menu-item <?= $page==='partner' ? 'active' : '' ?>">
+        <i class="fas fa-handshake"></i>
+        <span>Partner</span>
+    </a>
+
     <a href="index.php?page=contact" class="menu-item <?= ($page==='contact' || $page==='contact_reply') ? 'active' : '' ?>">
         <i class="fas fa-envelope"></i>
         <span>Contact</span>

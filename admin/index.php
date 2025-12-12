@@ -100,6 +100,10 @@ include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
             include __DIR__ . '/module/activity/index.php';
             break;
 
+        case 'partner':
+            include __DIR__ . '/module/partner/index.php';
+            break;
+
         case 'contact':
             include __DIR__ . '/module/contact/index.php';
         break;
