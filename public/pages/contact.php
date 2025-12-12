@@ -1,3 +1,47 @@
+<style>
+    /* --- CSS UNTUK BANNER CONTACT (Sama seperti Facility) --- */
+    .inner-banner.contact-banner {
+        /* Menggunakan gambar yang sama dengan facility */
+        background: url('assets/images/header-facility.jpeg') no-repeat center;
+        background-size: cover;
+        position: relative;
+        z-index: 0;
+        min-height: 350px; 
+        display: grid;
+        align-items: center;
+    }
+
+    .inner-banner.contact-banner:before {
+        content: "";
+        background: rgba(0, 0, 0, 0.6); /* Overlay gelap transparan */
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: -1;
+    }
+</style>
+
+<div class="inner-banner contact-banner">
+    <section class="w3l-breadcrumb text-center">
+        <div class="container">
+            <div class="w3breadcrumb-gids">
+                <div class="w3breadcrumb-left text-center">
+                    <h2 class="inner-w3-title">
+                        Contact Us
+                    </h2>
+                </div>
+                <div class="w3breadcrumb-right">
+                    <ul class="breadcrumbs-custom-path">
+                        <li><a href="index.php?page=home">Home</a></li>
+                        <li class="active"><span class="fas fa-angle-double-right mx-2"></span> Contact</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
 <section class="w3l-contact-main" id="contact">
     <div class="contact-infhny py-5 pb-0">
         <div class="container py-lg-3 pb-0">
