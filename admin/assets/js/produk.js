@@ -273,13 +273,12 @@ function loadProductList() {
         });
 }
 
-function loadEmptyForm(successMessage) {
+function loadEmptyForm() { // Hapus parameter successMessage
     const formContainer = document.getElementById("form-content-wrapper"); 
     if (!formContainer) return;
 
-    const url = "module/produk/form-load.php?success_msg=" + encodeURIComponent(successMessage);
-    displayAlert(successMessage, "success");
-
+    const url = "module/produk/form-load.php"; 
+    
     fetch(url).then((response) => response.text()).then((html) => {
         formContainer.innerHTML = html;
         setupFormValidation(); 
@@ -321,40 +320,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.addEventListener("submit", function (e) {
         if (e.target && e.target.id === "productForm") {
-            e.preventDefault(); 
+            
+            e.preventDefault(); // 🔥 SELALU CEGAH SUBMIT BAWAAN (AJAX ONLY) 🔥
+            
             const form = e.target;
             const formData = new FormData(form);
-            const url = "module/produk/save.php";
+            const isUpdateMode = formData.get("id_produk") && formData.get("id_produk") !== "";
 
             const submitBtn = document.getElementById("submitBtn");
             submitBtn.disabled = true;
             submitBtn.textContent = "Memproses...";
+            
+            const url = "module/produk/save.php";
 
             fetch(url, { method: "POST", body: formData })
                 .then((response) => response.json())
                 .then((data) => {
-                    if (data.status === "success") {
-
-                        // 🔥 CHECK REDIRECT
+                    
+                    if (data && data.status === "success") {
+                        
+                        // 🔥 LOGIKA REDIRECT: Jika server kirim redirect, ikuti. 🔥
                         if (data.redirect) {
-                            window.location.href = data.redirect;
-                            return;
-                        }
-
-                        loadProductList();
-                                        
-                        const isUpdate = formData.get("id_produk");
-                        if (isUpdate) {
-                            alert("Data berhasil diperbarui!");
-                            updateFileName(document.getElementById('inputGambar'));
-                            captureInitialState();
-                            validateFormState();
+                            displayAlert(data.message, "success");
+                            setTimeout(() => {
+                                window.location.href = data.redirect; 
+                            }, 300);
                         } else {
-                            loadEmptyForm(data.message);
+                            // Mode Tambah Baru
+                            displayAlert(data.message, "success");
+                            loadProductList();
+                            loadEmptyForm();
                         }
-
-                    } else {
+                    } 
+                    else if (data && data.status === "error") {
+                        
                         displayAlert(data.message, "error");
+                        
+                        // Jika server mengirim error dengan instruksi redirect (Misal: validasi gagal saat update)
+                        if (data.redirect) {
+                            setTimeout(() => {
+                                window.location.href = data.redirect; 
+                            }, 300);
+                        }
                     }
                 })
                 .catch((error) => {
@@ -364,6 +371,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .finally(() => {
                     validateFormState();
                 });
+
         }
     });
 });

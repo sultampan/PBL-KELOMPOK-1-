@@ -133,16 +133,37 @@ try {
     }
 
     // ========================================================================
-    // COMMIT
+    // COMMIT & RESPON JSON (STANDAR AJAX)
     // ========================================================================
     $pdo->commit();
-    sendJson('success', $msg, [
-    'redirect' => 'index.php?page=produk'
-    ]);
+    
+    // Tentukan apakah perlu redirect
+    $extra = [];
+    if ($id) { // Jika mode update, tambahkan instruksi redirect
+        $extra['redirect'] = 'index.php?page=produk';
+    }
+    
+    // Kirim respons JSON
+    sendJson('success', $msg, $extra);
 
 
 } catch (Exception $e) {
 
     if ($pdo->inTransaction()) $pdo->rollBack();
-    sendJson('error', "Terjadi kesalahan: " . $e->getMessage());
+    
+    // Jika ada error pada mode Update, kirimkan juga instruksi redirect error
+    if ($id) {
+        // Rediect ke form edit dengan membawa error
+        $redirectUrl = "index.php?page=produk&edit=$id";
+        $_SESSION['error'] = "Terjadi kesalahan: " . $e->getMessage();
+        $_SESSION['old_input'] = $_POST;
+        $_SESSION['edit_id'] = $id;
+
+        // Menggunakan JSON untuk AJAX, bukan header()
+        sendJson('error', "Update gagal. Lihat form edit.", ['redirect' => $redirectUrl]);
+        
+    } else {
+        // Mode Tambah Baru: Cukup kirim error JSON
+        sendJson('error', "Terjadi kesalahan: " . $e->getMessage());
+    }
 }
