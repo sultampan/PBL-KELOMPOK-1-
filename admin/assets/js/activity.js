@@ -82,6 +82,21 @@ function displayAlert(message, type) {
     }, 4000); 
 }
 
+// Fungsi untuk scroll ke bagian daftar activity
+function scrollToActivityList() {
+    const activityListContainer = document.getElementById('activity-list-container');
+    if (activityListContainer) {
+        const offset = 100; // Offset dari atas (dalam pixel)
+        const elementPosition = activityListContainer.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - offset;
+        
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+        });
+    }
+}
+
 function loadActivityList() {
   const listContainer = document.getElementById("activity-list-container");
   if (!listContainer) return;
@@ -101,6 +116,11 @@ function loadActivityList() {
         return;
       }
       listContainer.innerHTML = html;
+      
+      // Scroll ke daftar activity setelah reload
+      setTimeout(() => {
+        scrollToActivityList();
+      }, 100);
     }).catch((error) => {
       console.error("Error loading table:", error);
       listContainer.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat tabel.</div>';
@@ -150,9 +170,16 @@ function deleteActivity(id) {
 
   fetch(url, { method: "POST", body: formData })
     .then((response) => response.json()).then((data) => {
-      if (data.status === "success") loadActivityList(); 
-      else displayAlert(data.message, "error");
-    }).catch((error) => { console.error("AJAX Delete Error:", error); displayAlert("Terjadi kesalahan jaringan.", "error"); });
+      if (data.status === "success") {
+        loadActivityList(); 
+        displayAlert(data.message, "success");
+      } else {
+        displayAlert(data.message, "error");
+      }
+    }).catch((error) => { 
+      console.error("AJAX Delete Error:", error); 
+      displayAlert("Terjadi kesalahan jaringan.", "error"); 
+    });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -168,18 +195,29 @@ document.addEventListener("DOMContentLoaded", function () {
       submitBtn.disabled = true; 
       submitBtn.textContent = "Memproses...";
 
+      // Simpan info apakah ini mode update atau insert
+      const isUpdate = formData.get("id_activity");
+
       fetch(url, { method: "POST", body: formData })
         .then((response) => response.json())
         .then((data) => {
           if (data.status === "success") {
+            // Reload list activity
             loadActivityList();
             
-            const isUpdate = formData.get("id_activity"); // Cek Primary Key Activity
-            loadEmptyActivityForm(data.message);
-            
+            // Jika update, kosongkan form
             if (isUpdate) {
+                loadEmptyActivityForm(data.message);
                 window.history.pushState({}, document.title, window.location.pathname + "?page=activity");
+            } else {
+                // Jika insert baru, tetap kosongkan form
+                loadEmptyActivityForm(data.message);
             }
+            
+            // Scroll ke daftar activity setelah sedikit delay
+            setTimeout(() => {
+              scrollToActivityList();
+            }, 300);
           } else {
             // LOGIKA ERROR
             displayAlert(data.message, "error");
@@ -196,7 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
             displayAlert("Terjadi kesalahan jaringan/server.", "error"); 
         })
         .finally(() => { 
-            // BAGIAN INI YANG DIPERBAIKI
+            // Kembalikan tombol submit
             const finalBtn = document.getElementById("submitBtn");
             if (finalBtn) {
                 finalBtn.disabled = false; 
@@ -210,4 +248,25 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
   });
+  
+  // Auto scroll ke activity list saat halaman load jika ada parameter tertentu
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('scroll_to_list') || urlParams.has('keyword') || (urlParams.has('p') && urlParams.get('p') !== '1')) {
+    setTimeout(() => {
+      scrollToActivityList();
+    }, 100);
+  }
 });
+
+// Fungsi untuk team member (dari form-fields.php)
+function addTeamRow() {
+    const template = document.getElementById('teamRowTemplate');
+    if (!template) return;
+    
+    const clone = template.content.cloneNode(true);
+    document.getElementById('team-container').appendChild(clone);
+}
+
+function removeTeamRow(button) {
+    button.closest('.link-row').remove();
+}
