@@ -50,9 +50,6 @@
 
                 </ul>
 
-                <button id="trigger-overlay" class="searchw3-icon me-xl-4 me-lg-3" type="button">
-                    <i class="fas fa-search"></i>
-                </button>
 
                 <div class="overlay overlay-slidedown">
                     <button type="button" class="overlay-close">

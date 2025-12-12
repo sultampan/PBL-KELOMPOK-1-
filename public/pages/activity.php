@@ -121,10 +121,6 @@
         gap: 5px;
     }
 
-    .activity-date::before {
-        content: "📅";
-    }
-
     .activity-description {
         color: #555;
         font-size: 0.95rem;
