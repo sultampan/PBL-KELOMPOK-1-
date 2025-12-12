@@ -1,67 +1,5 @@
-<?php
-// ==========================================
-// 1. KONEKSI & PERSIAPAN DATA
-// ==========================================
-
-// --- PERBAIKAN PATH DI SINI ---
-// __DIR__ saat ini = .../public/pages
-// Kita perlu mundur 2 langkah ke belakang untuk sampai ke ROOT project
-$rootPath = dirname(__DIR__, 2); 
-$koneksiPath = $rootPath . '/config/koneksi.php';
-
-// Debugging: Jika masih error, ini akan memberi tahu dimana dia mencari file
-if (!file_exists($koneksiPath)) {
-    die("<h3>ERROR PATH:</h3> File koneksi tidak ditemukan.<br>Mencari di: <b>" . $koneksiPath . "</b><br>Pastikan struktur foldermu benar.");
-}
-
-require_once $koneksiPath;
-
-$activityList = [];
-if (isset($pdo)) {
-    try {
-        // PERBAIKAN QUERY (PostgreSQL Group By)
-        // PostgreSQL mewajibkan semua kolom non-agregat masuk ke GROUP BY
-        $query = "
-            SELECT 
-                a.id_activity,
-                a.judul,
-                a.deskripsi,
-                a.tanggal_kegiatan,
-                a.gambar,
-                STRING_AGG(m.nama_member, ', ') AS members
-            FROM activity a
-            LEFT JOIN activity_member am ON a.id_activity = am.id_activity
-            LEFT JOIN member m ON am.id_member = m.id_member
-            GROUP BY a.id_activity, a.judul, a.deskripsi, a.tanggal_kegiatan, a.gambar
-            ORDER BY a.tanggal_kegiatan DESC
-        ";
-        
-        $stmt = $pdo->prepare($query);
-        $stmt->execute();
-        $activityList = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    } catch (PDOException $e) { 
-        die("ERROR QUERY DATABASE: " . $e->getMessage());
-    }
-} else {
-    die("Koneksi Database Gagal ($pdo belum terdefinisi).");
-}
-
-// ==========================================
-// 2. PENGATURAN PATH GAMBAR
-// ==========================================
-// Karena file ini ada di 'public/pages/', kita perlu keluar folder ('../') untuk ke 'uploads'
-$webThumbPath    = 'uploads/thumb/activity-thumb/';
-$webImgPath      = 'uploads/activity/';
-
-// Path server (Absolute path) untuk pengecekan file_exists
-$serverBase      = $rootPath . '/public'; 
-$serverThumbPath = $serverBase . '/uploads/thumb/activity-thumb/';
-$serverImgPath   = $serverBase . '/uploads/activity/';
-?>
-
 <style>
-    /* --- BANNER ACTIVITY --- */
+    /* --- BANNER ACTIVITY (SAMA DENGAN FACILITY) --- */
     .inner-banner.activity-banner {
         background: url('assets/images/header-facility.jpeg') no-repeat center;
         background-size: cover;
@@ -95,7 +33,6 @@ $serverImgPath   = $serverBase . '/uploads/activity/';
         color: white;
         font-size: 1rem;
     }
-
     .breadcrumb-activity a {
         color: #ffb400;
         text-decoration: none;
@@ -105,7 +42,7 @@ $serverImgPath   = $serverBase . '/uploads/activity/';
         margin: 0 5px;
     }
 
-    /* Grid Layout */
+
     .activity-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -113,15 +50,13 @@ $serverImgPath   = $serverBase . '/uploads/activity/';
         margin-top: 2rem;
     }
 
-    /* Card Style */
     .activity-card {
         background: white;
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        display: flex;
-        flex-direction: column;
+        cursor: pointer; /* Tambahan: menunjukkan card bisa diklik */
     }
 
     .activity-card:hover {
@@ -175,9 +110,6 @@ $serverImgPath   = $serverBase . '/uploads/activity/';
 
     .activity-content {
         padding: 20px;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
     }
 
     .activity-date {
@@ -189,27 +121,39 @@ $serverImgPath   = $serverBase . '/uploads/activity/';
         gap: 5px;
     }
 
+    .activity-date::before {
+        content: "📅";
+    }
+
     .activity-description {
         color: #555;
         font-size: 0.95rem;
         line-height: 1.6;
-        margin-bottom: 15px;
-        flex-grow: 1;
+        margin-bottom: 10px;
     }
 
     .activity-members {
         font-size: 0.9rem;
         color: #333;
         font-weight: 500;
-        border-top: 1px solid #eee;
-        padding-top: 10px;
     }
 
     .activity-members span {
         font-weight: normal;
         color: #555;
-        display: block;
-        margin-top: 3px;
+    }
+
+    .member-list {
+        margin: 10px 0 0 0;
+        padding-left: 20px;
+        list-style-type: disc;
+    }
+
+    .member-list li {
+        color: #555;
+        font-weight: normal;
+        margin-bottom: 5px;
+        line-height: 1.5;
     }
 
     .no-activity {
@@ -218,6 +162,109 @@ $serverImgPath   = $serverBase . '/uploads/activity/';
         grid-column: 1 / -1;
         padding: 40px;
         font-size: 1.1rem;
+    }
+
+    /* ============================================= */
+    /* === TAMBAHAN CSS UNTUK LIGHTBOX MODAL === */
+    /* ============================================= */
+
+    .lightbox-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.95);
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .lightbox-modal.active {
+        display: flex;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .lightbox-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90vh;
+    }
+
+    .lightbox-image {
+        animation: zoomIn 0.3s ease;
+    }
+
+    @keyframes zoomIn {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .lightbox-image {
+        max-width: 100%;
+        max-height: 90vh;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .lightbox-close {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        background: none;
+        border: none;
+        transition: color 0.3s ease;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .lightbox-close:hover {
+        color: #ffb400;
+    }
+
+    .lightbox-info {
+        position: fixed;
+        bottom: 30px;
+        left: 0;
+        right: 0;
+        color: white;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .lightbox-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .lightbox-date {
+        font-size: 0.9rem;
+        color: #ccc;
+    }
+
+
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .lightbox-close {
+            top: 10px;
+            right: 10px;
+            font-size: 30px;
+        }
+
+        .lightbox-info {
+            position: static;
+            margin-top: 20px;
+        }
     }
 </style>
 
@@ -233,81 +280,207 @@ $serverImgPath   = $serverBase . '/uploads/activity/';
     </div>
 </section>
 
+
 <section class="py-5 activity-section-bg">
-    <div class="container py-md-5 py-3">
-        <h3 class="title-w3l mb-4 text-center">Our Activities</h3>
+<div class="container py-md-5 py-3">
+<h3 class="title-w3l mb-4 text-center">Our Activities</h3>
 
-        <div class="activity-grid">
-            <?php if (!empty($activityList)): ?>
-                <?php foreach ($activityList as $row): ?>
-                    <?php 
-                        // --- LOGIKA CEK GAMBAR ---
-                        $gambar = $row['gambar'];
-                        $srcDisplay = ''; 
-                        $hasImage = false; // Default anggap tidak ada gambar
+<div class="activity-grid">
 
-                        if (!empty($gambar)) {
-                            $ext       = pathinfo($gambar, PATHINFO_EXTENSION);
-                            $filename  = pathinfo($gambar, PATHINFO_FILENAME);
-                            $thumbName = $filename . '-thumb.' . $ext;
-                            
-                            // 1. Cek Thumbnail di Server
-                            if (file_exists($serverThumbPath . $thumbName)) {
-                                $srcDisplay = $webThumbPath . $thumbName;
-                                $hasImage = true;
-                            } 
-                            // 2. Cek Gambar Asli di Server
-                            elseif (file_exists($serverImgPath . $gambar)) {
-                                $srcDisplay = $webImgPath . $gambar;
-                                $hasImage = true;
+<?php
+/* === 1. KONEKSI DATABASE (Gunakan Config yang ada) === */
+// Asumsi file ini ada di public/pages/activity.php, maka config ada di root/config/
+$koneksiPath = dirname(dirname(__DIR__)) . '/config/koneksi.php';
+
+// Cek file koneksi
+if (file_exists($koneksiPath)) {
+    require_once $koneksiPath;
+} else {
+    // Fallback jika path beda
+    echo '<p class="no-activity">Config DB tidak ditemukan.</p>';
+    exit;
+}
+
+// Pastikan variabel $pdo tersedia (dari koneksi.php)
+if (!isset($pdo)) {
+    echo '<p class="no-activity">Koneksi database gagal (PDO not found).</p>';
+    exit;
+}
+
+try {
+    /* === 2. QUERY ACTIVITY (Pakai PDO) === */
+    // Query ini sama persis, cuma cara eksekusinya beda karena pakai PDO
+    $query = "
+       SELECT 
+        a.id_activity,
+        a.judul,
+        a.deskripsi,
+        a.tanggal_kegiatan,
+        a.gambar,
+        STRING_AGG(m.nama_member, ', ') AS members
+    FROM activity a
+    LEFT JOIN activity_member am ON a.id_activity = am.id_activity
+    LEFT JOIN member m ON am.id_member = m.id_member
+    GROUP BY a.id_activity
+    ORDER BY a.tanggal_kegiatan DESC
+    ";
+
+    $stmt = $pdo->prepare($query);
+    $stmt->execute();
+    $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Cek jumlah data
+    if (count($activities) > 0) {
+        foreach ($activities as $row) {
+
+            $image_path = $row['gambar'];
+            if (strpos($image_path, '/') === false) {
+                $image_path = 'uploads/activity/' . $image_path;
+            }
+            
+            // Format tanggal
+            $date = date_create($row['tanggal_kegiatan']);
+            $formatted_date = date_format($date, 'd F Y');
+            
+            // Escape data untuk JavaScript & HTML
+            $safe_image = htmlspecialchars($image_path, ENT_QUOTES);
+            $safe_title = htmlspecialchars($row['judul'], ENT_QUOTES);
+            $safe_desc = htmlspecialchars($row['deskripsi'], ENT_QUOTES);
+            $safe_date = htmlspecialchars($formatted_date, ENT_QUOTES);
+?>
+    <div class="activity-card" onclick="openLightbox('<?= $safe_image; ?>', '<?= $safe_title; ?>', '<?= $safe_date; ?>', '<?= $safe_desc; ?>')">
+        <div class="activity-image-wrapper">
+
+            <img src="<?= htmlspecialchars($image_path); ?>"
+                 alt="<?= htmlspecialchars($row['judul']); ?>"
+                 class="activity-image"
+                 onerror="this.src='assets/images/no-image.jpg'">
+
+            <div class="activity-title-overlay">
+                <h4 class="activity-title"><?= htmlspecialchars($row['judul']); ?></h4>
+            </div>
+
+        </div>
+
+        <div class="activity-content">
+
+            <div class="activity-date">
+                <?= $formatted_date; ?>
+            </div>
+
+            <p class="activity-description">
+                <?= htmlspecialchars($row['deskripsi']); ?>
+            </p>
+
+            <div class="activity-members">
+                <strong>Member Berpartisipasi:</strong>
+                <?php 
+                if (!empty($row['members'])) {
+                    // Pisahkan berdasarkan koma dan spasi
+                    $members_array = array_map('trim', explode(',', $row['members']));
+                    
+                    // Filter nama yang valid (sama persis logic sebelumnya)
+                    $valid_members = [];
+                    $current_member = '';
+                    
+                    foreach ($members_array as $part) {
+                        // Cek apakah ini gelar (S.T., M.MT., Ph.D, dll)
+                        if (preg_match('/^(S\.|M\.|Ph\.D|Dr\.|Ir\.)/', $part)) {
+                            $current_member .= ', ' . $part;
+                        } else {
+                            // Ini nama baru
+                            if (!empty($current_member)) {
+                                $valid_members[] = trim($current_member, ', ');
                             }
+                            $current_member = $part;
                         }
-                    ?>
+                    }
+                    // Tambahkan member terakhir
+                    if (!empty($current_member)) {
+                        $valid_members[] = trim($current_member, ', ');
+                    }
+                    
+                    if (count($valid_members) > 1) {
+                        echo '<ul class="member-list">';
+                        foreach ($valid_members as $member) {
+                            echo '<li>' . htmlspecialchars($member) . '</li>';
+                        }
+                        echo '</ul>';
+                    } else {
+                        echo '<br><span>' . htmlspecialchars($row['members']) . '</span>';
+                    }
+                } else {
+                    echo '<br><span>Belum ada member</span>';
+                }
+                ?>
+            </div>
 
-                    <div class="activity-card">
-                        <div class="activity-image-wrapper">
-                            
-                            <?php if ($hasImage): ?>
-                                <img src="<?= htmlspecialchars($srcDisplay); ?>"
-                                     alt="<?= htmlspecialchars($row['judul']); ?>"
-                                     class="activity-image">
-                            <?php else: ?>
-                                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; background-color: #f0f0f0; color: #999;">
-                                    <i class="fas fa-image" style="font-size: 48px; margin-bottom: 10px;"></i>
-                                    <span style="font-size: 14px;">Tidak ada gambar</span>
-                                </div>
-                            <?php endif; ?>
-
-                            <div class="activity-title-overlay">
-                                <h4 class="activity-title"><?= htmlspecialchars($row['judul']); ?></h4>
-                            </div>
-                        </div>
-
-                        <div class="activity-content">
-                            <div class="activity-date">
-                                <?php
-                                    $date = date_create($row['tanggal_kegiatan']);
-                                    echo date_format($date, 'd F Y');
-                                ?>
-                            </div>
-                            <div class="activity-description">
-                                <?= nl2br(htmlspecialchars($row['deskripsi'])); ?>
-                            </div>
-                            <div class="activity-members">
-                                <strong>Member Berpartisipasi:</strong>
-                                <span>
-                                    <?= !empty($row['members']) ? htmlspecialchars($row['members']) : '-'; ?>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="no-activity">
-                    <p>Belum ada aktivitas yang tersedia saat ini.</p>
-                </div>
-            <?php endif; ?>
         </div>
     </div>
+<?php
+        } // End Foreach
+    } else {
+        echo '<p class="no-activity">Belum ada aktivitas yang tersedia.</p>';
+    }
+
+} catch (PDOException $e) {
+    echo '<p class="no-activity">Terjadi kesalahan sistem (Database).</p>';
+    // Uncomment baris bawah untuk debugging jika error
+    // echo $e->getMessage();
+}
+?>
+</div>
+</div>
 </section>
+
+<div class="lightbox-modal" id="lightboxModal">
+    <div class="lightbox-content">
+        <button class="lightbox-close" id="lightboxClose">&times;</button>
+        <img src="" alt="" class="lightbox-image" id="lightboxImage">
+        <div class="lightbox-info">
+            <div class="lightbox-title" id="lightboxTitle"></div>
+            <div class="lightbox-date" id="lightboxDate"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Fungsi untuk membuka lightbox
+function openLightbox(imageSrc, title, date, description) {
+    const modal = document.getElementById('lightboxModal');
+    const image = document.getElementById('lightboxImage');
+    const titleEl = document.getElementById('lightboxTitle');
+    const dateEl = document.getElementById('lightboxDate');
+    
+    image.src = imageSrc;
+    image.alt = title;
+    titleEl.textContent = title;
+    dateEl.textContent = date;
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+}
+
+// Fungsi untuk menutup lightbox
+function closeLightbox() {
+    const modal = document.getElementById('lightboxModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = ''; // Enable scrolling
+}
+
+// Event listeners
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+
+document.getElementById('lightboxModal').addEventListener('click', function(e) {
+    if (e.target.id === 'lightboxModal') {
+        closeLightbox();
+    }
+});
+
+// Keyboard ESC untuk menutup lightbox
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeLightbox();
+    }
+});
+</script>
