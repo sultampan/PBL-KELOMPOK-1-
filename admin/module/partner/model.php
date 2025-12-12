@@ -52,10 +52,15 @@ function getPartnerById($pdo, $id) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function insertPartner($pdo, $nama, $gambar, $kategori) {
+function insertPartner($pdo, $nama, $gambar, $kategori, $created_by) { // <-- Tambah parameter ini
     checkPdo($pdo);
-    $stmt = $pdo->prepare("INSERT INTO partner (nama, gambar, kategori) VALUES (:nama, :gambar, :kategori)");
-    $stmt->execute([':nama' => $nama, ':gambar' => $gambar, ':kategori' => $kategori]);
+    $stmt = $pdo->prepare("INSERT INTO partner (nama, gambar, kategori, created_by) VALUES (:nama, :gambar, :kategori, :created_by)");
+    $stmt->execute([
+        ':nama' => $nama, 
+        ':gambar' => $gambar, 
+        ':kategori' => $kategori,
+        ':created_by' => $created_by // <-- Binding data
+    ]);
 }
 
 function updatePartner($pdo, $id, $nama, $gambar, $kategori) {
