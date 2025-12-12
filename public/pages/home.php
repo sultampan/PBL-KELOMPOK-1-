@@ -1,21 +1,4 @@
-<?php
-require_once __DIR__ . "/../../config/koneksi.php";
 
-// Ambil data produk dari PostgreSQL via PDO
-$stmt = $pdo->prepare("SELECT * FROM produk ORDER BY id_produk ASC");
-$stmt->execute();
-$produk = $stmt->fetchAll(PDO::FETCH_ASSOC);
-?>
-<style>
-.box-wrap {
-    min-height: 420px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 30px;
-    border-radius: 12px;
-}
-</style>
 
     <!--//Header-->
     <!--/Banner-Start-->
@@ -44,85 +27,31 @@ $produk = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </section>
     <!-- //main-slider -->
-    <!--/grids-->
-    <section class="w3l-grids-3 py-5" id="about">
-        <div class="container py-md-5 py-3">
-            <div class="bottom-ab-grids align-items-center">
-                <div class="w3ab-left-top">
-                    <h6 class="title-subw3hny mb-1">Our Info</h6>
-                    <h3 class="title-w3l mb-2">About the Applied Informatics Laboratory</h3>
-                    <p class="my-3 mb-5 px-lg-5"> The Applied Informatics Laboratory at Politeknik Negeri Malang serves as a research and development hub that supports practical learning, collaboration, and innovation in applied information technology.</p>
+   
+    <!-- product section -->
+     <?php
+require_once __DIR__ . "/../../config/koneksi.php";
 
-                    <div class="video-wrapper" style="position: relative; width: 100%; max-width: 900px; margin: auto;">
-    <iframe
-        id="ytplayer"
-        width="100%"
-        height="450"
-        src="https://www.youtube.com/embed/uNLhOq4C2d4"
-        frameborder="0"
-        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-    </iframe>
+// Ambil data produk dari PostgreSQL via PDO
+$stmt = $pdo->prepare("SELECT * FROM produk ORDER BY id_produk ASC LIMIT 3");
+$stmt->execute();
+$produk = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
 
-    <!-- Tombol Play Custom -->
-    <button id="customPlayBtn" class="play-button-custom"
-        style="
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            border: none;
-            background: rgba(255,255,255,0.9);
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer;
-            font-size: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        ">
-        <i class="fa fa-play"></i>
-    </button>
-</div>
+<style>
+.box-wrap {
+    height: 460px; /* semua kotak fix tinggi sama */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 30px;
+    border-radius: 12px;
+    background: #f7f7f7;
+}
+
+</style>
 
 
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!--//grids-->
-
-    <!--/w3-grids-->
-    <section class="w3l-passion-mid-sec home-phny py-5">
-        <div class="container py-md-5 py-3">
-            <div class="container">
-                <div class="row w3l-passion-mid-grids">
-                    <div class="col-lg-6 passion-grid-item-info pe-lg-5 mb-lg-0 mb-5">
-                        <h6 class="title-subw3hny mb-1">Welcome</h6>
-                        <h3 class="title-w3l mb-4">Empowering Innovation Through Applied Informatics</h3>
-                        <p class="mt-3 pe-lg-5">The Applied Informatics Laboratory focuses on research, development, and hands-on practice in areas such as cybersecurity, artificial intelligence, software engineering, and data-driven solutions. The lab supports collaborative projects, practical learning, and innovation to help students and researchers build technologies that address real-world needs.</p>
-
-                    </div>
-                    <div class="col-lg-6 w3hny-passion-item">
-                        <div class="row">
-                            <div class="col-6 passion-grid-item-pic">
-                                <img src="assets/images/ab1.jpg" alt="" 
-                                class="img-fluid radius-image"
-                                style="width: 150%; height: 300px; object-fit: cover;">
-                            </div>
-                            <div class="col-6 passion-grid-item-pic">
-                                <img src="assets/images/ab2.jpg" alt="" 
-                                class="img-fluid radius-image"
-                                style="width: 150%; height: 300px; object-fit: cover;">
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!--//w3-grids-->
-    <!-- features section -->
 <section class="w3l-features py-5" id="work">
     <div class="container py-lg-5 py-md-4 py-2">
 
@@ -141,6 +70,7 @@ $produk = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <!-- ICON / GAMBAR PRODUK -->
                             <div class="icon">
     <?php 
+    
     // 1. Ambil nama file dari database
     $gambar = $p['gambar']; 
     
@@ -161,7 +91,7 @@ $produk = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <img src="<?php echo htmlspecialchars($srcThumb); ?>"
          alt="<?php echo htmlspecialchars($p['nama']); ?>"
-         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"
+         style="width: 180px; height: 120px; object-fit: contain; border-radius: 8px;"
          onerror="this.onerror=null; this.src='<?php echo htmlspecialchars($srcAsli); ?>';">
          </div>
 
@@ -184,158 +114,219 @@ $produk = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php endforeach; ?>
 
             </div>
+            <!-- TOMBOL READ MORE -->
+        <div class="text-center mt-5">
+<a href="index.php?page=product"
+   class="btn btn-style btn-primary mt-lg-5 mt-4 me-2">
+   Read More <i class="fas fa-angle-double-right ms-2"></i>
+</a>
         </div>
     </div>
 </section>
-<!--//features section -->
+<!--//product section -->
 
-    <!--/Gallery-Section-->
-    <section class="w3l-gallery" id="gallery">
-        <div class="destionation-innf py-5">
-            <div class="container py-lg-5 py-md-4 py-2 HomePageGallery">
-                <div class="title-content text-center">
-                    <h6 class="title-subw3hny text-center">Laboratory Activities</h6>
-                    <h3 class="title-w3l mb-5 text-center">Latest Research & Collaboration Projects</h3>
-                </div>
-                <!--/grids-grids-->
-                <ul class="gallery_agile">
-                    <li>
-                        <div class="w3_agile_portfolio_grid">
-                            <a href="assets/images/g1.jpg">
-                                <img src="assets/images/g1.jpg" alt=" " class="img-fluid radius-image" />
-                                <div class="w3layouts_news_grid_pos">
-                                    <div class="wthree_text">
-                                        <h3>Cybersecurity Program Coordination Meeting</h3>
-                                 
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="w3_agile_portfolio_grid">
-                            <a href="assets/images/g2.jpg">
-                                <img src="assets/images/g2.jpg" alt=" " class="img-fluid radius-image" />
-                                <div class="w3layouts_news_grid_pos">
-                                    <div class="wthree_text">
-                                        <h3>Applied Informatics Research Presentation</h3>
-                                 
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="w3_agile_portfolio_grid">
-                            <a href="assets/images/g3.jpg">
-                                <img src="assets/images/g3.jpg" alt=" " class="img-fluid radius-image" />
-                                <div class="w3layouts_news_grid_pos">
-                                    <div class="wthree_text">
-                                        <h3>AI & Data Science Workshop</h3>
-                                    
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
+   <!--/activity-Section-->
+<?php
+// Koneksi Database PostgreSQL 
+$host = "localhost";
+$port = "5432";
+$dbname = "PBL"; 
+$user = "postgres"; 
+$password = "123"; 
 
-                    </li>
-                    <li>
-                        <div class="w3_agile_portfolio_grid">
-                            <a href="assets/images/g4.jpg">
-                                <img src="assets/images/g4.jpg" alt=" " class="img-fluid radius-image" />
-                                <div class="w3layouts_news_grid_pos">
-                                    <div class="wthree_text">
-                                        <h3>Industry Collaboration Discussion</h3>
-                                     
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="w3_agile_portfolio_grid">
-                            <a href="assets/images/g5.jpg">
-                                <img src="assets/images/g5.jpg" alt=" " class="img-fluid radius-image" />
-                                <div class="w3layouts_news_grid_pos">
-                                    <div class="wthree_text">
-                                        <h3>Training Session on Digital Transformation</h3>
-                                   
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="w3_agile_portfolio_grid">
-                            <a href="assets/images/g6.jpg">
-                                <img src="assets/images/g6.jpg" alt=" " class="img-fluid radius-image" />
-                                <div class="w3layouts_news_grid_pos">
-                                    <div class="wthree_text">
-                                        <h3>National Seminar on Technology Innovation</h3>
-                                     
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
+try {
+    $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
+    
+    if (!$conn) {
+        throw new Exception("Koneksi database gagal!");
+    }
+} catch (Exception $e) {
+    die("Error: " . $e->getMessage());
+}
 
-                    </li>
-                    <li>
-                        <div class="w3_agile_portfolio_grid">
-                            <a href="assets/images/g7.jpg">
-                                <img src="assets/images/g7.jpg" alt=" " class="img-fluid radius-image" />
-                                <div class="w3layouts_news_grid_pos">
-                                    <div class="wthree_text">
-                                        <h3>Applied Informatics Field Visit</h3>
-                                
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="w3_agile_portfolio_grid">
-                            <a href="assets/images/g8.jpg">
-                                <img src="assets/images/g8.jpg" alt=" " class="img-fluid radius-image" />
-                                <div class="w3layouts_news_grid_pos">
-                                    <div class="wthree_text">
-                                        <h3>Research Enhancement Program</h3>
-                                
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="w3_agile_portfolio_grid">
-                            <a href="assets/images/g9.jpg">
-                                <img src="assets/images/g9.jpg" alt=" " class="img-fluid radius-image" />
-                                <div class="w3layouts_news_grid_pos">
-                                    <div class="wthree_text">
-                                        <h3>Technology Implementation & Evaluation Meeting</h3>
-                        
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
+// Query untuk mengambil 9 data activity terbaru
+$query = "SELECT id_activity, judul, deskripsi, gambar FROM activity ORDER BY tanggal_kegiatan DESC LIMIT 9";
+$result = pg_query($conn, $query);
 
-                    </li>
-                </ul>
-                <!--//rids-grids-->
+// Cek apakah query berhasil
+if (!$result) {
+    die("Query gagal: " . pg_last_error($conn));
+}
+
+// Simpan hasil query ke array
+$activities = array();
+while ($row = pg_fetch_assoc($result)) {
+    $activities[] = $row;
+}
+
+// Tutup koneksi
+pg_close($conn);
+?>
+
+<section class="w3l-gallery" id="gallery">
+    <div class="destionation-innf py-5">
+        <div class="container py-lg-5 py-md-4 py-2 HomePageGallery">
+            <div class="title-content text-center">
+                <h6 class="title-subw3hny text-center">Laboratory Activities</h6>
+                <h3 class="title-w3l mb-5 text-center">Latest Research</h3>
             </div>
+            <!--/grids-grids-->
+            <ul class="gallery_agile">
+                <?php
+                // Loop untuk menampilkan data dari database
+                if (count($activities) > 0) {
+                    foreach ($activities as $activity) {
+                        // Path gambar - sesuaikan dengan folder upload kamu
+                        $imagePath = "uploads/activity/" . htmlspecialchars($activity['gambar']);
+                        $title = htmlspecialchars($activity['judul']);
+                        $id = htmlspecialchars($activity['id_activity']);
+                        ?>
+                        <li>
+                            <div class="w3_agile_portfolio_grid">
+                                <a href="javascript:void(0);" class="gallery-item" data-image="<?php echo $imagePath; ?>" data-title="<?php echo $title; ?>">
+                                    <img src="<?php echo $imagePath; ?>" alt="<?php echo $title; ?>" class="img-fluid radius-image" />
+                                    <div class="w3layouts_news_grid_pos">
+                                        <div class="wthree_text">
+                                            <h3><?php echo $title; ?></h3>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </li>
+                        <?php
+                    }
+                } else {
+                    // Jika tidak ada data
+                    echo '<li><p class="text-center">Belum ada kegiatan yang tersedia.</p></li>';
+                }
+                ?>
+            </ul>
+            <!--//rids-grids-->
         </div>
-    </section>
-    <!--//Gallery-Section-->
-    <!--/w3-grids-->
+    </div>
+</section>
+
+<!-- Modal Popup untuk Gambar -->
+<div id="imageModal" class="modal-gallery" style="display:none;">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content-gallery" id="modalImage">
+    <div id="modalCaption"></div>
+</div>
+
+<!-- CSS untuk Modal -->
+<style>
+.modal-gallery {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    padding-top: 50px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.9);
+}
+
+.modal-content-gallery {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 80%;
+    animation: zoom 0.3s;
+}
+
+@keyframes zoom {
+    from {transform: scale(0.8)}
+    to {transform: scale(1)}
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+    z-index: 10000;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#modalCaption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    font-size: 18px;
+}
+</style>
+
+<!-- JavaScript untuk Modal -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get modal element
+    var modal = document.getElementById('imageModal');
+    var modalImg = document.getElementById('modalImage');
+    var captionText = document.getElementById('modalCaption');
+    var closeBtn = document.getElementsByClassName('close-modal')[0];
+    
+    // Get all gallery items
+    var galleryItems = document.querySelectorAll('.gallery-item');
+    
+    // Add click event to each gallery item
+    galleryItems.forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.style.display = 'block';
+            modalImg.src = this.getAttribute('data-image');
+            captionText.innerHTML = this.getAttribute('data-title');
+        });
+    });
+    
+    // Close modal when clicking X
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    // Close modal when clicking outside image
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            modal.style.display = 'none';
+        }
+    });
+});
+</script>
+
+<!--//activity-Section-->
+
     <section class="w3l-passion-mid-sec py-5">
         <div class="container py-md-5 py-3">
             <div class="container">
                 <div class="row w3l-passion-mid-grids">
                     <div class="col-lg-6 passion-grid-item-info pe-lg-5 mb-lg-0 mb-5">
                         <h6 class="title-subw3hny mb-1">What We Offer</h6>
-                        <h3 class="title-w3l mb-4">Practical Research and Innovation for Real-World Solutions</h3>
-                        <p class="mt-3 pe-lg-5">Our lab provides facilities for applied research, software development, AI experimentation, cybersecurity practices, and collaborative technology projects. We guide students and partners in creating impactful digital solutions.</p>
+                        <h3 class="title-w3l mb-4">Our Project</h3>
+                        <p class="mt-3 pe-lg-5">Our lab showcases a diverse range of applied AI projects designed to solve real-world problems and support innovation across multiple domains.</p>
                      <div class="w3banner-content-btns">
-<a href="index.php?page=home#activity"
+<a href="index.php?page=activity"
    class="btn btn-style btn-primary mt-lg-5 mt-4 me-2">
    Read More <i class="fas fa-angle-double-right ms-2"></i>
 </a>
@@ -612,22 +603,4 @@ document.addEventListener('DOMContentLoaded', function() {
     startAutoSlidePartner();
 });
 </script>
-    <!--/footer-9-->
-<script src="https://www.youtube.com/iframe_api"></script>
-
-<script>
-var player;
-
-// YouTube API siap → hubungkan ke iframe
-function onYouTubeIframeAPIReady() {
-    player = new YT.Player('ytplayer', {});
-}
-
-// Klik tombol play custom
-document.getElementById('customPlayBtn').addEventListener('click', function () {
-    this.style.display = 'none'; // sembunyikan tombol custom
-    if (player && player.playVideo) {
-        player.playVideo();      // jalankan videonya
-    }
-});
-</script>
+    
