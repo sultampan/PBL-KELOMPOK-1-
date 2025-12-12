@@ -1,39 +1,51 @@
 // admin/assets/js/partner.js
 
-// Jalankan saat halaman pertama kali dimuat
+// Variabel Global untuk menyimpan status awal form
+let initialFormState = "";
+
+// Jalankan saat halaman dimuat
 document.addEventListener("DOMContentLoaded", function() {
     initPartnerForm();
 });
 
 // =========================================================
-// 1. INITIALIZER (PENTING: DIPANGGIL SETIAP FORM DILOAD)
+// 1. INITIALIZER
 // =========================================================
 function initPartnerForm() {
     const form = document.getElementById("partnerForm");
     if (!form) return;
 
-    // Reset listener submit (clone node)
+    // Reset listener submit
     const newForm = form.cloneNode(true);
     form.parentNode.replaceChild(newForm, form);
     
     // Pasang submit listener
     newForm.addEventListener("submit", handlePartnerSubmit);
 
-    // Pasang listener input (ketik/pilih) -> Trigger validasi tombol
+    // Pasang listener input/change
     const inputs = newForm.querySelectorAll('input, select, textarea');
     inputs.forEach(el => {
         el.addEventListener('input', validatePartnerButtons);
         el.addEventListener('change', validatePartnerButtons);
     });
 
-    // Cek status tombol sekarang juga
+    // --- LOGIKA BARU: SNAPSHOT DATA AWAL ---
+    // Simpan kondisi form saat ini ke variabel global sebagai pembanding
+    // Kita pakai URLSearchParams agar mudah membandingkan string
+    const formData = new FormData(newForm);
+    // Kita buang data file dari snapshot string karena file input kosong saat load
+    formData.delete("gambar"); 
+    initialFormState = new URLSearchParams(formData).toString();
+
+    // Cek status tombol
     validatePartnerButtons();
 }
 
 // =========================================================
-// 2. LOGIC TOMBOL (VALIDASI)
+// 2. LOGIC TOMBOL (VALIDASI CANGGIH)
 // =========================================================
 function validatePartnerButtons() {
+    const form = document.getElementById("partnerForm");
     const btnSimpan = document.getElementById("submitBtn");
     const btnBatal = document.getElementById("btnCancel");
     
@@ -42,15 +54,35 @@ function validatePartnerButtons() {
     const fileInput = document.getElementById("inputGambar");
     const isEditMode = document.querySelector('input[name="id_partner"]'); 
 
-    if(!btnSimpan || !btnBatal || !namaInput || !kategoriInput) return;
+    if(!form || !btnSimpan || !btnBatal || !namaInput || !kategoriInput) return;
 
-    // Ambil Data
+    // Ambil Data Dasar
     const nama = namaInput.value.trim();
     const kategori = kategoriInput.value;
     const hasFile = fileInput && fileInput.value !== "";
 
-    // A. TOMBOL SIMPAN (Wajib Nama & Kategori)
-    if(nama !== "" && kategori !== "") {
+    // 1. Apakah Data Wajib Terisi?
+    const isRequiredFilled = (nama !== "" && kategori !== "");
+
+    // 2. Apakah Ada Perubahan? (Khusus Edit Mode)
+    let hasChanges = true; // Default true untuk mode tambah
+    
+    if (isEditMode) {
+        // Ambil data form saat ini
+        const currentFormData = new FormData(form);
+        currentFormData.delete("gambar"); 
+        const currentState = new URLSearchParams(currentFormData).toString();
+        
+        // Cek beda string ATAU ada file baru dipilih
+        // (Jika string sama persis DAN tidak ada file baru, berarti false)
+        if (currentState === initialFormState && !hasFile) {
+            hasChanges = false;
+        }
+    }
+
+    // --- A. LOGIKA TOMBOL SIMPAN ---
+    // Nyala jika: (Wajib Terisi) DAN (Ada Perubahan)
+    if(isRequiredFilled && hasChanges) {
         btnSimpan.disabled = false;
         btnSimpan.style.opacity = "1";
         btnSimpan.style.cursor = "pointer";
@@ -60,8 +92,8 @@ function validatePartnerButtons() {
         btnSimpan.style.cursor = "not-allowed";
     }
 
-    // B. TOMBOL BATAL
-    // Nyala jika: Mode Edit ATAU Form Kotor
+    // --- B. LOGIKA TOMBOL BATAL ---
+    // Nyala jika: Mode Edit ATAU Form Kotor (Ada isinya)
     const isFormDirty = (nama !== "" || (kategori !== "" && kategori !== null) || hasFile);
     
     if(isEditMode || isFormDirty) {
@@ -76,31 +108,30 @@ function validatePartnerButtons() {
 }
 
 // =========================================================
-// 3. ACTION HANDLERS (CANCEL & SUBMIT)
+// 3. ACTION HANDLERS
 // =========================================================
 
-// Fungsi dipanggil oleh onclick="cancelPartnerForm()" di HTML
 function cancelPartnerForm() {
     const isEditMode = document.querySelector('input[name="id_partner"]');
     
     if (isEditMode) {
-        // Mode Edit -> Keluar ke mode tambah
+        // Mode Edit: Kembali ke Mode Tambah
         const currentUrl = new URL(window.location);
         currentUrl.searchParams.delete('edit'); 
         window.history.pushState({}, '', currentUrl);
-        loadEmptyPartnerForm("Mode edit dibatalkan.");
+        
+        // PERUBAHAN DISINI: Parameternya null agar tidak muncul notif
+        loadEmptyPartnerForm(null); 
     } else {
-        // Mode Tambah -> Reset Form
+        // Mode Tambah: Reset Form
         const form = document.getElementById("partnerForm");
         if(form) form.reset();
         
         removePartnerImage(); 
         
-        // Reset Kategori
         const kategori = document.getElementById("kategoriInput");
         if(kategori) kategori.value = ""; 
 
-        // Validasi ulang (PENTING: Ini yang bikin tombol Batal mati lagi)
         validatePartnerButtons(); 
     }
 }
@@ -145,7 +176,7 @@ function handlePartnerSubmit(e) {
 }
 
 // =========================================================
-// 4. IMAGE FUNCTIONS (GLOBAL)
+// 4. IMAGE FUNCTIONS
 // =========================================================
 
 function previewPartnerImage(e) {
@@ -192,7 +223,6 @@ function removePartnerImage() {
     if(previewContainer) previewContainer.style.display = "none";
     if(removeBtn) removeBtn.style.display = "none";
     
-    // Kembalikan teks default
     if(fileNameText) fileNameText.textContent = "Tidak ada file yang dipilih..."; 
     
     if(removeExisting) removeExisting.value = "1";
@@ -200,19 +230,22 @@ function removePartnerImage() {
 }
 
 // =========================================================
-// 5. LOADERS & HELPERS
+// 5. LOADERS & UTILS
 // =========================================================
 
 function loadEmptyPartnerForm(successMessage) {
     const formContainer = document.getElementById("form-content-wrapper"); 
     if (!formContainer) return;
-    if(successMessage) displayAlert(successMessage, "success");
+
+    // PERUBAHAN: Hanya tampilkan alert jika pesannya ada
+    if(successMessage && successMessage !== "") {
+        displayAlert(successMessage, "success");
+    }
 
     fetch("module/partner/form-load.php")
         .then(r => r.text())
         .then(html => {
             formContainer.innerHTML = html;
-            // Panggil init lagi untuk pasang listener di form baru
             initPartnerForm(); 
         });
 }

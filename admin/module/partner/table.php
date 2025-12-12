@@ -43,7 +43,7 @@
                         <?php else: ?>
                             <div class="no-image-placeholder">
                                 <i class="fas fa-image" style="font-size: 24px; margin-bottom: 5px;"></i>
-                                <span>No Logo</span>
+                                <span>Tidak ada gambar</span>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -60,11 +60,11 @@
 
                     <div class="card-action-buttons">
                         <a href="?page=partner&edit=<?= $row['id_partner'] ?>" class="btn-card btn-card-edit">
-                            <i class="fas fa-edit"></i> Edit
+                            <i></i> Edit
                         </a>
                         
                         <button type="button" onclick="deletePartner(<?= (int)$row['id_partner'] ?>)" class="btn-card btn-card-delete">
-                            <i class="fas fa-trash"></i> Hapus
+                            <i></i> Hapus
                         </button>
                     </div>
 
