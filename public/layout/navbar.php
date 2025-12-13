@@ -45,6 +45,10 @@
                     </li>
 
                     <li class="nav-item">
+                        <a class="nav-link" href="index.php?page=partner">Partner</a>
+                    </li>
+
+                    <li class="nav-item">
                         <a class="nav-link" href="index.php?page=contact">Contact</a>
                     </li>
 
