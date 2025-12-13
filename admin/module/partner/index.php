@@ -8,23 +8,16 @@ $webThumbDir = '../public/uploads/thumb/partner-thumb/';
 
 require_once "model.php";
 
-$page = (int)($_GET['p'] ?? 1);
-$limit = 10;
-$offset = ($page - 1) * $limit;
+// Parameter Filter
 $searchKeyword = $_GET['keyword'] ?? null;
-$currentSortBy = $_GET['sort'] ?? 'id_partner';
+$currentSortBy = $_GET['sort'] ?? 'kategori'; // Default sort kategori biar rapi
 $currentSortOrder = $_GET['order'] ?? 'ASC';
 
-$totalRecords = getTotalPartnerCount($pdo, $searchKeyword);
-$totalPages = ceil($totalRecords / $limit);
-$list = getPartnerAll($pdo, $limit, $offset, $searchKeyword, $currentSortBy, $currentSortOrder) ?: [];
+// [FIX] Panggil fungsi dengan parameter yang benar (Tanpa Limit & Offset)
+// Agar Client-Side Pagination bisa bekerja membagi data per kategori
+$list = getPartnerAll($pdo, $searchKeyword, $currentSortBy, $currentSortOrder) ?: [];
 
-$paginationData = [
-    'currentPage' => $page, 'totalPages' => $totalPages,
-    'searchKeyword' => $searchKeyword, 'limit' => $limit,
-    'list' => $list
-];
-
+// Data untuk Edit Form
 $editData = null;
 if (isset($_GET['edit'])) {
     $id_edit = (int)$_GET['edit'];

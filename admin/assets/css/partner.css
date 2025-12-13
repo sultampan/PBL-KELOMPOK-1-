@@ -186,3 +186,27 @@
     border: 2px dashed #eaeaea;
     color: #999;
 }
+
+/* --- SEPARATOR KATEGORI --- */
+.category-separator {
+    width: 100%;
+    grid-column: 1 / -1; /* Memaksa judul mengambil lebar penuh grid container (kalau masuk grid) */
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #02406C;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #ffb400; /* Garis bawah oranye */
+    display: block;
+}
+
+/* Pastikan judul pertama tidak terlalu jauh jarak atasnya */
+.category-separator:first-child {
+    margin-top: 0;
+}
+
+/* Penyesuaian Grid agar lebih rapih setelah dipisah */
+.partner-grid {
+    margin-bottom: 20px; /* Jarak antar grup kategori */
+}

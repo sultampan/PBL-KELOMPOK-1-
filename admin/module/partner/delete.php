@@ -10,6 +10,8 @@ $id = $_POST['id'] ?? null;
 if ($id) {
     try {
         $data = getPartnerById($pdo, (int)$id);
+        
+        // Hapus Gambar
         if ($data && $data['gambar']) {
             $path = __DIR__ . '/../../../public/uploads/partner/' . $data['gambar'];
             if (is_file($path)) @unlink($path);
@@ -17,7 +19,10 @@ if ($id) {
             $thumb = __DIR__ . '/../../../public/uploads/thumb/partner-thumb/' . pathinfo($data['gambar'], PATHINFO_FILENAME) . '-thumb.' . pathinfo($data['gambar'], PATHINFO_EXTENSION);
             if (is_file($thumb)) @unlink($thumb);
         }
-        deletePartner($pdo, (int)$id);
+
+        // [FIX] Panggil nama fungsi yang benar sesuai model.php
+        deletePartnerModel($pdo, (int)$id);
+        
         echo json_encode(['status' => 'success', 'message' => 'Partner berhasil dihapus.']);
     } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
