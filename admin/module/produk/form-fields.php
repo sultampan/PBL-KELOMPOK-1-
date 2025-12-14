@@ -31,6 +31,7 @@ $existingTeam = $editData['team'] ?? [];
 
     <div class="mb-3 link-section-box">
         <label class="form-label link-section-title">Tim Pengembang</label>
+        
         <div class="team-input-row">
             <select id="memberSelect" class="form-control">
                 <option value="">-- Pilih Member --</option>
@@ -39,8 +40,7 @@ $existingTeam = $editData['team'] ?? [];
                 <?php endforeach; ?>
             </select>
             <input id="roleInput" type="text" class="form-control" placeholder="Role (ex: Backend)">
-            <button type="button" class="btn btn-success" onclick="addTeamToTable()">Tambah</button>
-        </div>
+        </div> <button type="button" class="btn btn-success btn-block" onclick="addTeamToTable()">Tambah</button>
 
         <table class="table table-bordered mt-3" id="teamTable">
             <thead>

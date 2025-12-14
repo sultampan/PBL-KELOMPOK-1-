@@ -1,6 +1,8 @@
 /* admin/assets/css/produk.css */
 
-/* --- LAYOUT GRID --- */
+/* ================================================================= */
+/* 1. LAYOUT GRID & WRAPPER */
+/* ================================================================= */
 .member-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -8,27 +10,111 @@
     margin-top: 20px;
 }
 
-/* --- FORM TIM PENGEMBANG (Layout Rapi) --- */
+/* ================================================================= */
+/* 2. FORM TIM PENGEMBANG (LAYOUT & ALIGNMENT FIX) */
+/* ================================================================= */
+
+/* Container baris input */
 .team-input-row {
-    display: flex; 
-    gap: 15px; /* Jarak antar elemen */
-    margin-bottom: 15px; 
-    align-items: center; 
+    display: flex;
+    gap: 10px; /* Jarak antar elemen */
+    margin-bottom: 15px;
+    align-items: center; /* Pastikan vertikal rata tengah */
+    width: 100%;
 }
 
+/* Paksa tinggi Input dan Select agar konsisten */
 .team-input-row select,
-.team-input-row input[type="text"] {
-    flex: 1; /* Input mengisi ruang kosong */
-    height: 38px; 
+.team-input-row input[type="text"],
+.team-input-row .form-control {
+    flex: 1; /* Mengisi ruang kosong */
+    height: 40px !important; /* Tinggi standar yang nyaman & sama dengan tombol */
+    font-size: 14px;
+    box-sizing: border-box;
 }
 
-.team-input-row button {
-    flex-shrink: 0; 
-    height: 38px; 
-    padding: 6px 12px;
+/* ================================================================= */
+/* 3. BUTTON STYLES (SERAGAM & MODERN) */
+/* ================================================================= */
+
+/* Base Style untuk semua tombol */
+.btn {
+    border: none;
+    border-radius: 4px;
+    padding: 0 20px; /* Padding kiri-kanan */
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.5;
+    text-decoration: none;
 }
 
-/* --- CARD STYLE (Base Style) --- */
+/* Tombol TAMBAH (Hijau - Diatur agar sama persis dengan Input) */
+.btn-success {
+    background-color: #2ecc71;
+    color: #ffffff;
+    
+    /* KUNCI: Tinggi SAMA PERSIS dengan input */
+    height: 40px !important; 
+    flex-shrink: 0; /* Mencegah tombol mengecil */
+    
+    padding: 0 25px; /* Tombol agak lebar agar proporsional */
+}
+
+.btn-success:hover {
+    background-color: #27ae60;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-success:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* Tombol BATAL (Abu-abu) */
+.btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+    height: 40px !important;
+}
+.btn-secondary:hover { background-color: #7f8c8d; }
+
+/* Tombol SIMPAN (Biru) */
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+    height: 40px !important;
+}
+.btn-primary:hover { background-color: #2980b9; }
+
+/* Tombol Lihat Produk (Badge Kecil) */
+.btn-link-produk {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    background-color: #e8f5e9;
+    color: #43a047 !important;
+    border: 1px solid #c8e6c9;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-link-produk:hover {
+    background-color: #a5d6a7;
+    color: #1b5e20 !important;
+}
+
+/* ================================================================= */
+/* 4. CARD STYLE (PRODUK) */
+/* ================================================================= */
 .mit-card {
     background: #fff;
     border: 1px solid #e0e0e0;
@@ -46,7 +132,7 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-/* Header Role & Link */
+/* Header Role & Tanggal */
 .mit-card-role {
     margin-bottom: 10px !important;
     padding-bottom: 10px !important;
@@ -67,26 +153,6 @@
     border-radius: 3px;
 }
 
-/* Tombol Lihat Produk (Badge Hijau) */
-.btn-link-produk {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    text-decoration: none !important;
-    background-color: #e8f5e9; /* Hijau muda */
-    color: #43a047 !important; /* Hijau gelap */
-    border: 1px solid #c8e6c9;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.btn-link-produk:hover {
-    background-color: #a5d6a7; 
-    color: #1b5e20 !important;
-}
-
 /* Judul Produk */
 .mit-card-name {
     font-size: 1.25em !important;
@@ -102,7 +168,7 @@
     width: 100%;
 }
 
-/* --- GAMBAR PRODUK --- */
+/* --- GAMBAR --- */
 .mit-card-content {
     width: 100%;
     margin-bottom: 10px;
@@ -141,57 +207,6 @@
     border-radius: 8px;
     font-size: 14px;
 }
-
-.btn {
-    border: none;
-    border-radius: 4px; /* Sudut agak membulat, standar modern */
-    padding: 8px 20px;
-    font-size: 14px;
-    font-weight: 600; /* Teks agak tebal agar terbaca jelas */
-    cursor: pointer;
-    transition: all 0.2s ease-in-out; /* Transisi halus saat di-hover */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1.5;
-}
-
-/* Style Khusus Tombol TAMBAH (Hijau) */
-.btn-success {
-    background-color: #2ecc71; /* Hijau yang segar dan modern (Emerald) */
-    color: #ffffff;
-    height: 38px; /* PENTING: Samakan tinggi dengan input text di sebelahnya */
-}
-
-.btn-success:hover {
-    background-color: #27ae60; /* Hijau lebih gelap saat mouse di atasnya */
-    transform: translateY(-1px); /* Efek naik sedikit agar interaktif */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Bayangan halus */
-}
-
-.btn-success:active {
-    transform: translateY(0); /* Kembali ke posisi semula saat diklik */
-    box-shadow: none;
-}
-
-/* Style Khusus Tombol BATAL (Abu-abu - Jika belum ada) */
-.btn-secondary {
-    background-color: #95a5a6;
-    color: white;
-}
-.btn-secondary:hover {
-    background-color: #7f8c8d;
-}
-
-/* Style Khusus Tombol SIMPAN/PRIMARY (Biru - Jika belum ada) */
-.btn-primary {
-    background-color: #3498db;
-    color: white;
-}
-.btn-primary:hover {
-    background-color: #2980b9;
-}
-
 .no-image i {
     font-size: 48px;
     margin-bottom: 10px;
@@ -228,7 +243,9 @@
     font-weight: 500;
 }
 
-/* --- TOMBOL AKSI (FIXED VISIBILITY) --- */
+/* ================================================================= */
+/* 5. TOMBOL AKSI CARD (EDIT & HAPUS) - FIXED VISIBILITY */
+/* ================================================================= */
 .card-action-buttons {
     margin-top: 15px !important;
     display: flex !important;
@@ -248,12 +265,12 @@
     border: none;
     transition: background-color 0.2s;
     
-    /* Memastikan tombol selalu terlihat & solid */
+    /* Memastikan tombol selalu terlihat & solid (Fix visited link bug) */
     opacity: 1 !important;
     visibility: visible !important;
 }
 
-/* Tombol Edit (Oranye) - Fix visited state */
+/* Tombol Edit (Oranye) */
 .btn-card-edit, 
 .btn-card-edit:link, 
 .btn-card-edit:visited { 
@@ -267,7 +284,7 @@
     color: #fff !important;
 }
 
-/* Tombol Hapus (Merah) - Fix visited state */
+/* Tombol Hapus (Merah) */
 .btn-card-delete, 
 .btn-card-delete:link, 
 .btn-card-delete:visited { 
@@ -280,3 +297,4 @@
     background-color: #c0392b !important; 
     color: #fff !important;
 }
+

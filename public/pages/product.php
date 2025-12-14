@@ -1,6 +1,6 @@
 <?php
 // ==========================================
-// 1. KONEKSI & AMBIL DATA PRODUK
+// 1. KONEKSI & PERSIAPAN DATA (POSTGRESQL)
 // ==========================================
 $rootPath = dirname(dirname(__DIR__)); 
 $koneksiPath = $rootPath . '/config/koneksi.php';
@@ -9,171 +9,268 @@ if (file_exists($koneksiPath)) {
     require_once $koneksiPath;
 }
 
-// ==========================================
-// 2. PENGATURAN PATH GAMBAR & LINK
-// ==========================================
+// --- LOGIKA PENCARIAN ---
+$searchKeyword = '';
+if (isset($_GET['search'])) {
+    $searchKeyword = trim($_GET['search']);
+}
+
+// --- CONFIG PATH ---
 $webThumbPath = 'uploads/thumb/produk-thumb/';
-$webImgPath  = 'uploads/produk/';
+$webImgPath   = 'uploads/produk/';
 $serverBase = $rootPath . '/public'; 
 $serverThumbPath = $serverBase . '/uploads/thumb/produk-thumb/';
-$serverImgPath  = $serverBase . '/uploads/produk/';
+$serverImgPath   = $serverBase . '/uploads/produk/';
 
+// --- FUNGSI QUERY DATA (POSTGRESQL) ---
+function getProdukData($pdo, $keyword) {
+    try {
+        // [POSTGRESQL] Menggunakan STRING_AGG & ILIKE
+        $sql = "
+          SELECT 
+            p.id_produk,
+            p.nama,
+            p.deskripsi,
+            p.gambar,
+            p.link_produk, 
+            STRING_AGG(DISTINCT m.nama_member || ' (' || pm.role || ')', ', ') AS members
+          FROM produk p
+          LEFT JOIN produk_member pm ON p.id_produk = pm.id_produk
+          LEFT JOIN member m ON pm.id_member = m.id_member
+        ";
 
-$produkList = [];
-if (isset($pdo)) {
-  try {
-    $query = "
-      SELECT 
-        p.id_produk,
-        p.nama,
-        p.deskripsi,
-        p.gambar,
-                p.link_produk, 
-        STRING_AGG(m.nama_member || ' (' || pm.role || ')', ', ') AS members
-      FROM produk p
-            LEFT JOIN produk_member pm ON p.id_produk = pm.id_produk
-            LEFT JOIN member m ON pm.id_member = m.id_member
-            GROUP BY p.id_produk, p.nama, p.deskripsi, p.gambar, p.link_produk 
-      ORDER BY p.id_produk DESC
-    ";
-    $stmt = $pdo->prepare($query);
-    $stmt->execute();
-    $produkList = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  } catch (Exception $e) { }
+        // Filter
+        if (!empty($keyword)) {
+            $sql .= " WHERE p.nama ILIKE :keyword OR p.deskripsi ILIKE :keyword";
+        }
+
+        $sql .= " GROUP BY p.id_produk, p.nama, p.deskripsi, p.gambar, p.link_produk ORDER BY p.id_produk DESC";
+        
+        $stmt = $pdo->prepare($sql);
+        
+        if (!empty($keyword)) {
+            $stmt->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
+        }
+        
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) { return []; }
 }
+
+// ==========================================
+// 2. HANDLER AJAX (LIVE SEARCH)
+// ==========================================
+if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
+    // Kita coba bersihkan buffer, tapi jika index.php sudah output header, ini tidak cukup.
+    // Makanya kita pakai JS Parser di bawah nanti.
+    while (ob_get_level()) { ob_end_clean(); }
+    
+    $produkList = getProdukData($pdo, $searchKeyword);
+    
+    // OUTPUT GRID SAJA
+    if (!empty($produkList)) {
+        echo '<div class="activity-grid">';
+        foreach ($produkList as $row) {
+            $gambar = $row['gambar'];
+            $srcDisplay = ''; 
+            $hasImage = false; 
+            
+            if (!empty($gambar)) {
+                $ext    = pathinfo($gambar, PATHINFO_EXTENSION);
+                $filename = pathinfo($gambar, PATHINFO_FILENAME);
+                $thumbName = $filename . '-thumb.' . $ext;
+                
+                if (file_exists($serverThumbPath . $thumbName)) {
+                    $srcDisplay = $webThumbPath . $thumbName;
+                    $hasImage = true;
+                } elseif (file_exists($serverImgPath . $gambar)) {
+                    $srcDisplay = $webImgPath . $gambar;
+                    $hasImage = true;
+                }
+            }
+            ?>
+            <a href="index.php?page=product-detail&id=<?= $row['id_produk']; ?>" class="card-link-wrapper">
+              <div class="activity-card">
+                <div class="activity-image-wrapper">
+                  <?php if ($hasImage): ?>
+                    <img src="<?= htmlspecialchars($srcDisplay); ?>" alt="<?= htmlspecialchars($row['nama']); ?>" class="activity-image">
+                  <?php else: ?>
+                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: #ccc;">
+                          <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 10px;"></i>
+                          <span style="font-size: 14px;">No Image</span>
+                    </div>
+                  <?php endif; ?>
+                </div>
+                <div class="activity-content">
+                  <span class="card-badge">PRODUCT</span>
+                  <h4 class="activity-title"><?= htmlspecialchars($row['nama']); ?></h4>
+                  <div class="activity-description"><?= nl2br(htmlspecialchars($row['deskripsi'])); ?></div>
+                  <div class="activity-footer">
+                    <span class="view-btn">Lihat Detail <i class="fas fa-arrow-right"></i></span>
+                  </div>
+                </div>
+              </div>
+            </a> 
+            <?php
+        }
+        echo '</div>'; 
+    } else {
+        echo '<div class="no-activity">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <p>Produk tidak ditemukan.</p>
+              </div>';
+    }
+    exit; 
+}
+
+// --- LOAD DATA AWAL ---
+$produkList = getProdukData($pdo, $searchKeyword);
 ?>
 
 <style>
-/* ==================================================== */
-/* CSS LAMA AGAR CARD TAMPIL RAPI (TIDAK ADA PERUBAHAN) */
-/* ==================================================== */
+    /* CSS SEARCH BAR */
+    .search-wrapper-center {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 30px; 
+        margin-bottom: 40px;
+        padding: 0 15px;
+        position: relative;
+        z-index: 5;
+    }
 
-/* Grid Layout */
-.activity-grid {
-  display: grid !important; 
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important; 
-  gap: 30px;
-  margin-top: 2rem;
-}
+    .search-facility-box {
+        width: 100%;
+        max-width: 600px;
+        position: relative;
+        background: white;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
 
-/* Card Style */
-.activity-card {
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-}
+    .search-facility-box input {
+        width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 50px;
+        padding: 15px 60px 15px 30px;
+        background-color: #fff;
+        color: #333;
+        font-family: sans-serif;
+        font-weight: 400;
+        font-size: 16px;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+    
+    .search-facility-box input:focus {
+        border-color: #01B5B8;
+        box-shadow: 0 4px 10px rgba(1, 181, 184, 0.15);
+    }
 
-.activity-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-}
+    .search-icon-static {
+        position: absolute; right: 25px; top: 50%;
+        transform: translateY(-50%); color: #aaa;
+        font-size: 20px; pointer-events: none;
+    }
+    
+    .search-loading {
+        position: absolute; right: 25px; top: 50%;
+        transform: translateY(-50%); color: #01B5B8;
+        font-size: 20px; display: none;
+    }
 
-.activity-image-wrapper {
-  position: relative;
-  width: 100%;
-  height: 250px;
-  overflow: hidden;
-  background-color: #e0e0e0;
-    /* CENTERING GAMBAR */
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
-}
+    /* HEADER BANNER */
+    .inner-banner.product-banner {
+        background: url('assets/images/header-facility.jpeg') no-repeat center center;
+        background-size: cover;
+        position: relative;
+        z-index: 0;
+        min-height: 280px; 
+        display: grid;
+        align-items: center;
+        padding-top: 80px; /* Padding untuk kompensasi navbar */
+    }
+    .inner-banner.product-banner:before {
+        content: ""; background: rgba(0,0,0,0.6);
+        position: absolute; inset: 0; z-index: -1;
+    }
+    .inner-w3-title {
+        font-size: 3rem; font-weight: 700; color: #fff; margin-bottom: 10px;
+    }
 
-.activity-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
+    /* CARD STYLE */
+    .activity-grid {
+        display: grid !important; 
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important; 
+        gap: 30px; margin-top: 1rem;
+    }
 
-.activity-card:hover .activity-image {
-  transform: scale(1.1);
-}
+    .card-link-wrapper {
+        display: block; text-decoration: none; color: inherit; height: 100%; 
+    }
 
-.activity-content {
-  padding: 20px;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
+    .activity-card {
+        background: white; border-radius: 8px; overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex; flex-direction: column; height: 100%; border: 1px solid #eee;
+    }
 
-.activity-title { 
-  color: #333;
-  font-size: 1.1rem;
-  font-weight: 600;
-  line-height: 1.4;
-  margin-bottom: 10px;
-}
+    .card-link-wrapper:hover .activity-card {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        border-color: #01B5B8;
+    }
 
-.activity-description { 
-  color: #555;
-  font-size: 0.95rem;
-  line-height: 1.6; 
-  margin-bottom: 15px;
-  flex-grow: 1;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3; 
-  line-clamp: 3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+    .activity-image-wrapper {
+        position: relative; width: 100%; height: 200px;
+        overflow: hidden; background-color: #f8f9fa;
+        display: flex; justify-content: center; align-items: center; 
+        border-bottom: 1px solid #eee;
+    }
 
-.activity-members { 
-  font-size: 0.9rem;
-  color: #333;
-  font-weight: 500;
-  border-top: 1px solid #eee;
-  padding-top: 10px;
-}
+    .activity-image {
+        width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;
+    }
+    .card-link-wrapper:hover .activity-image { transform: scale(1.05); }
 
-.activity-members span {
-  font-weight: normal;
-  color: #555;
-  display: block;
-  margin-top: 3px;
-}
+    .activity-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
 
-.no-activity { 
-  text-align: center;
-  color: #888;
-  grid-column: 1 / -1;
-  padding: 40px;
-  font-size: 1.1rem;
-}
+    .card-badge {
+        font-size: 10px; text-transform: uppercase; color: #999;
+        font-weight: 700; margin-bottom: 5px; letter-spacing: 1px;
+    }
 
-/* Tambahan CSS untuk Link Wrapper */
-.card-link-wrapper {
-    display: block; 
-    text-decoration: none; 
-    color: inherit; 
-    height: 100%; 
-}
+    .activity-title { 
+        color: #02406C; font-size: 1.2rem; font-weight: 700;
+        line-height: 1.3; margin-bottom: 10px;
+        display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
 
-/* Styling Banner */
-.inner-banner.product-banner {
-    background: url('assets/images/header-facility.jpeg') no-repeat center;
-    background-size: cover;
-    position: relative;
-    z-index: 0;
-    min-height: 350px;
-    display: grid;
-    align-items: center;
-}
-.inner-banner.product-banner:before {
-    content: "";
-    background: rgba(0,0,0,0.6);
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-}
+    .activity-description { 
+        color: #666; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;
+        flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3;
+        -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
+        word-wrap: break-word; overflow-wrap: anywhere; 
+    }
+
+    .activity-footer { 
+        font-size: 0.85rem; color: #555; border-top: 1px solid #f0f0f0;
+        padding-top: 15px; margin-top: auto;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .view-btn {
+        color: #01B5B8; font-weight: 600; font-size: 12px;
+        display: flex; align-items: center; gap: 5px;
+    }
+
+    .no-activity { 
+        text-align: center; color: #888; grid-column: 1 / -1;
+        padding: 40px; width: 100%;
+    }
 </style>
-
 
 <div class="inner-banner product-banner">
   <section class="w3l-breadcrumb text-center">
@@ -187,98 +284,130 @@ if (isset($pdo)) {
   </section>
 </div>
 
-<section class="w3l-gallery pb-5 pt-4">
-  <div class="container pb-md-5 pt-3">
+  <div class="container pb-md-5">
 
-    <div class="title-content text-center mb-5">
-      <h6 class="title-subw3hny">Explore Our Works</h6>
-      <h3 class="title-w3l mb-4"> Produk Unggulan Kami </h3>
+    <div class="search-wrapper-center">
+        <div class="search-facility-box">
+            <form action="#" method="GET" onsubmit="return false;">
+                <input type="text" id="searchInput" 
+                       placeholder="Cari Produk..." 
+                       value="<?= htmlspecialchars($searchKeyword) ?>"
+                       oninput="performLiveSearch(this.value)"> 
+                
+                <i id="staticSearchIcon" class="fas fa-search search-icon-static"></i>
+                <div id="searchSpinner" class="search-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <?php if (!empty($produkList)): ?>
-      <div class="activity-grid"> 
 
-        <?php foreach ($produkList as $row): ?>
-          <?php
-                        // ==========================================
-                        // LOGIKA LINK ABSOLUT (DIPERKUAT DENGAN HTTPS DEFAULT)
-                        // ==========================================
-                        $rawLink = $row['link_produk'];
-                        $finalLink = '#'; // Default ke '#' jika link kosong
-
-                        if (!empty($rawLink)) {
-                            // 1. Membersihkan link dari protokol lama (jika ada)
-                            $cleanLink = preg_replace('#^https?://#i', '', $rawLink);
-
-                            // 2. Memastikan protokol HTTPS yang merupakan standar web modern
-                            $finalLink = 'https://' . $cleanLink; 
-                        }
-
-
-            // LOGIKA CEK GAMBAR (tetap sama) 
-            $gambar = $row['gambar'];
-            $srcDisplay = ''; 
-            $hasImage = false; 
-                        
-                        if (!empty($gambar)) {
-                            $ext    = pathinfo($gambar, PATHINFO_EXTENSION);
-                            $filename = pathinfo($gambar, PATHINFO_FILENAME);
-                            $thumbName = $filename . '-thumb.' . $ext;
-                            
-                            if (file_exists($serverThumbPath . $thumbName)) {
-                                $srcDisplay = $webThumbPath . $thumbName;
-                                $hasImage = true;
-                            } elseif (file_exists($serverImgPath . $gambar)) {
-                                $srcDisplay = $webImgPath . $gambar;
-                                $hasImage = true;
-                            }
-                        }
-          ?>
-
-          <a href="<?= htmlspecialchars($finalLink); ?>" class="card-link-wrapper" target="_blank">
-              <div class="activity-card">
-                <div class="activity-image-wrapper">
-                                
-                  <?php if ($hasImage): ?>
-                    <img src="<?= htmlspecialchars($srcDisplay); ?>"
-                      alt="<?= htmlspecialchars($row['nama']); ?>"
-                      class="activity-image">
-                  <?php else: ?>
-                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; background-color: #f0f0f0; color: #999;">
-                          <i class="fa fa-image" style="font-size: 48px; margin-bottom: 10px;"></i>
-                          <span style="font-size: 14px;">Tidak ada gambar</span>
+    <div id="product-results-container">
+        <?php if (!empty($produkList)): ?>
+          <div class="activity-grid"> 
+            <?php foreach ($produkList as $row): ?>
+              <?php
+                // Setup Gambar
+                $gambar = $row['gambar'];
+                $srcDisplay = ''; 
+                $hasImage = false; 
+                
+                if (!empty($gambar)) {
+                    $ext    = pathinfo($gambar, PATHINFO_EXTENSION);
+                    $filename = pathinfo($gambar, PATHINFO_FILENAME);
+                    $thumbName = $filename . '-thumb.' . $ext;
+                    if (file_exists($serverThumbPath . $thumbName)) {
+                        $srcDisplay = $webThumbPath . $thumbName;
+                        $hasImage = true;
+                    } elseif (file_exists($serverImgPath . $gambar)) {
+                        $srcDisplay = $webImgPath . $gambar;
+                        $hasImage = true;
+                    }
+                }
+              ?>
+              <a href="index.php?page=product-detail&id=<?= $row['id_produk']; ?>" class="card-link-wrapper">
+                  <div class="activity-card">
+                    <div class="activity-image-wrapper">
+                      <?php if ($hasImage): ?>
+                        <img src="<?= htmlspecialchars($srcDisplay); ?>" alt="<?= htmlspecialchars($row['nama']); ?>" class="activity-image">
+                      <?php else: ?>
+                        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: #ccc;">
+                              <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 10px;"></i>
+                              <span style="font-size: 14px;">No Image</span>
+                        </div>
+                      <?php endif; ?>
                     </div>
-                  <?php endif; ?>
-                </div>
-
-                <div class="activity-content">
-                                
-                  <h4 class="activity-title">
-                    <?= htmlspecialchars($row['nama']); ?>
-                  </h4>
-
-                  <div class="activity-description">
-                    <?= nl2br(htmlspecialchars($row['deskripsi'])); ?>
+                    <div class="activity-content">
+                      <span class="card-badge">PRODUCT</span>
+                      <h4 class="activity-title"><?= htmlspecialchars($row['nama']); ?></h4>
+                      <div class="activity-description"><?= nl2br(htmlspecialchars($row['deskripsi'])); ?></div>
+                      <div class="activity-footer">
+                        <span class="view-btn">Lihat Detail <i class="fas fa-arrow-right"></i></span>
+                      </div>
+                    </div>
                   </div>
-              
-                  <div class="activity-members">
-                    <strong>Pengembang :</strong>
-                    <span>
-                      <?= !empty($row['members']) ? htmlspecialchars($row['members']) : 'Tim LabAI'; ?>
-                    </span>
-                  </div>
-                </div>
-              </div>
-                    </a> 
-
-        <?php endforeach; ?>
-
-      </div>
-    <?php else: ?>
-      <div class="no-activity">
-        <p>Belum ada produk unggulan yang tersedia saat ini.</p>
-      </div>
-    <?php endif; ?>
+              </a> 
+            <?php endforeach; ?>
+          </div>
+        <?php else: ?>
+          <div class="no-activity">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <p>Belum ada produk unggulan yang tersedia saat ini.</p>
+          </div>
+        <?php endif; ?>
+    </div>
 
   </div>
-</section>
+
+<script>
+    let searchTimeout;
+
+    function performLiveSearch(keyword) {
+        const spinner = document.getElementById('searchSpinner');
+        const staticIcon = document.getElementById('staticSearchIcon');
+        const container = document.getElementById('product-results-container');
+
+        // Tampilkan loading
+        spinner.style.display = 'block';
+        staticIcon.style.opacity = '0';
+        container.style.opacity = '0.5';
+
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            fetch(`index.php?page=product&ajax=1&search=${encodeURIComponent(keyword)}`)
+                .then(res => res.text())
+                .then(html => {
+                    // [SOLUSI DOUBLE NAVBAR]
+                    // Kita gunakan DOMParser untuk mengambil HANYA bagian grid
+                    // Membuang Header/Navbar yang mungkin ikut terkirim oleh server
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Cari elemen grid atau no-activity di dalam HTML yang diterima
+                    const newGrid = doc.querySelector('.activity-grid');
+                    const noData = doc.querySelector('.no-activity');
+
+                    if (newGrid) {
+                        container.innerHTML = newGrid.outerHTML;
+                    } else if (noData) {
+                        container.innerHTML = noData.outerHTML;
+                    } else {
+                        // Fallback jika tidak ditemukan (misal error)
+                        container.innerHTML = '<div class="no-activity"><p>Tidak ada hasil ditemukan.</p></div>';
+                    }
+
+                    // Sembunyikan loading
+                    spinner.style.display = 'none';
+                    staticIcon.style.opacity = '1';
+                    container.style.opacity = '1';
+                })
+                .catch(err => {
+                    console.error('Search error:', err);
+                    spinner.style.display = 'none';
+                    staticIcon.style.opacity = '1';
+                    container.style.opacity = '1';
+                });
+        }, 300);
+    }
+</script>
