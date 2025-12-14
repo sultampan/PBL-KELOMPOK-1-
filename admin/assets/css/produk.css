@@ -1,157 +1,282 @@
-/* --- LEBAR KOLOM TABEL (Biar Rapi) --- */
+/* admin/assets/css/produk.css */
 
-/* Kolom Deskripsi (Biasanya kolom ke-3 atau ke-4) dibatasi lebarnya */
-/* Supaya teks deskripsi panjang otomatis turun baris, bukan melebar ke samping */
-.table tbody tr td:nth-child(3),
-.table tbody tr td:nth-child(4) { 
-    max-width: 300px;       
-    word-break: break-word; 
-    line-height: 1.5;      
-}
-
-/* Kolom Aksi (Paling Kanan) dibuat sempit pas konten */
-.table tbody td:last-child {
-    white-space: nowrap;    
-    width: 1%;              
-    text-align: center;
-}
-
-/* --- WARNA TOMBOL AKSI DI TABEL --- */
-
-.table tbody td a {
-    text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    margin-right: 5px;
-    font-weight: 600;
-    display: inline-block;
-    font-size: 12px;
-    color: #fff; /* Pastikan teks putih */
-    transition: opacity 0.2s;
-}
-
-.table tbody td a:hover { 
-    opacity: 0.85; 
-}
-
-/* Tombol Edit (Kuning/Oranye) */
-/* Selector pintar: mencari link yang href-nya mengandung kata "edit" */
-.table tbody td a[href*="edit"] { 
-    background-color: #f39c12; 
-}
-
-/* Tombol Hapus (Merah) */
-/* Selector: mencari link dengan class "del" ATAU title "Hapus" */
-.table tbody td a.del, 
-.table tbody td a[title="Hapus"] { 
-    background-color: #e74c3c; 
-}
-
-/* Tombol Detail/Link Tambahan (Biru - Opsional) */
-.table tbody td a.link {
-    background-color: #3498db;
-}
-
-.product-grid {
+/* --- LAYOUT GRID --- */
+.member-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 22px;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
     margin-top: 20px;
 }
 
-.product-card {
-    background: #fff;
-    border-radius: 14px;
-    border: 1px solid #e4e4e4;
-    padding: 18px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    transition: .2s;
-    overflow: hidden;
-}
-
-.product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-}
-
-.product-thumb {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 15px;
-}
-
-.product-title {
-    font-size: 19px;
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-
-.product-desc {
-    color: #444;
-    font-size: 14px;
-    margin-bottom: 12px;
-    min-height: 48px;
-}
-
-.product-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 14px;
-}
-
-.btn-edit {
-    background: #f39c12;
-    padding: 7px 16px;
-    color: white;
-    border-radius: 6px;
-}
-
-.btn-delete {
-    background: #e74c3c;
-    padding: 7px 16px;
-    color: white;
-    border-radius: 6px;
-}
-
-/* Team Card Style C */
-.team-card-item {
-    margin-bottom: 8px;
-    padding: 6px 10px;
-    background: #f7f9fc;
-    border-left: 3px solid #2b67f6;
-    border-radius: 4px;
-}
-
-.team-card-item .team-name {
-    font-weight: bold;
-    color: #1d2d50;
-}
-
-.team-card-item .team-role {
-    font-size: 13px;
-    margin-left: 18px;
-    color: #444;
-}
-
-.product-desc {
-    word-break: break-word; /* Wajib untuk kata panjang tanpa spasi */
-    overflow-wrap: break-word;
-    white-space: normal;
-}
-
+/* --- FORM TIM PENGEMBANG (Layout Rapi) --- */
 .team-input-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
+    display: flex; 
+    gap: 15px; /* Jarak antar elemen */
+    margin-bottom: 15px; 
+    align-items: center; 
 }
 
 .team-input-row select,
-.team-input-row input {
-    flex: 1;
+.team-input-row input[type="text"] {
+    flex: 1; /* Input mengisi ruang kosong */
+    height: 38px; 
 }
 
-#teamTable td {
-    vertical-align: middle;
+.team-input-row button {
+    flex-shrink: 0; 
+    height: 38px; 
+    padding: 6px 12px;
+}
+
+/* --- CARD STYLE (Base Style) --- */
+.mit-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    padding: 20px !important;
+    border-radius: 4px;
+    transition: box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    min-height: 420px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mit-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Header Role & Link */
+.mit-card-role {
+    margin-bottom: 10px !important;
+    padding-bottom: 10px !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #666;
+    font-weight: 600;
+    gap: 10px;
+}
+
+.role-badge {
+    background-color: #eee;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* Tombol Lihat Produk (Badge Hijau) */
+.btn-link-produk {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    background-color: #e8f5e9; /* Hijau muda */
+    color: #43a047 !important; /* Hijau gelap */
+    border: 1px solid #c8e6c9;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-link-produk:hover {
+    background-color: #a5d6a7; 
+    color: #1b5e20 !important;
+}
+
+/* Judul Produk */
+.mit-card-name {
+    font-size: 1.25em !important;
+    margin: 10px 0 10px 0 !important;
+    line-height: 1.4 !important;
+    font-weight: 700;
+    color: #2c3e50;
+    display: block;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    width: 100%;
+}
+
+/* --- GAMBAR PRODUK --- */
+.mit-card-content {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.mit-activity-image {
+    width: 100%;
+    height: 180px;
+    min-height: 180px;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mit-activity-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Placeholder No Image */
+.no-image {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 180px;
+    width: 100%;
+    background-color: #f0f0f0;
+    color: #999;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.btn {
+    border: none;
+    border-radius: 4px; /* Sudut agak membulat, standar modern */
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 600; /* Teks agak tebal agar terbaca jelas */
+    cursor: pointer;
+    transition: all 0.2s ease-in-out; /* Transisi halus saat di-hover */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.5;
+}
+
+/* Style Khusus Tombol TAMBAH (Hijau) */
+.btn-success {
+    background-color: #2ecc71; /* Hijau yang segar dan modern (Emerald) */
+    color: #ffffff;
+    height: 38px; /* PENTING: Samakan tinggi dengan input text di sebelahnya */
+}
+
+.btn-success:hover {
+    background-color: #27ae60; /* Hijau lebih gelap saat mouse di atasnya */
+    transform: translateY(-1px); /* Efek naik sedikit agar interaktif */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Bayangan halus */
+}
+
+.btn-success:active {
+    transform: translateY(0); /* Kembali ke posisi semula saat diklik */
+    box-shadow: none;
+}
+
+/* Style Khusus Tombol BATAL (Abu-abu - Jika belum ada) */
+.btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+}
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+}
+
+/* Style Khusus Tombol SIMPAN/PRIMARY (Biru - Jika belum ada) */
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+}
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+.no-image i {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+/* --- DESKRIPSI & MEMBERS --- */
+.mit-bio {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    width: 100%;
+    padding: 10px 0 !important;
+    min-height: 60px;
+    flex-grow: 1;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.activity-members {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.member-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: #f0f7f8;
+    color: #01B5B8;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* --- TOMBOL AKSI (FIXED VISIBILITY) --- */
+.card-action-buttons {
+    margin-top: 15px !important;
+    display: flex !important;
+    gap: 10px !important;
+}
+
+.btn-card {
+    padding: 12px 24px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    flex: 1 !important;
+    text-align: center !important;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #fff !important;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+    
+    /* Memastikan tombol selalu terlihat & solid */
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Tombol Edit (Oranye) - Fix visited state */
+.btn-card-edit, 
+.btn-card-edit:link, 
+.btn-card-edit:visited { 
+    background-color: #FE7C11 !important; 
+    color: #fff !important;
+}
+
+.btn-card-edit:hover,
+.btn-card-edit:active { 
+    background-color: #e66b00 !important; 
+    color: #fff !important;
+}
+
+/* Tombol Hapus (Merah) - Fix visited state */
+.btn-card-delete, 
+.btn-card-delete:link, 
+.btn-card-delete:visited { 
+    background-color: #e74c3c !important; 
+    color: #fff !important;
+}
+
+.btn-card-delete:hover,
+.btn-card-delete:active { 
+    background-color: #c0392b !important; 
+    color: #fff !important;
 }
