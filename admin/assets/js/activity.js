@@ -6,6 +6,8 @@
 function previewActivityImage(event) {
     const input = event.target;
     const imgPreview = document.getElementById("imgPreview");
+    const previewBox = document.getElementById("previewBox"); // Ambil elemen Kotak
+    
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
@@ -24,7 +26,10 @@ function previewActivityImage(event) {
             errorContainer.textContent = `Ekstensi tidak diizinkan.`;
             errorContainer.style.display = "block";
             input.value = "";
-            imgPreview.style.display = "none";
+            
+            // Sembunyikan kotak jika error
+            if(previewBox) previewBox.style.display = "none";
+            
             updateActivityFileName(input);
             return;
         }
@@ -32,7 +37,10 @@ function previewActivityImage(event) {
             errorContainer.textContent = "File terlalu besar (Max 5MB).";
             errorContainer.style.display = "block";
             input.value = "";
-            imgPreview.style.display = "none";
+            
+            // Sembunyikan kotak jika error
+            if(previewBox) previewBox.style.display = "none";
+            
             updateActivityFileName(input);
             return;
         }
@@ -40,26 +48,30 @@ function previewActivityImage(event) {
         const reader = new FileReader();
         reader.onload = function (e) {
             imgPreview.src = e.target.result;
-            imgPreview.style.display = "block";
+            // Tampilkan kotak dengan flex agar gambar di tengah
+            if(previewBox) previewBox.style.display = "flex";
         };
         reader.readAsDataURL(file);
     } else {
         imgPreview.src = "";
-        imgPreview.style.display = "none";
+        // Sembunyikan kotak jika tidak ada file
+        if(previewBox) previewBox.style.display = "none";
     }
 }
 
 function removeActivityImage() {
     const input = document.getElementById("inputGambar");
     const img = document.getElementById("imgPreview");
+    const previewBox = document.getElementById("previewBox"); // Ambil elemen Kotak
     const removeBtn = document.getElementById("removeImageBtn");
     const fileNameText = document.getElementById("fileNameText");
 
     if (input) input.value = "";
-    if (img) {
-        img.src = "";
-        img.style.display = "none";
-    }
+    if (img) img.src = "";
+    
+    // Sembunyikan kotak saat dihapus
+    if (previewBox) previewBox.style.display = "none";
+
     if (fileNameText) fileNameText.textContent = "Tidak ada file yang dipilih...";
     if (removeBtn) removeBtn.style.display = "none";
 
@@ -149,28 +161,40 @@ function displayAlert(message, type) {
 function loadActivityList() {
     const listContainer = document.getElementById("activity-list-container");
     if (!listContainer) return;
+    
     const currentParams = new URLSearchParams(window.location.search);
-    // Pastikan path ini benar sesuai struktur folder kamu
     const url = "module/activity/table-load.php" + window.location.search;
 
     listContainer.innerHTML = '<div style="text-align:center; padding:20px;">Memuat data...</div>';
 
     fetch(url).then((response) => response.text()).then((html) => {
+        // Buat elemen temporary untuk mengecek isi HTML yang baru diterima
         const tempDiv = document.createElement("div");
         tempDiv.innerHTML = html;
-        const currentPage = parseInt(currentParams.get("p")) || 1;
-        const tableBody = tempDiv.querySelector(".table tbody");
         
-        // Logika mundur halaman jika data kosong setelah delete
-        if (currentPage > 1 && tableBody && tableBody.children.length === 1 && tableBody.querySelector("td[colspan]")) {
+        const currentPage = parseInt(currentParams.get("p")) || 1;
+        
+        // [PERBAIKAN DISINI]
+        // Kita hitung jumlah card (.mit-card) yang ada di respon baru.
+        const totalCards = tempDiv.querySelectorAll(".mit-card").length;
+
+        // Logika: Jika kita ada di halaman > 1 TAPI tidak ada card satupun (kosong)
+        // Maka otomatis mundur 1 halaman.
+        if (currentPage > 1 && totalCards === 0) {
             currentParams.set("p", currentPage - 1);
+            
+            // Update URL browser tanpa reload
             window.history.pushState(null, "", window.location.pathname + "?" + currentParams.toString());
-            loadActivityList();
+            
+            // Panggil fungsi ini lagi untuk memuat halaman sebelumnya
+            loadActivityList(); 
             return;
         }
+
+        // Jika data ada, tampilkan seperti biasa
         listContainer.innerHTML = html;
         
-        // Re-attach search listener karena HTML baru saja direplace
+        // Pasang ulang listener search
         attachSearchListener(); 
 
     }).catch((error) => {
@@ -224,22 +248,28 @@ function cancelMemberForm() {
 
 function deleteActivity(id) {
     if (!confirm("Anda yakin ingin menghapus activity ini?")) return;
+    
     const url = "module/activity/delete.php";
     const formData = new FormData();
     formData.append("id", id);
-    displayAlert("Menghapus data...", "warning");
 
     fetch(url, {
         method: "POST",
         body: formData
     })
-        .then((response) => response.json()).then((data) => {
-            if (data.status === "success") loadActivityList();
-            else displayAlert(data.message, "error");
-        }).catch((error) => {
-            console.error("AJAX Delete Error:", error);
-            displayAlert("Terjadi kesalahan jaringan.", "error");
-        });
+    .then((response) => response.json()).then((data) => {
+        if (data.status === "success") {
+            loadActivityList();
+            // Opsional: Tampilkan pesan sukses final dari server
+            displayAlert(data.message, "success");
+        }
+        else {
+            displayAlert(data.message, "error");
+        }
+    }).catch((error) => {
+        console.error("AJAX Delete Error:", error);
+        displayAlert("Terjadi kesalahan jaringan.", "error");
+    });
 }
 
 // Fungsi helper untuk event listener search (Enter key)
@@ -253,9 +283,6 @@ function attachSearchListener() {
         newInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') searchActivity();
         });
-        
-        // Kembalikan fokus jika hilang setelah replace
-        newInput.focus();
     }
 }
 
@@ -320,3 +347,45 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+/* =========================================
+   7. FUNGSI FILTER MEMBER (DENGAN DEBOUNCE)
+   ========================================= */
+
+let memberSearchTimeout = null; // Variabel timer global
+
+function filterMemberSelection() {
+    // 1. Reset timer setiap kali user mengetik
+    clearTimeout(memberSearchTimeout);
+
+    // 2. Set timer baru (tunggu 300ms setelah ketikan terakhir)
+    memberSearchTimeout = setTimeout(() => {
+        
+        // --- LOGIKA PENCARIAN DIMULAI DI SINI ---
+        const input = document.getElementById('searchMemberInput');
+        const filter = input.value.toLowerCase();
+        
+        const container = document.getElementById('memberListContainer');
+        const items = container.getElementsByClassName('member-item');
+        const noResult = document.getElementById('noMemberFound');
+        
+        let visibleCount = 0;
+
+        for (let i = 0; i < items.length; i++) {
+            const label = items[i].getElementsByTagName("span")[0];
+            const txtValue = label.textContent || label.innerText;
+            
+            if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                items[i].style.display = ""; 
+                visibleCount++;
+            } else {
+                items[i].style.display = "none";
+            }
+        }
+
+        if (visibleCount === 0) {
+            if (noResult) noResult.style.display = "block";
+        } else {
+            if (noResult) noResult.style.display = "none";
+        }
+    }, 300); // 300ms
+}

@@ -1,188 +1,329 @@
 <footer class="w3l-footer9">
-        <section class="footer-inner-main py-5">
-            <div class="container py-md-3">
-                <div class="right-side">
-                    <div class="row footer-hny-grids sub-columns">
-                        <div class="col-lg-3 sub-one-left">
-                            <h6>Laboratory </h6>
-                            <p class="footer-phny pe-lg-5">2nd Floor of the Postgraduate Building of Malang State Polytechnic.</p>
-                            <div class="columns-2 mt-lg-5 mt-4">
-                                <ul class="social">
-                                    <li><a href="#facebook"><span class="fab fa-facebook-f"></span></a>
-                                    </li>
-                                    <li><a href="#linkedin"><span class="fab fa-linkedin-in"></span></a>
-                                    </li>
-                                    <li><a href="#twitter"><span class="fab fa-twitter"></span></a>
-                                    </li>
-                                    <li><a href="#google"><span class="fab fa-google-plus-g"></span></a>
-                                    </li>
-
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 sub-two-right">
-                            <h6>Company</h6>
-                            <ul>
-                                <li><a href="#processing"><i class="fas fa-angle-right"></i> Agriculture Processing</a>
-                                </li>
-                                <li><a href="#research"><i class="fas fa-angle-right"></i> Chemical Research</a>
-                                </li>
-                                <li><a href="#metal"><i class="fas fa-angle-right"></i> Metal Engineering</a>
-                                </li>
-                                <li><a href="#gas"><i class="fas fa-angle-right"></i> Petroleum & Gas</a>
-                                </li>
-                                <li><a href="#work"><i class="fas fa-angle-right"></i> Mechanical Engineering</a></li>
-
-
-                            </ul>
-                        </div>
-                        <div class="col-lg-3 sub-two-right">
-                            <h6>Our Links</h6>
-                            <ul>
-
-                                <li><a href="#why"><i class="fas fa-angle-right"></i> Why us</a>
-                                </li>
-                                <li><a href="#licence"><i class="fas fa-angle-right"></i> Licensing
-                                    </a>
-                                </li>
-                                <li><a href="#log"><i class="fas fa-angle-right"></i> Offers
-                                    </a></li>
-                                <li><a href="#log"><i class="fas fa-angle-right"></i> Changelog
-                                    </a></li>
-                                <li><a href="#career"><i class="fas fa-angle-right"></i> Careers</a></li>
-
-                            </ul>
-                        </div>
-                        <div class="col-lg-3 sub-one-left">
-                            <h6>Recent Posts </h6>
-                            <div class="row fposts-grid-inner mb-4">
-                                <div class="col-4 fposts-grid-left ps-0">
-                                    <a href="blog-single.html">
-                                        <img src="assets/images/g2.jpg" alt=" " class="img-fluid radius-image">
-                                    </a>
-                                </div>
-                                <div class="col-8 fposts-grid-right">
-                                    <h4>
-                                        <a href="#home" class="text-bl text-left">Lorem ipsum viverra feugiat libero.</a>
-                                    </h4>
-                                    <p class="time"> 11 Minutes ago</p>
-                                </div>
-                            </div>
-                            <div class="row fposts-grid-inner mb-4">
-                                <div class="col-4 fposts-grid-left ps-0">
-                                    <a href="blog-single.html">
-                                        <img src="assets/images/g3.jpg" alt=" " class="img-fluid radius-image">
-                                    </a>
-                                </div>
-                                <div class="col-8 fposts-grid-right">
-                                    <h4>
-                                        <a href="#home" class="text-bl text-left">Lorem ipsum viverra feugiat libero.</a>
-                                    </h4>
-                                    <p class="time"> 11 Minutes ago</p>
-                                </div>
-                            </div>
-
-                        </div>
+    <section class="footer-inner-main py-5">
+        <div class="container py-md-4">
+            <div class="row align-items-start">
+                
+                <!-- LOGO LABORATORY (Kiri) -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="footer-logo">
+                        <a href="index.php?page=home">
+                            <img src="assets/images/logo.png" alt="Applied Informatics Laboratory" style="max-width: 200px; height: auto;">
+                        </a>
                     </div>
                 </div>
-                <div class="below-section mt-5">
-                    <div class="copyright-footer">
-                        <div class="columns text-left">
-                            
-                        </div>
-                        <ul class="footer-w3list text-right">
-                            <li><a href="#url">Privacy Policy</a>
-                            </li>
-                            <li><a href="#url">Terms &amp; Conditions</a>
-                            </li>
-                        </ul>
-                    </div>
 
+                <!-- LABORATORY (Lokasi) -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h6 class="footer-title mb-3">Laboratory</h6>
+                    <p class="footer-text mb-2">2nd Floor of the Postgraduate Building of Malang State Polytechnic</p>
+                    <p class="footer-text mb-0">
+                        <a href="mailto:email@labai.polinema.ac.id" style="color: #aaa; text-decoration: none;">
+                            email@labai.polinema.ac.id
+                        </a>
+                    </p>
+                </div>
+
+                <!-- COMPANY -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="footer-title mb-3">Company</h6>
+                    <ul class="footer-list list-unstyled">
+                        <li class="mb-2">
+                            <a href="index.php?page=about" class="footer-link">About us</a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="index.php?page=contact" class="footer-link">Contact us</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- SOCIAL MEDIA -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h6 class="footer-title mb-3">Social Media</h6>
+                    <ul class="social-media-list list-unstyled">
+                        <li class="d-flex align-items-center mb-3">
+                            <a href="https://instagram.com/sallysvsta" target="_blank" class="social-link d-flex align-items-center">
+                                <div class="social-icon-box">
+                                    <i class="fab fa-instagram"></i>
+                                </div>
+                                <span class="social-name ms-3">Instagram</span>
+                            </a>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <a href="https://facebook.com/your_facebook" target="_blank" class="social-link d-flex align-items-center">
+                                <div class="social-icon-box">
+                                    <i class="fab fa-facebook-f"></i>
+                                </div>
+                                <span class="social-name ms-3">Facebook</span>
+                            </a>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <a href="https://twitter.com/your_twitter" target="_blank" class="social-link d-flex align-items-center">
+                                <div class="social-icon-box">
+                                    <i class="fab fa-twitter"></i>
+                                </div>
+                                <span class="social-name ms-3">Twitter</span>
+                            </a>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <a href="https://github.com/sallysvsta" target="_blank" class="social-link d-flex align-items-center">
+                                <div class="social-icon-box">
+                                    <i class="fab fa-github"></i>
+                                </div>
+                                <span class="social-name ms-3">GitHub</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- COPYRIGHT & TERMS -->
+            <div class="row mt-4 pt-4" style="border-top: 1px solid #333;">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <p class="copyright-text mb-0" style="color: #aaa; font-size: 14px;">
+                            © 2025 Applied Informatics Laboratory. All rights reserved.
+                        </p>
+                     
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Js scripts -->
-        <!-- move top -->
-        <button onclick="topFunction()" id="movetop" title="Go to top">
-            <span class="fas fa-level-up-alt" aria-hidden="true"></span>
-        </button>
-        <script>
-            // When the user scrolls down 20px from the top of the document, show the button
-            window.onscroll = function() {
-                scrollFunction()
-            };
+        </div>
+    </section>
 
-            function scrollFunction() {
-                if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-                    document.getElementById("movetop").style.display = "block";
-                } else {
-                    document.getElementById("movetop").style.display = "none";
-                }
-            }
+    <!-- Move to Top Button -->
+    <button onclick="topFunction()" id="movetop" title="Go to top">
+        <span class="fas fa-level-up-alt" aria-hidden="true"></span>
+    </button>
 
-            // When the user clicks on the button, scroll to the top of the document
-            function topFunction() {
-                document.body.scrollTop = 0;
-                document.documentElement.scrollTop = 0;
-            }
-
-        </script>
-        <!-- //move top -->
-    </footer>
-    <!--//footer-9 -->
-
-    <!-- Template JavaScript -->
-    <script src="assets/js/jquery-3.3.1.min.js"></script>
-    <script src="assets/js/theme-change.js"></script>
-    <!--/search-->
-    <script src="assets/js/modernizr.custom.js"></script>
-    <script src="assets/js/classie.js"></script>
-    <script src="assets/js/demo1.js"></script>
-    <!--//search-->
-    <!-- MENU-JS -->
     <script>
-        $(window).on("scroll", function() {
-            var scroll = $(window).scrollTop();
+        // When the user scrolls down 20px from the top of the document, show the button
+        window.onscroll = function() {
+            scrollFunction()
+        };
 
-            if (scroll >= 80) {
-                $("#site-header").addClass("nav-fixed");
+        function scrollFunction() {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                document.getElementById("movetop").style.display = "block";
             } else {
-                $("#site-header").removeClass("nav-fixed");
+                document.getElementById("movetop").style.display = "none";
             }
-        });
+        }
 
-        //Main navigation Active Class Add Remove
-        $(".navbar-toggler").on("click", function() {
-            $("header").toggleClass("active");
-        });
-        $(document).on("ready", function() {
+        // When the user clicks on the button, scroll to the top of the document
+        function topFunction() {
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+    </script>
+</footer>
+
+<!-- CSS untuk Footer -->
+<style>
+/* Footer Background */
+.w3l-footer9 {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+.footer-inner-main {
+    background-color: #1a1a1a;
+}
+
+/* Footer Title */
+.footer-title {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Footer Text */
+.footer-text {
+    color: #aaa;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+/* Footer List */
+.footer-list li {
+    margin-bottom: 10px;
+}
+
+.footer-link {
+    color: #aaa;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: inline-block;
+}
+
+.footer-link:hover {
+    color: #ff9800;
+}
+
+
+/* 1. Logo lebih besar dan lebih kiri */
+.footer-logo img {
+    max-width: 260px !important; 
+    transform: translateX(-10px); 
+}
+
+/* 2. Social Media — title ditengah */
+.col-lg-4 .footer-title {
+    text-align: center;
+}
+
+/* 3. Social media list*/
+.social-media-list {
+    padding-left: 40px; 
+}
+
+/* 4. Besarkan ikon sosial (lebih mirip contoh putih) */
+.social-icon-box {
+    width: 50px;
+    height: 50px;
+}
+
+.social-icon-box i {
+    font-size: 22px;
+}
+
+.social-name {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* 5. Atur jarak antar kolom biar lebih penuh */
+.footer-inner-main .row.align-items-start > div {
+    margin-bottom: 20px;
+}
+
+/* 6. Copyright ke tengah */
+.copyright-text {
+    width: 100%;
+    text-align: center;
+}
+
+/* 7. Sesuaikan */
+.footer-inner-main .container {
+    max-width: 1150px; /* agar komponennya tidak terlalu mepet */
+}
+
+
+/* Social Media Icons - ORANGE KOTAK */
+.social-icon-box {
+    width: 40px;
+    height: 40px;
+    background-color: #ff9800;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.social-icon-box i {
+    color: #ffffff;
+    font-size: 18px;
+}
+
+/* Social Media Link */
+.social-link {
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover .social-icon-box {
+    background-color: #ff9800; /* TETAP ORANGE saat hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+}
+
+.social-name {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.social-link:hover .social-name {
+    color: #ff9800;
+}
+
+/* Copyright & Bottom Links */
+.copyright-text {
+    color: #888;
+}
+
+.footer-bottom-link {
+    color: #888;
+    transition: color 0.3s ease;
+}
+
+.footer-bottom-link:hover {
+    color: #ff9800;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer-logo img {
+        max-width: 150px;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .footer-bottom-links {
+        margin-top: 10px;
+    }
+}
+</style>
+
+<!-- Template JavaScript -->
+<script src="assets/js/jquery-3.3.1.min.js"></script>
+<script src="assets/js/theme-change.js"></script>
+<script src="assets/js/modernizr.custom.js"></script>
+<script src="assets/js/classie.js"></script>
+<script src="assets/js/demo1.js"></script>
+
+<script>
+    $(window).on("scroll", function() {
+        var scroll = $(window).scrollTop();
+        if (scroll >= 80) {
+            $("#site-header").addClass("nav-fixed");
+        } else {
+            $("#site-header").removeClass("nav-fixed");
+        }
+    });
+
+    $(".navbar-toggler").on("click", function() {
+        $("header").toggleClass("active");
+    });
+    
+    $(document).on("ready", function() {
+        if ($(window).width() > 991) {
+            $("header").removeClass("active");
+        }
+        $(window).on("resize", function() {
             if ($(window).width() > 991) {
                 $("header").removeClass("active");
             }
-            $(window).on("resize", function() {
-                if ($(window).width() > 991) {
-                    $("header").removeClass("active");
-                }
-            });
         });
+    });
 
-    </script>
-    <!-- //MENU-JS -->
+    $(function() {
+        $('.navbar-toggler').click(function() {
+            $('body').toggleClass('noscroll');
+        })
+    });
+</script>
 
-    <!-- disable body scroll which navbar is in active -->
-    <script>
-        $(function() {
-            $('.navbar-toggler').click(function() {
-                $('body').toggleClass('noscroll');
-            })
-        });
-
-    </script>
-    <!-- //disable body scroll which navbar is in active -->
-    <!-- //bootstrap -->
-    <script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
 
 </body>
-
 </html>

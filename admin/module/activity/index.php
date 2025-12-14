@@ -9,7 +9,7 @@ $webThumbDir = '../public/uploads/thumb/activity-thumb/';
 require_once "model.php";
 
 $page = (int)($_GET['p'] ?? 1);
-$limit = 10;
+$limit = 6;
 $offset = ($page - 1) * $limit;
 $searchKeyword = $_GET['keyword'] ?? null;
 $currentSortBy = $_GET['sort'] ?? 'id_activity'; 
@@ -24,7 +24,7 @@ $paginationData = [
     'limit' => $limit, 'currentSortBy' => $currentSortBy, 'currentSortOrder' => $currentSortOrder, 'list' => $list
 ];
 
-$editData = null; $oldInput = [];
+$editData = null; 
 if (isset($_GET['edit'])) {
     $editData = getActivityById($pdo, (int)$_GET['edit']);
 }
@@ -38,7 +38,10 @@ if (isset($_GET['edit'])) {
 <div class="header-title" style="margin-bottom: 20px;">
 </div>
 
-<?php include __DIR__ . '/form.php'; ?>
+<div id="form-content-wrapper">
+    <?php include __DIR__ . '/form.php'; ?>
+</div>
+
 <?php include __DIR__ . '/table.php'; ?>
 
 <script src="assets/js/activity.js"></script>

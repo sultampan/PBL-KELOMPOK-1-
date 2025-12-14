@@ -1,10 +1,14 @@
 <?php
 // admin/module/activity/form-fields.php
+
 // 1. Ambil Opsi Member untuk Dropdown
 $memberOptions = getAllMembersOption($pdo);
 
 // 2. Ambil Data Tim yang sudah ada (Kalau lagi Edit)
 $existingTeam = $editData['team'] ?? [];
+
+// 3. DAFTAR KATEGORI SESUAI ENUM DATABASE
+$kategoriList = ['Research', 'Projects', 'Activity'];
 ?>
 <h2><?= $editData ? "Edit Activity" : "Tambah Activity Baru" ?></h2>
 
@@ -22,6 +26,19 @@ $existingTeam = $editData['team'] ?? [];
     </div>
 
     <div class="mb-3">
+        <label class="form-label">Kategori <span style="color:red">*</span></label>
+        <select name="kategori" class="form-control" required>
+            <option value="">-- Pilih Kategori --</option>
+            <?php foreach ($kategoriList as $cat): ?>
+                <option value="<?= $cat ?>" 
+                    <?= (isset($formData['kategori']) && $formData['kategori'] == $cat) ? 'selected' : '' ?>>
+                    <?= $cat ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <div class="mb-3">
         <label class="form-label">Tanggal Kegiatan</label>
         <input type="date" name="tanggal_kegiatan" class="form-control"
                value="<?= $formData['tanggal_kegiatan'] ?? '' ?>" required>
@@ -33,52 +50,52 @@ $existingTeam = $editData['team'] ?? [];
     </div>
 
     <div class="mb-3 link-section-box">
-    <label class="form-label link-section-title">Partisipasi Member</label>
-    <small style="display:block; margin-bottom:10px; color:#666;">Member yang terlibat dalam proyek ini.</small>
-    
-    <div id="team-container">
-        <?php 
-        // A. JIKA MODE EDIT: Tampilkan baris yang sudah ada
-        if (!empty($existingTeam)) {
-            foreach ($existingTeam as $tm) {
-                ?>
-                <div class="link-row">
-                    <select name="member_ids[]" class="form-control" style="flex: 1;" required>
-                        <option value="">-- Pilih Member --</option>
-                        <?php foreach ($memberOptions as $opt): ?>
-                            <option value="<?= $opt['id_member'] ?>" 
-                                <?= ($tm['id_member'] == $opt['id_member']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($opt['nama_member']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+        <label class="form-label link-section-title">Partisipasi Member</label>
+        <small style="display:block; margin-bottom:10px; color:#666;">Member yang terlibat dalam proyek ini.</small>
+        
+        <div id="team-container">
+            <?php 
+            // A. JIKA MODE EDIT: Tampilkan baris yang sudah ada
+            if (!empty($existingTeam)) {
+                foreach ($existingTeam as $tm) {
+                    ?>
+                    <div class="link-row">
+                        <select name="member_ids[]" class="form-control" style="flex: 1;" required>
+                            <option value="">-- Pilih Member --</option>
+                            <?php foreach ($memberOptions as $opt): ?>
+                                <option value="<?= $opt['id_member'] ?>" 
+                                    <?= ($tm['id_member'] == $opt['id_member']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($opt['nama_member']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
 
-                    <button type="button" class="btn-remove-link" onclick="removeTeamRow(this)" title="Hapus Member">&times;</button>
-                </div>
-                <?php
+                        <button type="button" class="btn-remove-link" onclick="removeTeamRow(this)" title="Hapus Member">&times;</button>
+                    </div>
+                    <?php
+                }
             }
-        }
-        ?>
-    </div>
-
-    <button type="button" class="btn-add-link" onclick="addTeamRow()">
-        +
-    </button>
-
-    <template id="teamRowTemplate">
-        <div class="link-row">
-            <select name="member_ids[]" class="form-control" style="flex: 1;" required>
-                <option value="">-- Pilih Member --</option>
-                <?php foreach ($memberOptions as $opt): ?>
-                    <option value="<?= $opt['id_member'] ?>">
-                        <?= htmlspecialchars($opt['nama_member']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <button type="button" class="btn-remove-link" onclick="removeTeamRow(this)" title="Hapus Member">&times;</button>
+            ?>
         </div>
-    </template>
-</div>
+
+        <button type="button" class="btn-add-link" onclick="addTeamRow()">
+            + Tambah Member
+        </button>
+
+        <template id="teamRowTemplate">
+            <div class="link-row">
+                <select name="member_ids[]" class="form-control" style="flex: 1;" required>
+                    <option value="">-- Pilih Member --</option>
+                    <?php foreach ($memberOptions as $opt): ?>
+                        <option value="<?= $opt['id_member'] ?>">
+                            <?= htmlspecialchars($opt['nama_member']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <button type="button" class="btn-remove-link" onclick="removeTeamRow(this)" title="Hapus Member">&times;</button>
+            </div>
+        </template>
+    </div>
 
     <div class="mb-3">
         <label class="form-label">Gambar Activity</label>

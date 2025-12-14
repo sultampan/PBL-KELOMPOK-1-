@@ -3,8 +3,14 @@
         <nav class="navbar navbar-expand-lg navbar-dark stroke py-lg-0">
 
             <h1>
-                <a class="navbar-brand" href="index.php?page=home">
-                    <span class="sub-color">APPLIED</span> INFORMATICS
+                <a class="navbar-brand" href="index.php?page=home" style="display: flex; align-items: center;">
+                    
+                    <img src="assets/images/logo-separo.png" alt="Logo Lab" 
+                         style="height: 40px; width: auto; margin-right: 10px;">
+                    
+                    <span style="line-height: 1.2;">
+                        <span class="sub-color">APPLIED</span> INFORMATICS
+                    </span>
                 </a>
             </h1>
 
@@ -20,6 +26,10 @@
 
                     <li class="nav-item">
                         <a class="nav-link" href="index.php?page=home">Home</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php?page=about">About</a>
                     </li>
 
                     <li class="nav-item">
@@ -39,17 +49,16 @@
                     </li>
 
                     <li class="nav-item">
+                        <a class="nav-link" href="index.php?page=partner">Partner</a>
+                    </li>
+
+                    <li class="nav-item">
                         <a class="nav-link" href="index.php?page=contact">Contact</a>
                     </li>
 
                 </ul>
 
-                <!-- Search button -->
-                <button id="trigger-overlay" class="searchw3-icon me-xl-4 me-lg-3" type="button">
-                    <i class="fas fa-search"></i>
-                </button>
 
-                <!-- search overlay -->
                 <div class="overlay overlay-slidedown">
                     <button type="button" class="overlay-close">
                         <i class="fas fa-times"></i>
@@ -64,7 +73,6 @@
 
             </div>
 
-            <!-- Theme button -->
             <div class="mobile-position">
                 <nav class="navigation">
                     <div class="theme-switch-wrapper">

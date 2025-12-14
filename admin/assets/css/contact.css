@@ -1,0 +1,401 @@
+/* admin/assets/css/contact.css */
+
+/* --- 1. TOOLBAR HEADER --- */
+.toolbar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.header-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+}
+
+.search-input {
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 250px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    border-color: #02406C;
+    box-shadow: 0 0 0 3px rgba(2, 64, 108, 0.1);
+}
+
+.btn-search {
+    background-color: #02406C;
+    color: #fff;
+    border: none;
+    padding: 0 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 42px;
+    transition: background-color 0.2s;
+    text-decoration: none;
+}
+
+.btn-search:hover {
+    background-color: #012b49;
+}
+
+/* --- 2. CONTAINER TABLE (CARD) --- */
+.card-table-wrapper {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* --- 3. TABEL STYLE (FIXED LAYOUT) --- */
+.contact-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    
+    /* INI KUNCINYA: */
+    table-layout: fixed; /* Memaksa lebar kolom sesuai % di HTML */
+}
+
+.contact-table thead th {
+    background-color: #34495e;
+    color: #fff;
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+.contact-table tbody tr {
+    border-bottom: 1px solid #ecf0f1;
+    transition: background-color 0.2s;
+}
+
+.contact-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.contact-table td {
+    padding: 15px;
+    vertical-align: middle;
+    color: #555;
+    line-height: 1.5;
+    
+    /* Mencegah sel melebar keluar */
+    overflow: hidden; 
+}
+
+/* --- Styling Khusus Kolom --- */
+
+/* Kolom Pengirim */
+.col-sender {
+    /* Agar email yang sangat panjang ada titik-titiknya */
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.col-sender b {
+    color: #2c3e50;
+    font-size: 15px;
+    display: block; /* Nama di baris atas */
+    overflow: hidden; text-overflow: ellipsis;
+}
+
+.col-sender small {
+    color: #01B5B8;
+    font-weight: 600;
+    display: block; /* Email di baris bawah */
+    overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Kolom Subjek (YANG SERING KEPANJANGAN) */
+.col-subject {
+    font-weight: 600;
+    color: #444;
+    
+    /* 1. Izinkan teks turun baris */
+    white-space: normal; 
+    
+    /* 2. Pastikan kata yang sangat panjang dipotong */
+    word-break: break-word; 
+    overflow-wrap: break-word;
+
+    /* 3. TEKNIK LINE CLAMP (Maksimal 3 Baris) */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;  /* Batas jumlah baris */
+    line-clamp: 3;          /* Standar masa depan */
+    -webkit-box-orient: vertical;
+    overflow: hidden;       /* Sembunyikan sisa teks */
+}
+
+/* --- 4. STATUS BADGES --- */
+.badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap; /* Badge jangan turun baris */
+}
+
+.badge-pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.badge-read {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.badge-replied {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* --- 5. ACTION BUTTON --- */
+.btn-reply {
+    background-color: #01B5B8;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-reply:hover {
+    background-color: #018c8e;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(1, 181, 184, 0.3);
+}
+
+.btn-delete-msg {
+    background-color: #e74c3c;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    margin-left: 5px;
+    white-space: nowrap;
+}
+
+.btn-delete-msg:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(231, 76, 60, 0.3);
+}
+
+/* Responsif Mobile */
+@media (max-width: 768px) {
+    .toolbar-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+        text-align: center;
+    }
+    .search-input { width: 100%; }
+    .btn-search { justify-content: center; }
+    
+    /* Reset Table Layout di Mobile agar jadi Card Stack */
+    .contact-table { display: block; table-layout: auto; }
+    .contact-table thead { display: none; }
+    .contact-table tbody, .contact-table tr, .contact-table td {
+        display: block; width: 100%;
+    }
+    .contact-table tr {
+        margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; padding: 10px;
+    }
+    .contact-table td {
+        text-align: right; padding: 10px;
+        border-bottom: 1px solid #eee;
+        
+        /* Reset ellipsis di mobile agar teks terbaca semua */
+        white-space: normal; 
+        overflow: visible;
+        text-overflow: clip;
+        max-width: none;
+    }
+    .contact-table td::before {
+        content: attr(data-label); float: left; font-weight: bold; text-transform: uppercase;
+    }
+    
+    .col-sender small {
+        display: inline-block;
+    }
+}
+
+/* --- TAMBAHAN: MODAL VIEW REPLY --- */
+.modal-overlay {
+    display: none; /* Hidden by default */
+    position: fixed; 
+    z-index: 9999; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+    animation: fadeIn 0.3s;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* 5% from the top and centered */
+    padding: 0;
+    border: 1px solid #888;
+    width: 60%; /* Width of modal */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    position: relative;
+    animation: slideDown 0.3s;
+}
+
+.modal-header {
+    background-color: #02406C;
+    color: white;
+    padding: 15px 20px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 { margin: 0; font-size: 18px; }
+
+.close-modal {
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.close-modal:hover { color: #ccc; }
+
+.modal-body { padding: 20px; color: #333; }
+
+/* Box Style di dalam Modal */
+.view-box {
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+.view-box strong { display: block; color: #02406C; margin-bottom: 5px; font-size: 13px; text-transform: uppercase; }
+.view-box p { margin: 0; line-height: 1.6; white-space: pre-wrap; }
+.view-meta { font-size: 12px; color: #777; margin-top: 10px; font-style: italic; border-top: 1px dashed #ddd; padding-top: 5px;}
+
+/* Tombol Khusus Lihat Balasan */
+.btn-view-reply {
+    background-color: #6c757d;
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    margin-right: 5px;
+}
+.btn-view-reply:hover { background-color: #5a6268; }
+
+@keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+@keyframes slideDown { from {transform: translateY(-20px);} to {transform: translateY(0);} }
+
+@media (max-width: 768px) {
+    .modal-content { width: 95%; margin: 10% auto; }
+}
+
+/* --- HISTORY TIMELINE --- */
+.reply-history-container {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.history-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #34495e;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reply-item {
+    margin-bottom: 15px;
+}
+
+.reply-meta {
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.reply-content {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 12px;
+    border-radius: 6px;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.loading-text {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+    padding: 10px;
+}

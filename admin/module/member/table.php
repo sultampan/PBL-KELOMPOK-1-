@@ -9,7 +9,6 @@
                 // --- DEFINISI VARIABEL & FUNGSI HELPER ---
                 global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
                 
-                // Pastikan variabel pagination tersedia
                 if (isset($paginationData) && is_array($paginationData)) extract($paginationData);
                 else {
                     $currentPage = 1; $totalPages = 1; $searchKeyword = null;
@@ -36,7 +35,7 @@
                 ?>
 
                 <input type="text" id="searchMemberInput" class="form-control"
-                    placeholder="Cari Nama, NIDN, atau Deskripsi..."
+                    placeholder="Cari Nama, NIDN, atau Keahlian..."
                     value="<?= htmlspecialchars($searchKeyword ?? '') ?>"
                     style="font-size: 13px; padding: 6px 10px; width: 250px;">
 
@@ -56,12 +55,14 @@
             <?php if ($list): ?>
                 <?php foreach ($list as $row):
                     // Encode data row ke JSON untuk keperluan Modal Detail (JS)
-                    // Pastikan key 'links' sudah ada dari Model
                     $dataJson = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
                     
                     $isHead = ($row['jabatan'] === 'Head of Laboratory');
                     $badgeLabel = $isHead ? 'HEAD LAB' : 'MEMBER';
                     $badgeClass = $isHead ? 'role-badge-head' : 'role-badge';
+                    
+                    // [UBAH DISINI] Ambil Keahlian, handle null agar tidak error
+                    $keahlian = $row['keahlian'] ?? '-';
                 ?>
                     <div class="mit-card">
                         <div class="mit-card-role">
@@ -93,7 +94,6 @@
 
                             <div class="mit-contact">
                                 <?php 
-                                // Cek apakah ada array 'links'
                                 if (!empty($row['links']) && is_array($row['links'])): 
                                     foreach ($row['links'] as $link):
                                         $judulLink = $link['judul_link'];
@@ -111,10 +111,12 @@
                                     endforeach;
                                 endif; 
                                 ?>
-                            </div>                        </div>
+                            </div>
+                        </div>
 
                         <div class="mit-bio">
-                            <?= htmlspecialchars($row['deskripsi']) ?>
+                            <strong style="font-size:10px; color:#999; text-transform:uppercase; letter-spacing:0.5px;">Expertise:</strong><br>
+                            <?= htmlspecialchars($keahlian) ?>
                         </div>
 
                         <div class="card-action-buttons">

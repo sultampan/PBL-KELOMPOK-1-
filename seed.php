@@ -1,42 +1,70 @@
 <?php
+// seed.php
 require_once __DIR__ . '/config/koneksi.php';
 
+// Fungsi Load Env Manual
+function loadEnv($path) {
+    if (!file_exists($path)) throw new Exception("File .env tidak ditemukan di: $path");
+    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        list($name, $value) = explode('=', $line, 2);
+        putenv(sprintf('%s=%s', trim($name), trim($value, '"\' ')));
+        $_ENV[trim($name)] = trim($value, '"\' ');
+    }
+}
+
 try {
-    // === KONFIGURASI ===
-    $username       = "admin";
-    $email          = "tes@example.com";
-    $password_login = "admin";      // Password Login Admin
-    $password_email = "tes"; // Password App Gmail/SMTP
+    loadEnv(__DIR__ . '/config/.env'); 
 
-    // Key Enkripsi (SIMPAN INI DI FILE CONFIG, JANGAN HILANG!)
-    // Ini kuncinya. Kalau hilang, password email tidak bisa dibuka lagi.
-    $kunci_rahasia  = "KunciRahasiaDapur1234567890"; 
-    $cipher_method  = "AES-256-CBC";
-
-    // === 1. PROSES DATA ===
+    // === KONFIGURASI DARI .ENV ===
+    $username       = getenv('ADMIN_USERNAME');
+    $email          = getenv('ADMIN_EMAIL');
+    $password_login = getenv('ADMIN_LOGIN_PASS');
+    $password_email = getenv('ADMIN_EMAIL_PASS'); // Password App Gmail (Plaintext)
     
-    // A. Password Login -> Pakai HASH (Satu Arah)
+    // Validasi input
+    if (!$username || !$email || !$password_login || !$password_email) {
+        throw new Exception("Data di file .env belum lengkap (Username, Email, Pass Login, atau Pass Email kosong).");
+    }
+
+    // 1. Hash Password Login (TETAP DI-HASH BIAR AMAN)
+    // Ini untuk login ke dashboard admin
     $hash_login = password_hash($password_login, PASSWORD_DEFAULT);
 
-    // B. Password Email -> Pakai ENKRIPSI (Dua Arah)
-    $iv_length = openssl_cipher_iv_length($cipher_method);
-    $iv        = openssl_random_pseudo_bytes($iv_length); // Buat pengacak
-    $encrypted = openssl_encrypt($password_email, $cipher_method, $kunci_rahasia, 0, $iv);
+    // 2. Password Email (LANGSUNG PLAINTEXT)
+    // Disimpan apa adanya agar bisa langsung dipakai PHPMailer tanpa dekripsi
+    $plain_email_pass = $password_email;
+
+    // 3. Simpan ke Database
+    $check = $pdo->prepare("SELECT id_admin FROM admin WHERE username = ?");
+    $check->execute([$username]);
     
-    // Gabungkan IV dan Hasil Enkripsi dengan pemisah "::" lalu encode ke base64
-    // Format simpan: Base64(IV::EncryptedData)
-    $token_email_aman = base64_encode($iv . "::" . $encrypted);
+    if ($check->rowCount() > 0) {
+        // UPDATE: Timpa data lama dengan data baru (termasuk pass email plaintext)
+        $sql = "UPDATE admin SET email = ?, password = ?, email_password = ? WHERE username = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$email, $hash_login, $plain_email_pass, $username]);
+        
+        echo "<h3>UPDATE SUKSES!</h3>";
+        echo "Data Admin <b>$username</b> berhasil diperbarui.<br>";
+    } else {
+        // INSERT: Buat admin baru
+        $sql = "INSERT INTO admin (username, email, password, email_password) VALUES (?, ?, ?, ?)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$username, $email, $hash_login, $plain_email_pass]);
+        
+        echo "<h3>INSERT SUKSES!</h3>";
+        echo "Admin Baru <b>$username</b> berhasil dibuat.<br>";
+    }
 
-    // === 2. INSERT KE DATABASE ===
-    $sql = "INSERT INTO admin (username, email, password, email_password) VALUES (?, ?, ?, ?)";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$username, $email, $hash_login, $token_email_aman]);
+    echo "<ul>";
+    echo "<li>Email Pengirim: $email</li>";
+    echo "<li>Password Login: (Telah di-Hash demi keamanan)</li>";
+    echo "<li>Password Email: (Disimpan sebagai teks biasa untuk SMTP)</li>";
+    echo "</ul>";
 
-    echo "Sukses!";
-    echo "Password Admin: Di-Hash (Aman, tidak bisa dibaca)";
-    echo "Password Email: Di-Enkripsi (Aman, tapi bisa dikembalikan saat kirim email)";
-
-} catch (PDOException $e) {
-    echo "Error: " . $e->getMessage();
+} catch (Exception $e) {
+    echo "<h3>Error:</h3> " . $e->getMessage();
 }
 ?>

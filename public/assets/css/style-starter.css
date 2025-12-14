@@ -20793,3 +20793,16 @@ section.footer-inner-main {
 
 /*--//Footer-9--*/
 /*# sourceMappingURL=style-freedom.css.map */
+
+/* KONDISI 1: Belum Scroll (Posisi Paling Atas) */
+/* Karena backgroundnya banner gelap, tulisan 'INFORMATICS' wajib PUTIH saat hover */
+header .navbar-brand:hover {
+    color: #ffffff !important;
+}
+
+/* KONDISI 2: Sudah Scroll (Header Putih/Gelap sesuai tema) */
+/* Class 'nav-fixed' otomatis muncul saat discroll. 
+   Di sini baru kita suruh warnanya ikut tema (Hitam di Light Mode, Putih di Dark Mode) */
+header.nav-fixed .navbar-brand:hover {
+    color: var(--heading-color) !important;
+}

@@ -46,6 +46,9 @@
                     <div class="mit-card">
                         <div class="mit-card-role">
                             <span class="role-badge">ACTIVITY</span>
+                            <span class="role-badge">
+        <?= !empty($row['kategori']) ? htmlspecialchars($row['kategori']) : 'ACTIVITY' ?>
+    </span>
                             <span><?= date('d M Y', strtotime($row['tanggal_kegiatan'])) ?></span>
                         </div>
 

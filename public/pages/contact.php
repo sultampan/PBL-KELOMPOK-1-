@@ -1,106 +1,149 @@
-    <div class="inner-banner py-5">
-        <section class="w3l-breadcrumb text-left py-sm-5 ">
-            <div class="container">
-                <div class="w3breadcrumb-gids">
-                    <div class="w3breadcrumb-left text-left">
-                        <h2 class="inner-w3-title mt-sm-5 mt-4">
-                            Contact Us </h2>
-                    </div>
-                    <div class="w3breadcrumb-right">
-                        <ul class="breadcrumbs-custom-path">
-                            <li><a href="index.html">Home</a></li>
-                            <li class="active"><span class="fas fa-angle-double-right mx-2"></span> Contact Us</li>
-                        </ul>
-                    </div>
-                </div>
+<style>
+    /* --- CSS UNTUK BANNER CONTACT (Sama seperti Facility) --- */
+    .inner-banner.contact-banner {
+        /* Menggunakan gambar yang sama dengan facility */
+        background: url('assets/images/header-facility.jpeg') no-repeat center;
+        background-size: cover;
+        position: relative;
+        z-index: 0;
+        min-height: 350px; 
+        display: grid;
+        align-items: center;
+    }
 
+    .inner-banner.contact-banner:before {
+        content: "";
+        background: rgba(0, 0, 0, 0.6); /* Overlay gelap transparan */
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: -1;
+    }
+</style>
+
+<div class="inner-banner contact-banner">
+    <section class="w3l-breadcrumb text-center">
+        <div class="container">
+            <div class="w3breadcrumb-gids">
+                <div class="w3breadcrumb-left text-center">
+                    <h2 class="inner-w3-title">
+                        Contact Us
+                    </h2>
+                </div>
+                <div class="w3breadcrumb-right">
+                    <ul class="breadcrumbs-custom-path">
+                        <li><a href="index.php?page=home">Home</a></li>
+                        <li class="active"><span class="fas fa-angle-double-right mx-2"></span> Contact</li>
+                    </ul>
+                </div>
             </div>
-        </section>
+        </div>
+    </section>
+</div>
+<section class="w3l-contact-main" id="contact">
+    <div class="contact-infhny py-5 pb-0">
+        <div class="container py-lg-3 pb-0">
+            <div class="top-map">
+                <div class="map-content-9">
+                    
+                    <form id="contactForm" action="save_contact.php" method="post">
+                        <div class="form-top1">
+                            <div class="w3header-section text-center">
+                                <h6 class="title-subw3hny">Get In Touch </h6>
+                                <h3 class="title-w3l mb-0">Fill the form and send your query</h3>
+                                <p class="mb-lg-5 mb-4 text-center">We have made it easy for clients to reach us and get their solutions weaved</p>
+                            </div>
+
+                            <div id="formMessage" style="display:none; margin-bottom: 20px; text-align: center; padding: 15px; border-radius: 4px;"></div>
+
+                            <div class="form-top">
+                                <div class="form-top-left">
+                                    <input type="text" name="nama_pengirim" id="w3lName" placeholder="Name" required="">
+                                    <input type="email" name="email_pengirim" id="w3lSender" placeholder="Email*" required="">
+                                    <input type="text" name="subjek" id="w3lSubject" placeholder="Subject" required="">
+                                </div>
+                                <div class="form-top-righ">
+                                    <textarea name="pesan" id="w3lMessage" placeholder="Message*" required=""></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="text-lg-right text-center">
+                                <button type="submit" id="btnSubmit" class="btn btn-style btn-primary">
+                                    <span id="btnText">Submit Now</span> 
+                                    <i class="fas fa-paper-plane ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
     </div>
-    <!--//inner-page-->
-    <!-- contact-form -->
-    <section class="w3l-contact-main" id="contact">
-        <div class="contact-infhny py-5 pb-0">
-            <div class="container py-lg-3 pb-0">
-                <div class="top-map">
-                    <div class="map-content-9">
-                        <form action="https://sendmail.w3layouts.com/submitForm" method="post">
-                            <div class="form-top1">
-                                <div class="w3header-section text-center">
-                                    <h6 class="title-subw3hny">Get In Touch </h6>
-                                    <h3 class="title-w3l mb-0">
-                                        Fill the form and send your query</h3>
-                                    <p class="mb-lg-5 mb-4 text-center">We have made it easy for clients to reach us and
-                                        get
-                                        their solutions
-                                        weaved</p>
-                                </div>
+</section>
 
-                                <div class="form-top">
-                                    <div class="form-top-left">
-                                        <input type="text" name="w3lName" id="w3lName" placeholder="Name" required="">
-                                        <input type="number" name="w3lPhone" placeholder="Your phone number" required="">
-                                        <input type="email" name="w3lSender" id="w3lSender" placeholder="Email*" required="">
-                                        <input type="text" name="w3lSubject" id="w3lName" placeholder="Subject" required="">
-                                    </div>
-                                    <div class="form-top-righ">
-                                        <textarea name="w3lMessage" id="w3lMessage" placeholder="Message*" required=""></textarea>
-                                    </div>
-                                </div>
-                                <div class="text-lg-right text-center">
-                                    <button type="submit" class="btn btn-style btn-primary">Submit Now <i class="fas fa-paper-plane ms-2"></i></button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- //contact-form -->
-    <!-- contact-form -->
-    <section class="w3l-contact-main py-5" id="contact2">
-        <div class="container py-md-4 py-3">
-            <div class="w3l-contact-info top-map">
-                <div class="row contact-infos justify-content-center">
-                    <div class="col-lg-4 col-md-6">
-                        <div class="single-contact-infos">
-                            <div class="icon-box"> <span class="fas fa-map-marked-alt"></span></div>
-                            <div class="text-box">
-                                <h3 class="mb-2">Our Location</h3>
-                                <p>Factorship,808 Services, #21st street, NY - 62617.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 mt-md-0 mt-4">
-                        <div class="single-contact-infos">
-                            <div class="icon-box"> <span class="fas fa-phone-alt"></span></div>
-                            <div class="text-box">
-                                <h3 class="mb-2">Give us a call</h3>
-                                <p><a href="tel:+12 404-11-22-89">+12 404-11-22-89</a></p>
-                                <p><a href="tel:+12 404-11-22-99">+12 404-11-22-99</a></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 mt-lg-0 mt-4">
-                        <div class="single-contact-infos">
-                            <div class="icon-box"> <span class="fas fa-envelope-open-text"></span></div>
-                            <div class="text-box">
-                                <h3 class="mb-2">Help Desk</h3>
-                                <p> <a href="mailto:company@gmail.com">company@gmail.com</a></p>
-                                <p> <a href="mailto:support@gmail.com">support@gmail.com</a></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contactForm');
+    const msgBox = document.getElementById('formMessage');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const btnText = document.getElementById('btnText');
 
-    <!-- contact map -->
-    <section class="w3l-contact-main" id="contact">
-        <div class="map">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d387193.3059445135!2d-74.25986613799748!3d40.69714941774136!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m3!3e3!4m0!4m0!5e0!3m2!1sen!2sin!4v1570181661801!5m2!1sen!2sin" allowfullscreen=""></iframe>
-        </div>
-    </section>
-    <!-- //contact map -->
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault(); // 1. Mencegah form reload halaman
+
+        // 2. Ubah tombol jadi Loading
+        const originalText = btnText.innerText;
+        btnText.innerText = 'Sending...';
+        btnSubmit.disabled = true;
+        msgBox.style.display = 'none'; // Sembunyikan pesan lama
+
+        // 3. Ambil data form
+        const formData = new FormData(contactForm);
+
+        // 4. Kirim via Fetch (AJAX)
+        fetch('save_contact.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json()) // Ubah respon jadi JSON
+        .then(data => {
+            // 5. Tampilkan Pesan
+            msgBox.style.display = 'block';
+            
+            if (data.status === 'success') {
+                // Style Sukses
+                msgBox.style.backgroundColor = '#d4edda';
+                msgBox.style.color = '#155724';
+                msgBox.style.border = '1px solid #c3e6cb';
+                msgBox.innerHTML = `<strong>Success!</strong> ${data.message}`;
+                
+                // Reset form jika sukses
+                contactForm.reset();
+            } else {
+                // Style Error
+                msgBox.style.backgroundColor = '#f8d7da';
+                msgBox.style.color = '#721c24';
+                msgBox.style.border = '1px solid #f5c6cb';
+                msgBox.innerHTML = `<strong>Error!</strong> ${data.message}`;
+            }
+        })
+        .catch(error => {
+            // Error Jaringan / Server 500
+            msgBox.style.display = 'block';
+            msgBox.style.backgroundColor = '#fff3cd';
+            msgBox.style.color = '#856404';
+            msgBox.style.border = '1px solid #ffeeba';
+            msgBox.innerHTML = `<strong>Connection Error!</strong> Gagal menghubungi server.`;
+            console.error('Error:', error);
+        })
+        .finally(() => {
+            // 6. Kembalikan tombol seperti semula
+            btnText.innerText = originalText;
+            btnSubmit.disabled = false;
+        });
+    });
+});
+</script>
