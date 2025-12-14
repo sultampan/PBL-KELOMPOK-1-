@@ -9,24 +9,57 @@ if (file_exists($koneksiPath)) {
     require_once $koneksiPath;
 }
 
+// --- KONFIGURASI PAGINASI ---
+$limit = 9; // Batas item per halaman (9 fasilitas)
+$page = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $limit;
+
 // --- LOGIKA PENCARIAN (PHP) ---
 $searchKeyword = '';
 if (isset($_GET['search'])) {
     $searchKeyword = trim($_GET['search']);
 }
 
-// --- FUNGSI QUERY DATA ---
-function getFasilitasData($pdo, $keyword) {
+// --- FUNGSI QUERY DATA (DENGAN LIMIT & OFFSET) ---
+function getFasilitasData($pdo, $keyword, $limit, $offset) {
     try {
+        $sql = "SELECT * FROM fasilitas";
+        $params = [];
+
         if (!empty($keyword)) {
-            $stmt = $pdo->prepare("SELECT * FROM fasilitas WHERE judul LIKE :keyword OR deskripsi LIKE :keyword ORDER BY id_fasilitas DESC");
-            $stmt->execute(['keyword' => "%$keyword%"]);
-        } else {
-            $stmt = $pdo->prepare("SELECT * FROM fasilitas ORDER BY id_fasilitas DESC");
-            $stmt->execute();
+            $sql .= " WHERE judul LIKE :keyword OR deskripsi LIKE :keyword";
+            $params['keyword'] = "%$keyword%";
         }
+
+        $sql .= " ORDER BY id_fasilitas DESC LIMIT :limit OFFSET :offset";
+        
+        $stmt = $pdo->prepare($sql);
+        
+        if (!empty($keyword)) {
+            $stmt->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) { return []; }
+}
+
+// --- FUNGSI HITUNG TOTAL DATA (UNTUK PAGINASI) ---
+function countTotalFasilitas($pdo, $keyword) {
+    try {
+        $sql = "SELECT COUNT(*) FROM fasilitas";
+        $params = [];
+        if (!empty($keyword)) {
+            $sql .= " WHERE judul LIKE :keyword OR deskripsi LIKE :keyword";
+            $params['keyword'] = "%$keyword%";
+        }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn();
+    } catch (Exception $e) { return 0; }
 }
 
 // Definisi Path
@@ -37,13 +70,17 @@ $serverThumbPath = $serverBase . '/uploads/thumb/fasilitas-thumb/';
 $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 
 // ==========================================
-// 2. HANDLER AJAX (LIVE SEARCH)
+// 2. HANDLER AJAX (LIVE SEARCH + PAGINASI)
 // ==========================================
 if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     while (ob_get_level()) { ob_end_clean(); }
     
-    $fasilitasList = getFasilitasData($pdo, $searchKeyword);
+    // Ambil data terbaru sesuai halaman & search
+    $fasilitasList = getFasilitasData($pdo, $searchKeyword, $limit, $offset);
+    $totalData = countTotalFasilitas($pdo, $searchKeyword);
+    $totalPages = ceil($totalData / $limit);
     
+    // --- OUTPUT GRID GAMBAR ---
     if (!empty($fasilitasList)) {
         echo '<ul class="gallery_agile">';
         foreach ($fasilitasList as $row) {
@@ -94,20 +131,62 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 <h4 class="text-muted">Fasilitas tidak ditemukan.</h4>
               </div>';
     }
+
+    // --- OUTPUT TOMBOL PAGINASI (AJAX) ---
+    if ($totalPages > 1) {
+        echo '<div class="pagination-wrapper">';
+        
+        // Prev
+        if ($page > 1) {
+            echo '<button class="page-btn" onclick="goToPage('.($page - 1).')">&laquo; Prev</button>';
+        } else {
+            echo '<button class="page-btn disabled" disabled>&laquo; Prev</button>';
+        }
+
+        // Numbers
+        for ($i = 1; $i <= $totalPages; $i++) {
+            $activeClass = ($i == $page) ? 'active' : '';
+            echo '<button class="page-btn '.$activeClass.'" onclick="goToPage('.$i.')">'.$i.'</button>';
+        }
+
+        // Next
+        if ($page < $totalPages) {
+            echo '<button class="page-btn" onclick="goToPage('.($page + 1).')">Next &raquo;</button>';
+        } else {
+            echo '<button class="page-btn disabled" disabled>Next &raquo;</button>';
+        }
+        echo '</div>';
+    }
+
     exit;
 }
 
 // --- LOAD DATA AWAL ---
-$fasilitasList = getFasilitasData($pdo, $searchKeyword);
+$fasilitasList = getFasilitasData($pdo, $searchKeyword, $limit, $offset);
+$totalData = countTotalFasilitas($pdo, $searchKeyword);
+$totalPages = ceil($totalData / $limit);
 ?>
 
 <style>
-    /* --- CSS HEADER --- */
+    /* --- [FIX NAVBAR KETIMPA] --- */
+    /* Memaksa Header/Navbar memiliki Z-Index paling tinggi */
+    header, .w3l-header, .w3l-header-fixed, .main-header, .navbar {
+        z-index: 9999 !important;
+        position: relative; /* Pastikan position diset agar z-index jalan */
+    }
+
+    /* Memastikan konten fasilitas ada di bawah header */
+    .inner-banner, .w3l-gallery, .search-wrapper-center {
+        z-index: 1;
+        position: relative;
+    }
+
+    /* --- CSS HEADER BANNER --- */
     .inner-banner.facility-banner {
         background: url('assets/images/header-facility.jpeg') no-repeat center;
         background-size: cover;
         position: relative;
-        z-index: 0;
+        /* z-index: 0; Hapus atau biarkan default agar tidak konflik */
         min-height: 350px; 
         display: grid;
         align-items: center;
@@ -123,17 +202,17 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
     /* --- LAYOUT POSISI SEARCH BAR (TENGAH & BESAR) --- */
     .search-wrapper-center {
         display: flex;
-        justify-content: center; /* Posisi di tengah */
+        justify-content: center;
         width: 100%;
-        margin-top: 15px;        /* Jarak dari judul atas */
-        margin-bottom: 50px;     /* Jarak ke hasil pencarian di bawah */
+        margin-top: 15px;
+        margin-bottom: 40px;
         padding: 0 15px;
     }
 
     /* CSS KOTAK PENCARIAN */
     .search-facility-box {
         width: 100%;
-        max-width: 600px; /* UKURAN LEBIH BESAR */
+        max-width: 600px; 
         position: relative;
     }
 
@@ -142,61 +221,37 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
         width: 100%;
         border: 1px solid #ccc;
         border-radius: 50px;
-        /* Padding diperbesar agar kotak terlihat tinggi dan luas */
         padding: 15px 60px 15px 30px; 
         background-color: #fff;
         color: #333;
         font-family: sans-serif;
         font-weight: 400;
-        font-size: 18px; /* Font input diperbesar */
+        font-size: 18px; 
         outline: none;
         transition: all 0.3s ease;
         box-shadow: 0 4px 8px rgba(0,0,0,0.05); 
     }
-
-    .search-facility-box input::placeholder {
-        color: #999;
-        font-weight: 400;
-        opacity: 1;
-    }
-
     .search-facility-box input:focus {
         border-color: var(--primary-color, #007bff);
         box-shadow: 0 6px 15px rgba(0,0,0,0.1);
     }
+    .search-facility-box input::placeholder { color: #aaa; }
 
-    /* Ikon Kaca Pembesar */
+    /* Ikon Search & Loading */
     .search-icon-static {
-        position: absolute;
-        right: 25px;              
-        top: 50%;
-        transform: translateY(-50%);
-        color: #aaa;
-        font-size: 22px;          
-        pointer-events: none;
-        transition: opacity 0.2s;
+        position: absolute; right: 25px; top: 50%;
+        transform: translateY(-50%); color: #aaa;
+        font-size: 22px; pointer-events: none; transition: opacity 0.2s;
     }
-
-    /* Spinner Loading */
     .search-loading {
-        position: absolute;
-        right: 25px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #aaa;
-        font-size: 22px;
-        display: none;
+        position: absolute; right: 25px; top: 50%;
+        transform: translateY(-50%); color: #aaa;
+        font-size: 22px; display: none;
     }
 
-    /* Responsive untuk Mobile */
+    /* Responsive */
     @media (max-width: 768px) {
-        .search-facility-box {
-            max-width: 100%; 
-        }
-        .search-facility-box input {
-            padding: 12px 50px 12px 20px;
-            font-size: 16px; 
-        }
+        .search-facility-box input { padding: 12px 50px 12px 20px; font-size: 16px; }
     }
 
     /* --- CSS GRID & CARD --- */
@@ -228,7 +283,6 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
         background-color: var(--bg-grey); 
         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
-    .facility-img-wrap a { display: block; width: 100%; height: 100%; }
     .facility-img-wrap img {
         width: 100% !important; height: 100% !important; 
         object-fit: cover; object-position: center; 
@@ -259,7 +313,7 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
         overflow: hidden; word-break: break-word; 
     }
 
-    /* --- CSS TOMBOL CLOSE (Sangat Penting agar Script Close berfungsi) --- */
+    /* --- CSS TOMBOL CLOSE (Agar pasti muncul di atas segalanya) --- */
     #Choco_close, .chocolat-close {
         position: fixed !important; top: 25px !important; right: 25px !important;
         z-index: 2147483647 !important; width: 44px !important; height: 44px !important;
@@ -271,6 +325,41 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
     }
     #Choco_close:hover, .chocolat-close:hover {
         background-color: #dc3545 !important; transform: scale(1.1) !important; border-color: #fff !important;
+    }
+
+    /* --- CSS PAGINASI BARU --- */
+    .pagination-wrapper {
+        margin-top: 40px;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+    .page-btn {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        background-color: #fff;
+        color: #333;
+        cursor: pointer;
+        border-radius: 5px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .page-btn:hover:not(.disabled) {
+        background-color: var(--primary-color, #007bff);
+        color: #fff;
+        border-color: var(--primary-color, #007bff);
+    }
+    .page-btn.active {
+        background-color: var(--primary-color, #007bff);
+        color: #fff;
+        border-color: var(--primary-color, #007bff);
+        cursor: default;
+    }
+    .page-btn.disabled {
+        color: #ccc;
+        cursor: not-allowed;
+        background-color: #f9f9f9;
     }
 </style>
 
@@ -304,10 +393,7 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
                     <input type="text" id="searchInput" 
                            placeholder="Search..." 
                            value="<?= htmlspecialchars($searchKeyword) ?>"
-                           oninput="performLiveSearch(this.value)">
-                    
-                    <i id="staticSearchIcon" class="fas fa-search search-icon-static"></i>
-
+                           oninput="performLiveSearch(this.value, 1)"> <i id="staticSearchIcon" class="fas fa-search search-icon-static"></i>
                     <div id="searchSpinner" class="search-loading">
                         <i class="fas fa-spinner fa-spin"></i>
                     </div>
@@ -323,12 +409,10 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
                             $gambar = $row['gambar'];
                             $hasImage = false;
                             $srcThumb = ''; $srcFull  = '';
-
                             if (!empty($gambar)) {
                                 $ext = pathinfo($gambar, PATHINFO_EXTENSION);
                                 $filename = pathinfo($gambar, PATHINFO_FILENAME);
                                 $thumbName = $filename . '-thumb.' . $ext;
-                                
                                 if (file_exists($serverThumbPath . $thumbName)) {
                                     $srcThumb = $webThumbPath . $thumbName;
                                     $hasImage = true;
@@ -340,7 +424,6 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
                                 else $srcFull = $srcThumb;
                             }
                         ?>
-
                         <li class="facility-card">
                             <div class="facility-img-wrap">
                                 <?php if ($hasImage): ?>
@@ -354,7 +437,6 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
                                     </div>
                                 <?php endif; ?>
                             </div>
-
                             <div class="facility-text">
                                 <div class="facility-title"><?= htmlspecialchars($row['judul']) ?></div>
                                 <div class="facility-desc"><?= nl2br(htmlspecialchars($row['deskripsi'])) ?></div>
@@ -365,6 +447,26 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
             <?php else: ?>
                 <div class="text-center py-5">
                     <h4 class="text-muted">Belum ada data fasilitas.</h4>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($totalPages > 1): ?>
+                <div class="pagination-wrapper">
+                    <?php if ($page > 1): ?>
+                        <button class="page-btn" onclick="goToPage(<?= $page - 1 ?>)">&laquo; Prev</button>
+                    <?php else: ?>
+                        <button class="page-btn disabled" disabled>&laquo; Prev</button>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <button class="page-btn <?= ($i == $page) ? 'active' : '' ?>" onclick="goToPage(<?= $i ?>)"><?= $i ?></button>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $totalPages): ?>
+                        <button class="page-btn" onclick="goToPage(<?= $page + 1 ?>)">Next &raquo;</button>
+                    <?php else: ?>
+                        <button class="page-btn disabled" disabled>Next &raquo;</button>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -379,9 +481,8 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
                 imageSize: 'contain',
                 loop: true,
                 overlayOpacity: 0.9,
+                overlayClose: true, 
                 closeImg: '',
-                leftImg: '',
-                rightImg: ''
             });
         }
     }
@@ -389,14 +490,12 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
     document.addEventListener("DOMContentLoaded", function () {
         initChocolat();
 
-        // 👉 CLICK OVERLAY = CLOSE POPUP
+        // LOGIKA KLIK OVERLAY UNTUK TUTUP POPUP
         $('body')
             .off('click.chocoOverlay')
             .on('click.chocoOverlay', '#Choco_overlay, .chocolat-overlay', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-
-                // Trigger tombol close Chocolat
                 if ($('#Choco_close').length) {
                     $('#Choco_close').trigger('click');
                 } else if ($('.chocolat-close').length) {
@@ -406,7 +505,20 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
     });
 
     let searchTimeout;
-    function performLiveSearch(keyword) {
+    
+    // Fungsi pindah halaman
+    function goToPage(pageNum) {
+        const keyword = document.getElementById('searchInput').value;
+        performLiveSearch(keyword, pageNum);
+        
+        // Scroll halus ke atas grid
+        $('html, body').animate({
+            scrollTop: $(".facility-section-bg").offset().top
+        }, 500);
+    }
+
+    // Fungsi Pencarian Utama + Paginasi AJAX
+    function performLiveSearch(keyword, pageNum = 1) {
         const spinner = document.getElementById('searchSpinner');
         const staticIcon = document.getElementById('staticSearchIcon');
         const container = document.getElementById('facility-results-container');
@@ -417,11 +529,11 @@ $fasilitasList = getFasilitasData($pdo, $searchKeyword);
 
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            fetch(`index.php?page=facility&ajax=1&search=${encodeURIComponent(keyword)}`)
+            fetch(`index.php?page=facility&ajax=1&search=${encodeURIComponent(keyword)}&halaman=${pageNum}`)
                 .then(res => res.text())
                 .then(html => {
                     container.innerHTML = html;
-                    initChocolat(); // re-init setelah AJAX
+                    initChocolat(); 
 
                     spinner.style.display = 'none';
                     staticIcon.style.opacity = '1';
