@@ -1,16 +1,30 @@
 /* admin/assets/css/fasilitas.css */
 
-/* --- 1. TOOLBAR HEADER (JUDUL & SEARCH) --- */
+/* --- 1. WRAPPER UTAMA (KOTAK PUTIH BESAR) --- */
+/* Kotak pembungkus yang menyatukan Header dan Grid agar terlihat satu kesatuan */
+.fasilitas-wrapper {
+    background: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    margin-bottom: 25px;
+    overflow: hidden; /* Agar sudut tumpul (radius) tidak tertutup anak elemen */
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- 2. TOOLBAR HEADER (JUDUL & SEARCH) --- */
+/* Style header di-reset agar menempel di dalam wrapper */
 .toolbar-header {
     display: flex;
     justify-content: space-between; /* Judul Kiri, Search Kanan */
     align-items: center;
-    background: #fff;
-    border: 1px solid #eaeaea;
-    border-radius: 12px;
+    background: transparent; /* Transparan, mengikuti warna wrapper */
+    border-bottom: 1px solid #eaeaea; /* Hanya garis pemisah bawah */
     padding: 20px 25px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03); /* Bayangan halus */
+    margin: 0; /* Hilangkan margin agar nempel */
+    box-shadow: none; /* Hilangkan bayangan sendiri */
+    border-radius: 0; /* Hilangkan radius sendiri */
 }
 
 /* Judul (Daftar Fasilitas) */
@@ -64,43 +78,27 @@
     align-items: center;
     gap: 8px;
     transition: background-color 0.2s;
-    height: 42px; /* Samakan tinggi dengan input (karena padding input + border) */
+    height: 42px; /* Samakan tinggi dengan input */
 }
 
 .btn-cari:hover {
     background-color: #012b49;
 }
 
-/* --- 2. GRID LAYOUT (3 KOLOM) --- */
+/* --- 3. CONTAINER GRID (ISI DI DALAM WRAPPER) --- */
+.fasilitas-grid-container {
+    padding: 25px; /* Memberi jarak dalam agar kartu tidak nempel pinggir */
+    background-color: #fff;
+}
+
+/* --- 4. GRID LAYOUT (3 KOLOM) --- */
 .fasilitas-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr); 
     gap: 30px; 
 }
 
-/* Responsif Grid */
-@media (max-width: 992px) { 
-    .fasilitas-grid { grid-template-columns: repeat(2, 1fr); } 
-}
-@media (max-width: 600px) { 
-    .fasilitas-grid { grid-template-columns: 1fr; } 
-    
-    /* Responsif Toolbar di HP */
-    .toolbar-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-        text-align: center;
-    }
-    .search-input {
-        width: 100%; /* Input full width */
-    }
-    .btn-cari {
-        justify-content: center;
-    }
-}
-
-/* --- 3. KARTU FASILITAS --- */
+/* --- 5. KARTU FASILITAS --- */
 .fasilitas-card {
     background: #fff;
     border: 1px solid #eaeaea; 
@@ -205,7 +203,7 @@
     background-color: #c9302c; 
 }
 
-/* --- 4. PREVIEW GAMBAR DI FORM (KOTAK PUTUS-PUTUS) --- */
+/* --- 6. PREVIEW GAMBAR DI FORM --- */
 .form-preview-box {
     margin-top: 15px;
     width: 100%;
@@ -222,4 +220,27 @@
     max-height: 100%;
     object-fit: contain; 
     display: block;
+}
+
+/* --- 7. RESPONSIVE --- */
+@media (max-width: 992px) { 
+    .fasilitas-grid { grid-template-columns: repeat(2, 1fr); } 
+}
+
+@media (max-width: 600px) { 
+    .fasilitas-grid { grid-template-columns: 1fr; } 
+    
+    .toolbar-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+        text-align: center;
+        padding: 20px;
+    }
+    .search-input {
+        width: 100%; 
+    }
+    .btn-cari {
+        justify-content: center;
+    }
 }

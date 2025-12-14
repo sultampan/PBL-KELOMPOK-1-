@@ -20806,3 +20806,154 @@ header .navbar-brand:hover {
 header.nav-fixed .navbar-brand:hover {
     color: var(--heading-color) !important;
 }
+
+/* ======================================================= */
+/* TAMBAHAN: FACILITY GRID & PAGINATION GLOBAL (STRICT)    */
+/* ======================================================= */
+
+/* 1. GRID SYSTEM YANG KAKU (ANTI-GESER) */
+.facility-section-bg, .facility-section-home { 
+    background-color: var(--bg-color); 
+    transition: background-color 0.3s ease;
+}
+
+ul.gallery_agile {
+    display: grid; 
+    grid-template-columns: repeat(3, minmax(0, 1fr)); 
+    gap: 30px; 
+    padding: 0 !important; margin: 0 !important;
+    list-style: none !important; width: 100%; 
+    align-items: stretch; /* MEMAKSA TINGGI KARTU SAMA */
+}
+
+.facility-card {
+    width: 100%; 
+    margin-bottom: 30px; 
+    box-sizing: border-box; 
+    overflow: hidden;
+    /* Flexbox Column untuk menyusun gambar dan teks */
+    display: flex; 
+    flex-direction: column; 
+    height: 100%; /* Memenuhi tinggi grid */
+    
+    /* Force alignment ke kiri */
+    text-align: left !important; 
+    align-items: flex-start !important; 
+    justify-content: flex-start !important;
+}
+
+/* 2. WRAPPER GAMBAR (TINGGI DIKUNCI) */
+.facility-img-wrap {
+    width: 100%; 
+    height: 250px !important; /* TINGGI FIXED */
+    border-radius: var(--border-radius); 
+    overflow: hidden; 
+    margin-bottom: 20px; 
+    position: relative;
+    background-color: var(--bg-grey); 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    flex-shrink: 0; /* Gambar tidak boleh mengecil */
+}
+
+.facility-img-wrap img {
+    width: 100% !important; height: 100% !important; 
+    object-fit: cover; object-position: center; display: block;
+    transition: transform 0.5s ease;
+}
+.facility-img-wrap:hover img { transform: scale(1.05); }
+
+/* 3. PLACEHOLDER NO IMAGE */
+.no-image-box {
+    width: 100%; height: 100%; 
+    background-color: var(--bg-lightgrey);
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    color: var(--font-color); text-align: center !important;
+    border: 1px solid #dee2e6;
+}
+.no-image-box i { font-size: 42px; margin-bottom: 8px; color: #ced4da; }
+.no-image-box span { font-size: 16px; font-weight: 600; font-family: sans-serif; color: #adb5bd; }
+
+/* 4. WRAPPER TEKS & TYPOGRAPHY */
+.facility-text { 
+    padding: 0 5px; 
+    width: 100%; 
+    text-align: left !important; /* Paksa Rata Kiri */
+    flex-grow: 1;
+}
+
+.facility-title {
+    font-size: 22px; font-weight: 800; text-transform: uppercase;
+    color: var(--heading-color); margin-bottom: 10px; line-height: 1.4;
+    display: -webkit-box; -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical; overflow: hidden;
+    min-height: 60px; /* Tinggi minimal judul agar sejajar */
+    text-align: left !important;
+}
+
+.facility-desc {
+    font-size: 16px; color: var(--font-color); line-height: 1.6;
+    display: -webkit-box; -webkit-line-clamp: 3; 
+    -webkit-box-orient: vertical; overflow: hidden;
+    text-align: left !important;
+}
+
+/* 5. STYLE PAGINASI (ROUNDED BLUE - SESUAI GAMBAR) */
+.pagination-wrapper {
+    margin-top: 50px;
+    display: flex; justify-content: center;
+    gap: 8px; flex-wrap: wrap;
+}
+
+.page-btn {
+    min-width: 42px; height: 42px; padding: 0 12px;
+    display: flex; align-items: center; justify-content: center;
+    background-color: #fff; 
+    border: 1px solid #e1e1e1; 
+    border-radius: 8px; /* Sudut melengkung */
+    
+    color: #333; font-weight: 600; font-size: 15px; font-family: sans-serif;
+    cursor: pointer; transition: all 0.2s ease-in-out;
+}
+
+/* Hover State */
+.page-btn:hover:not(.disabled):not(.active) {
+    background-color: #f1f1f1; border-color: #ccc;
+}
+
+/* Active State (Biru Tua) */
+.page-btn.active {
+    background-color: #ff9800; /* Warna Biru Tua */
+    color: #ffffff;            
+    border-color: #ff9800;
+    cursor: default;
+}
+
+/* Disabled State */
+.page-btn.disabled {
+    background-color: #fafafa; color: #e0e0e0; 
+    border-color: #f0f0f0; cursor: not-allowed;
+}
+
+.page-btn i { font-size: 12px; }
+
+/* 6. RESPONSIVE */
+@media (max-width: 992px) { 
+    ul.gallery_agile { grid-template-columns: repeat(2, minmax(0, 1fr)); } 
+}
+@media (max-width: 768px) { 
+    ul.gallery_agile { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .facility-img-wrap { height: 250px !important; }
+    .page-btn { min-width: 35px; height: 35px; font-size: 14px; border-radius: 6px; }
+}
+
+/* 7. SEARCH BOX GLOBAL */
+.search-wrapper-center { display: flex; justify-content: center; width: 100%; margin-top: 15px; margin-bottom: 40px; padding: 0 15px; }
+.search-facility-box { width: 100%; max-width: 600px; position: relative; }
+.search-facility-box input {
+    width: 100%; border: 1px solid #ccc; border-radius: 50px; padding: 15px 60px 15px 30px;
+    background-color: #fff; color: #333; font-size: 18px; outline: none; transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05); 
+}
+.search-facility-box input:focus { border-color: var(--primary-color, #007bff); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+.search-icon-static { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 22px; pointer-events: none; }
+.search-loading { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 22px; display: none; }
