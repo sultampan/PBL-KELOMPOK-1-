@@ -115,34 +115,51 @@ function getActivityById($pdo, $id) {
     return $activity; // ← RETURN DI AKHIR
 }
 
-function insertActivity($pdo, $judul, $deskripsi, $tanggal, $gambar, $id_admin) {
+function insertActivity($pdo, $judul, $deskripsi, $tanggal, $kategori, $gambar, $id_admin) {
     checkPdo($pdo);
     $stmt = $pdo->prepare("
-        INSERT INTO activity (judul, deskripsi, tanggal_kegiatan, gambar, created_by)
-        VALUES (:judul, :deskripsi, :tanggal, :gambar, :created_by)
+        INSERT INTO activity (judul, deskripsi, tanggal_kegiatan, kategori, gambar, created_by)
+        VALUES (:judul, :deskripsi, :tanggal, :kategori, :gambar, :created_by)
     ");
     $stmt->execute([
         ':judul' => $judul,
         ':deskripsi' => $deskripsi,
         ':tanggal' => $tanggal,
+        ':kategori' => $kategori, // <-- Kolom Kategori
         ':gambar' => $gambar,
         ':created_by' => $id_admin
     ]);
+    // Tidak perlu return di sini, kita pakai $pdo->lastInsertId() di save.php
 }
 
-function updateActivity($pdo, $id, $judul, $deskripsi, $tanggal, $gambar) {
+// UPDATE FUNGSI UPDATE (Tambah parameter Kategori)
+function updateActivity($pdo, $id, $judul, $deskripsi, $tanggal, $kategori, $gambar) {
     checkPdo($pdo);
-    $stmt = $pdo->prepare("
-        UPDATE activity
-        SET judul = :judul, deskripsi = :deskripsi, tanggal_kegiatan = :tanggal, gambar = :gambar
-        WHERE id_activity = :id
-    ");
+    
+    // [PERBAIKAN]
+    // Hapus logika if/else. Kita SELALU update kolom gambar.
+    // Karena save.php sudah mengatur isinya:
+    // 1. File Baru -> $gambar = 'nama_baru.jpg'
+    // 2. Tidak Berubah -> $gambar = 'nama_lama.jpg'
+    // 3. Dihapus -> $gambar = NULL
+    
+    $sql = "UPDATE activity 
+            SET judul = :judul, 
+                deskripsi = :deskripsi, 
+                tanggal_kegiatan = :tanggal, 
+                kategori = :kategori, 
+                gambar = :gambar 
+            WHERE id_activity = :id";
+            
+    $stmt = $pdo->prepare($sql);
+    
     $stmt->execute([
-        ':judul' => $judul,
+        ':judul'     => $judul,
         ':deskripsi' => $deskripsi,
-        ':tanggal' => $tanggal,
-        ':gambar' => $gambar,
-        ':id' => $id
+        ':tanggal'   => $tanggal,
+        ':kategori'  => $kategori,
+        ':gambar'    => $gambar, // Ini bisa string atau NULL, PDO akan menanganinya
+        ':id'        => $id
     ]);
 }
 

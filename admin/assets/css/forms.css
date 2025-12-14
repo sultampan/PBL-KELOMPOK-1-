@@ -316,13 +316,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
+    
+    /* Hapus garis bawah */
+    border-bottom: none !important; 
+    
+    /* Karena garis hilang, padding bawah bisa dinolkan */
+    padding-bottom: 0 !important; 
+    
+    /* Atur jarak secukupnya ke input pertama */
+    margin-bottom: 15px !important; 
 }
 
+.card-header-flex h2, 
 .card-header-flex h3 {
-    margin: 0;
+    margin: 0 !important;
     font-size: 20px;
     color: #2c3e50;
     font-weight: 700;

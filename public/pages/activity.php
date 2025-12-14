@@ -280,22 +280,21 @@
             $grouped = [
                 'Research' => [],
                 'Projects' => [],
-                'Activity' => [],
-                'Other'    => [] // Jaga-jaga jika ada kategori lain
+                'Activity' => []
+                // Hapus 'Other' jika tidak ada di ENUM
             ];
 
+            // B. Masukkan Data ke Group
             if (count($allActivities) > 0) {
                 foreach ($allActivities as $row) {
                     $cat = $row['kategori'];
-                    if (empty($cat)) $cat = 'Other'; // Handle jika null
-                    
-                    // Masukkan ke grup yang sesuai
+
+                    // Cek apakah kategori dari database ada di daftar $grouped kita
                     if (array_key_exists($cat, $grouped)) {
                         $grouped[$cat][] = $row;
-                    } else {
-                        // Jika kategori baru (misal user nambah enum baru), buat grup baru
-                        $grouped[$cat][] = $row;
-                    }
+                    } 
+                    // Jika data punya kategori yang tidak dikenali (bukan salah satu dari 3 di atas),
+                    // data tersebut akan otomatis terabaikan/tidak tampil agar tidak merusak layout.
                 }
             }
 

@@ -31,13 +31,24 @@
     margin-bottom: 10px !important;
     padding-bottom: 10px !important;
     display: flex;
-    justify-content: space-between;
+    
+    /* [UBAH BAGIAN INI] */
+    /* Hapus space-between, ganti jadi flex-start agar mepet kiri */
+    justify-content: flex-start !important; 
+    
+    /* Tambahkan gap agar tulisan Activity dan Projects tidak dempet banget */
+    gap: 8px; 
+
     align-items: center;
     width: 100%;
     font-size: 11px;
     text-transform: uppercase;
     color: #666;
     font-weight: 600;
+}
+
+.mit-card-role span:last-child {
+    margin-left: auto;
 }
 
 .role-badge {

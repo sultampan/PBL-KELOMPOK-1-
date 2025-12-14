@@ -13,7 +13,7 @@ $serverThumbDir = $projectRoot . 'public/uploads/thumb/activity-thumb/';
 $webUploadDir = $basePath . '/public/uploads/activity/'; 
 $webThumbDir = $basePath . '/public/uploads/thumb/activity-thumb/';
 
-$limit = 10; $page = (int)($_GET['p'] ?? 1); $offset = ($page - 1) * $limit;
+$limit = 6; $page = (int)($_GET['p'] ?? 1); $offset = ($page - 1) * $limit;
 $searchKeyword = $_GET['keyword'] ?? null;
 $currentSortBy = $_GET['sort'] ?? 'id_activity'; $currentSortOrder = $_GET['order'] ?? 'ASC';
 
