@@ -26,7 +26,7 @@ $link3 = $links[2] ?? null; // Slot 3
     </div>
 
     <div class="mb-3">
-        <label class="form-label">NIDN <span style="color: red">*</span></label>
+        <label class="form-label">NIDN/NIM <span style="color: red">*</span></label>
         <input type="text" name="nidn" class="form-control"
                value="<?= $formData['nidn'] ?? '' ?>" inputmode="numeric" 
                oninput="this.value = this.value.replace(/[^0-9]/g, '')">

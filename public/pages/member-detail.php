@@ -216,7 +216,7 @@ if (!$member) {
                 <div class="profile-content">
                     <h2><?= htmlspecialchars($nama) ?></h2>
                     <?php if($member['nidn']): ?>
-                        <span class="profile-nidn">NIDN: <?= htmlspecialchars($member['nidn']) ?></span>
+                        <span class="profile-nidn"><?= htmlspecialchars($member['nidn']) ?></span>
                     <?php endif; ?>
 
                     <div class="content-section">

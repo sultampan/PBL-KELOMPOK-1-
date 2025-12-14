@@ -1,3 +1,49 @@
+ <style> 
+        /* --- BANNER ACTIVITY --- */
+    .inner-banner.activity-banner {
+        background: url('assets/images/header-facility.jpeg') no-repeat center;
+        background-size: cover;
+        position: relative;
+        z-index: 0;
+        min-height: 350px;
+        display: grid;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+        .inner-banner.activity-banner:before {
+        content: "";
+        background: rgba(0, 0, 0, 0.6);
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+    }
+
+    .inner-banner.activity-banner h2 {
+        font-size: 3rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 10px;
+    }
+
+    .breadcrumb-activity { color: white; font-size: 1rem; }
+    .breadcrumb-activity a { color: #ffb400; text-decoration: none; }
+    .breadcrumb-activity span { margin: 0 5px; }
+
+</style>
+
+<section class="inner-banner activity-banner">
+    <div>
+        <h2>About</h2>
+        <div class="breadcrumb-activity">
+            <a href="index.php">About</a>
+            <span>›</span>
+            <span>About</span>
+        </div>
+    </div>
+</section>
+
 <section class="w3l-about-breadcrumb">
     <div class="breadcrumb-bg breadcrumb-bg-about py-sm-5 py-4">
         <div class="container py-2">
