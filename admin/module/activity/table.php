@@ -1,9 +1,10 @@
 <div id="activity-list-container">
-    <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3>Daftar Activity</h3>
+    <div class="activity-main-card">
+        <!-- HEADER SECTION -->
+        <div class="card-header-section">
+            <h2 class="header-title">Daftar Activity</h2>
 
-            <div class="search-box">
+            <div class="search-section">
                 <?php
                 global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
                 
@@ -23,38 +24,41 @@
                 }
                 ?>
 
-                <input type="text" id="searchActivityInput" class="form-control"
+                <input type="text" id="searchActivityInput" class="search-input"
                     placeholder="Cari Judul atau Deskripsi..."
-                    value="<?= htmlspecialchars($searchKeyword ?? '') ?>"
-                    style="font-size: 13px; padding: 6px 10px; width: 250px;">
+                    value="<?= htmlspecialchars($searchKeyword ?? '') ?>">
 
                 <button type="button" onclick="searchActivity()" class="btn-search">
                     <i class="fas fa-search"></i> <span>Cari</span>
                 </button>
 
                 <?php if($searchKeyword): ?>
-                    <button type="button" onclick="resetSearchActivity()" class="btn-reset" title="Hapus Pencarian">
+                    <button type="button" onclick="resetSearchActivity()" class="btn-search" title="Hapus Pencarian" style="background-color: #e74c3c;">
                         <i class="fas fa-times"></i>
                     </button>
                 <?php endif; ?>
             </div>
         </div>
 
-        <div class="member-grid">
+        <!-- CONTENT AREA -->
+        <div class="activity-content">
             <?php if ($list): ?>
-                <?php foreach ($list as $row): ?>
-                    <div class="mit-card">
-                        <div class="mit-card-role">
-                            <span class="role-badge">ACTIVITY</span>
-                            <span><?= date('d M Y', strtotime($row['tanggal_kegiatan'])) ?></span>
-                        </div>
+                <div class="activity-grid">
+                    <?php foreach ($list as $row): ?>
+                        <div class="activity-item">
+                            <!-- HEADER -->
+                            <div class="activity-item-header">
+                                <span class="badge-activity">ACTIVITY</span>
+                                <span class="activity-date-small"><?= date('d M Y', strtotime($row['tanggal_kegiatan'])) ?></span>
+                            </div>
 
-                        <h2 class="mit-card-name">
-                            <?= htmlspecialchars($row['judul']) ?>
-                        </h2>
+                            <!-- TITLE -->
+                            <h3 class="activity-item-title">
+                                <?= htmlspecialchars($row['judul']) ?>
+                            </h3>
 
-                        <div class="mit-card-content">
-                            <div class="mit-activity-image">
+                            <!-- IMAGE -->
+                            <div class="activity-item-image">
                                 <?php
                                 $defaultImg = '';
                                 $imgSrc = $defaultImg;
@@ -76,98 +80,113 @@
                                 <?php if ($hasImage): ?>
                                     <img src="<?= $imgSrc ?>" alt="<?= htmlspecialchars($row['judul']) ?>">
                                 <?php else: ?>
-                                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; background-color: #f0f0f0; color: #999;">
-                                        <i class="fas fa-image" style="font-size: 48px; margin-bottom: 10px;"></i>
-                                        <span style="font-size: 14px;">Tidak ada gambar</span>
+                                    <div class="no-image">
+                                        <i class="fas fa-image"></i>
                                     </div>
                                 <?php endif; ?>
                             </div>
-                        </div>
 
-                        <div class="mit-bio">
-                            <?= htmlspecialchars($row['deskripsi']) ?>
-                        </div>
-
-                        <div class="activity-members" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                            <div style="font-weight: 600; font-size: 13px; color: #666; margin-bottom: 10px;">
-                                <i class="fas fa-users" style="margin-right: 5px;"></i>Member yang Berpartisipasi:
+                            <!-- DESCRIPTION -->
+                            <div class="activity-item-description">
+                                <?= htmlspecialchars($row['deskripsi']) ?>
                             </div>
-                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                <?php 
-                                if (!empty($row['members']) && is_array($row['members'])) {
-                                    foreach ($row['members'] as $member): 
-                                        $memberName = is_array($member) ? ($member['nama_member'] ?? 'Unknown') : $member;
-                                ?>
-                                    <span class="member-tag" style="display: inline-flex; align-items: center; padding: 6px 12px; background-color: #f0f7f8; color: #01B5B8; border-radius: 20px; font-size: 12px; font-weight: 500;">
-                                        <i class="fas fa-user" style="font-size: 10px; margin-right: 5px;"></i>
-                                        <?= htmlspecialchars($memberName) ?>
-                                    </span>
-                                <?php 
-                                    endforeach;
-                                } else {
-                                    echo '<span style="font-size: 12px; color: #999; font-style: italic;">Tidak ada.</span>';
-                                }
-                                ?>
+
+                            <!-- MEMBERS -->
+                            <div class="activity-item-members">
+                                <div class="members-label">
+                                    <i class="fas fa-users"></i>
+                                    Member yang Berpartisipasi:
+                                </div>
+                                <div class="members-tags">
+                                    <?php 
+                                    if (!empty($row['members']) && is_array($row['members'])) {
+                                        foreach ($row['members'] as $member): 
+                                            $memberName = is_array($member) ? ($member['nama_member'] ?? 'Unknown') : $member;
+                                    ?>
+                                        <span class="member-tag">
+                                            <i class="fas fa-user"></i>
+                                            <?= htmlspecialchars($memberName) ?>
+                                        </span>
+                                    <?php 
+                                        endforeach;
+                                    } else {
+                                        echo '<span class="no-members-text">Tidak ada member.</span>';
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+
+                            <!-- ACTIONS -->
+                            <div class="activity-item-actions">
+                                <a href="?page=activity&edit=<?= $row['id_activity'] ?>" class="btn-action btn-edit">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button type="button" onclick="deleteActivity(<?= (int)$row['id_activity'] ?>)" class="btn-action btn-delete">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
                             </div>
                         </div>
-
-                        <div class="card-action-buttons">
-                            <a href="?page=activity&edit=<?= $row['id_activity'] ?>" class="btn-card btn-card-edit">Edit</a>
-                            <a onclick="deleteActivity(<?= (int)$row['id_activity'] ?>)" class="btn-card btn-card-delete">Hapus</a>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
             <?php else: ?>
-                <div style="width:100%; text-align:center; padding:20px; color:#777;">
-                    Belum ada activity.
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p><?= $searchKeyword ? 'Tidak ada hasil untuk pencarian "' . htmlspecialchars($searchKeyword) . '"' : 'Belum ada activity.' ?></p>
+                </div>
+            <?php endif; ?>
+
+            <!-- PAGINATION -->
+            <?php if ($totalPages > 1): ?>
+                <div class="pagination-container">
+                    <!-- First Page -->
+                    <button onclick="window.location.href='<?= buildPageUrl(1, $searchKeyword, $currentSortBy, $currentSortOrder) ?>'" 
+                            <?= ($currentPage <= 1) ? 'disabled' : '' ?>>
+                        &laquo;
+                    </button>
+
+                    <!-- Previous Page -->
+                    <button onclick="window.location.href='<?= buildPageUrl($currentPage - 1, $searchKeyword, $currentSortBy, $currentSortOrder) ?>'" 
+                            <?= ($currentPage <= 1) ? 'disabled' : '' ?>>
+                        &lsaquo;
+                    </button>
+
+                    <?php
+                    $max_buttons = 5;
+                    $half = floor($max_buttons / 2);
+                    $start_page = $currentPage - $half;
+                    $end_page   = $currentPage + $half;
+
+                    if ($start_page < 1) { 
+                        $start_page = 1; 
+                        $end_page = min($totalPages, $start_page + $max_buttons - 1); 
+                    }
+                    if ($end_page > $totalPages) { 
+                        $end_page = $totalPages; 
+                        $start_page = max(1, $end_page - $max_buttons + 1); 
+                    }
+
+                    for ($i = $start_page; $i <= $end_page; $i++):
+                        $isActive = ($i == $currentPage) ? 'active' : '';
+                    ?>
+                        <button onclick="window.location.href='<?= buildPageUrl($i, $searchKeyword, $currentSortBy, $currentSortOrder) ?>'" 
+                                class="<?= $isActive ?>">
+                            <?= $i ?>
+                        </button>
+                    <?php endfor; ?>
+
+                    <!-- Next Page -->
+                    <button onclick="window.location.href='<?= buildPageUrl($currentPage + 1, $searchKeyword, $currentSortBy, $currentSortOrder) ?>'" 
+                            <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>>
+                        &rsaquo;
+                    </button>
+
+                    <!-- Last Page -->
+                    <button onclick="window.location.href='<?= buildPageUrl($totalPages, $searchKeyword, $currentSortBy, $currentSortOrder) ?>'" 
+                            <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>>
+                        &raquo;
+                    </button>
                 </div>
             <?php endif; ?>
         </div>
-
-        <?php if ($totalPages > 1): ?>
-            <div class="pagination" style="margin-top: 20px; text-align: center;">
-
-                <?php if ($currentPage > 1): ?>
-                    <a href="<?= buildPageUrl($currentPage - 1, $searchKeyword, $currentSortBy, $currentSortOrder) ?>" class="page-link page-arrow" title="Sebelumnya">&lsaquo;</a>
-                <?php else: ?>
-                    <span class="page-link page-arrow disabled">&lsaquo;</span>
-                <?php endif; ?>
-
-                <?php if ($currentPage > 1): ?>
-                    <a href="<?= buildPageUrl(1, $searchKeyword, $currentSortBy, $currentSortOrder) ?>" class="page-link page-arrow" title="Ke Awal">&laquo;</a>
-                <?php else: ?>
-                    <span class="page-link page-arrow disabled">&laquo;</span>
-                <?php endif; ?>
-
-                <?php
-                $max_buttons = 5;
-                $half = floor($max_buttons / 2);
-                $start_page = $currentPage - $half;
-                $end_page   = $currentPage + $half;
-
-                if ($start_page < 1) { $start_page = 1; $end_page = $start_page + $max_buttons - 1; }
-                if ($end_page > $totalPages) { $end_page = $totalPages; $start_page = $end_page - $max_buttons + 1; if ($start_page < 1) $start_page = 1; }
-
-                for ($i = $start_page; $i <= $end_page; $i++):
-                    $isActive = ($i == $currentPage) ? 'active' : '';
-                ?>
-                    <a href="<?= buildPageUrl($i, $searchKeyword, $currentSortBy, $currentSortOrder) ?>" class="page-link page-num <?= $isActive ?>"><?= $i ?></a>
-                <?php endfor; ?>
-
-                <?php if ($currentPage < $totalPages): ?>
-                    <a href="<?= buildPageUrl($totalPages, $searchKeyword, $currentSortBy, $currentSortOrder) ?>" class="page-link page-arrow" title="Ke Akhir">&raquo;</a>
-                <?php else: ?>
-                    <span class="page-link page-arrow disabled">&raquo;</span>
-                <?php endif; ?>
-
-                <?php if ($currentPage < $totalPages): ?>
-                    <a href="<?= buildPageUrl($currentPage + 1, $searchKeyword, $currentSortBy, $currentSortOrder) ?>" class="page-link page-arrow" title="Berikutnya">&rsaquo;</a>
-                <?php else: ?>
-                    <span class="page-link page-arrow disabled">&rsaquo;</span>
-                <?php endif; ?>
-
-            </div>
-        <?php endif; ?>
-
     </div>
 </div>
