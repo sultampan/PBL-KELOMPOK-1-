@@ -270,6 +270,7 @@ $totalPages = ceil($totalData / $limit);
     .facility-text { padding: 0 5px; width: 100%; text-align: left !important; flex-grow: 1; }
     
    /* JUDUL (Maksimal 2 Baris) */
+   /* JUDUL (Maksimal 2 Baris) */
    .facility-title {
         font-size: 22px; 
         font-weight: 800; 
@@ -305,7 +306,7 @@ $totalPages = ceil($totalData / $limit);
         min-height: 52px; /* Menjaga tinggi agar sejajar (sekitar 16px * 1.6 * 2) */
         text-align: left !important;
     }
-    
+
     /* 5. PAGINASI STYLE (KOTAK ROUNDED) */
     .pagination-wrapper { margin-top: 50px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
     
