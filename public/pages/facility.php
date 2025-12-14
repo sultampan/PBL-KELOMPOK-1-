@@ -136,9 +136,8 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         
         /* Teknik Line Clamp */
         display: -webkit-box;
-        -webkit-line-clamp: 2; /* Batas jumlah baris judul */
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
+        line-clamp: 2; /* Batas jumlah baris judul */
+        box-orient: vertical;
         overflow: hidden;
         word-break: break-word; /* Memaksa kata super panjang putus */
     }
@@ -153,9 +152,8 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         
         /* Teknik Line Clamp */
         display: -webkit-box;
-        -webkit-line-clamp: 3; /* Batas jumlah baris deskripsi (bisa diubah jadi 2 kalau mau) */
-        line-clamp: 3;
-        -webkit-box-orient: vertical;
+        line-clamp: 3; /* Batas jumlah baris deskripsi (bisa diubah jadi 2 kalau mau) */
+        box-orient: vertical;
         overflow: hidden;
         word-break: break-word; /* Memaksa kata super panjang putus */
     }
@@ -201,7 +199,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         
         <div class="title-content text-center mb-5">
             <h6 class="title-subw3hny">Explore Our Labs</h6>
-            <h3 class="title-w3l mb-4"> Sarana & Prasarana Laboratorium </h3>
+            <h3 class="title-w3l mb-4">Laboratory Facilities and Infrastructure</h3>
         </div>
 
         <?php if (!empty($fasilitasList)): ?>
