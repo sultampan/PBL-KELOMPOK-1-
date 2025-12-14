@@ -122,9 +122,6 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 
     .facility-text { padding: 0 5px; }
 
-    /* --- PERBAIKAN UTAMA DI SINI --- */
-
-    /* CSS Agar Judul Max 2 Baris + Titik-titik */
     .facility-title {
         font-size: 22px; 
         font-weight: 800;
@@ -133,32 +130,77 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         margin-bottom: 10px;
         line-height: 1.4;
         cursor: text; 
-        
-        /* Teknik Line Clamp */
         display: -webkit-box;
-        line-clamp: 2; /* Batas jumlah baris judul */
-        box-orient: vertical;
+        -webkit-line-clamp: 2; 
+        -webkit-box-orient: vertical;
         overflow: hidden;
-        word-break: break-word; /* Memaksa kata super panjang putus */
+        word-break: break-word; 
     }
 
-    /* CSS Agar Deskripsi Max 3 Baris + Titik-titik */
     .facility-desc {
         font-size: 16px;
         color: var(--font-color);
         line-height: 1.6;
         margin: 0;
         text-align: left; 
-        
-        /* Teknik Line Clamp */
         display: -webkit-box;
-        line-clamp: 3; /* Batas jumlah baris deskripsi (bisa diubah jadi 2 kalau mau) */
-        box-orient: vertical;
+        -webkit-line-clamp: 3; 
+        -webkit-box-orient: vertical;
         overflow: hidden;
-        word-break: break-word; /* Memaksa kata super panjang putus */
+        word-break: break-word; 
     }
 
-    /* RESPONSIVE BREAKPOINTS */
+    /* ======================================================== */
+    /* --- CSS KHUSUS TOMBOL CLOSE (SILANG) - VERSI ANTI GAGAL --- */
+    /* ======================================================== */
+    
+    #Choco_close {
+        /* Paksa posisi FIXED di layar (bukan di dalam div) */
+        position: fixed !important;
+        top: 30px !important;
+        right: 30px !important;
+        
+        /* Z-Index Maksimal (di atas header, navbar, semuanya) */
+        z-index: 2147483647 !important; 
+        
+        /* Ukuran Tombol */
+        width: 45px !important;
+        height: 45px !important;
+        
+        /* Reset Background Bawaan Plugin */
+        background-image: none !important;
+        background-color: #000 !important; /* Lingkaran Hitam */
+        border: 2px solid #fff !important; /* Garis Putih */
+        border-radius: 50% !important;
+        
+        /* Tampilkan Flex untuk tengahin huruf X */
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer !important;
+        opacity: 1 !important;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    /* Tanda "X" menggunakan huruf biasa (Bukan Icon) biar pasti muncul */
+    #Choco_close::after {
+        content: "X" !important;
+        color: #fff !important;
+        font-family: Arial, sans-serif !important; /* Font standar semua browser */
+        font-weight: bold !important;
+        font-size: 24px !important;
+        line-height: 1 !important;
+        margin-top: 2px; /* Sedikit adjustment posisi */
+    }
+
+    /* Efek Hover biar kelihatan aktif */
+    #Choco_close:hover {
+        background-color: red !important; /* Jadi Merah pas disentuh */
+        transform: scale(1.1);
+        transition: 0.2s;
+    }
+
+    /* RESPONSIVE */
     @media (max-width: 992px) {
         ul.gallery_agile {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -171,6 +213,17 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         }
         .facility-img-wrap { height: 250px; }
         .facility-title { font-size: 20px; }
+        
+        /* Sesuaikan posisi tombol close di HP */
+        #Choco_close {
+            top: 20px !important;
+            right: 20px !important;
+            width: 35px !important;
+            height: 35px !important;
+        }
+        #Choco_close::after {
+            font-size: 18px !important;
+        }
     }
 </style>
 
@@ -271,7 +324,10 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         if (typeof $ !== 'undefined' && $.fn.Chocolat) {
-            $('.chocolat-image').Chocolat();
+            $('.chocolat-image').Chocolat({
+                overlayOpacity: 0.9,
+                closeImg: '' // Matikan loading gambar close bawaan
+            });
         }
     });
 </script>
