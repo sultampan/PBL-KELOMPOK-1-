@@ -27,7 +27,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 ?>
 
 <style>
-    /* --- CSS UNTUK BANNER (HERO SECTION) --- */
+    /* --- CSS HEADER BANNER --- */
     .inner-banner.facility-banner {
         background: url('assets/images/header-facility.jpeg') no-repeat center;
         background-size: cover;
@@ -37,7 +37,6 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         display: grid;
         align-items: center;
     }
-
     .inner-banner.facility-banner:before {
         content: "";
         background: rgba(0, 0, 0, 0.6); 
@@ -49,13 +48,11 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         z-index: -1;
     }
 
-    /* --- CSS UNTUK KONTEN FASILITAS --- */
+    /* --- CSS GRID FASILITAS --- */
     .facility-section-bg {
         background-color: var(--bg-color); 
         transition: background-color 0.3s ease;
     }
-
-    /* Grid Layout: 3 Kolom */
     ul.gallery_agile {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr)); 
@@ -66,7 +63,6 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         width: 100%;
         align-items: start;
     }
-
     .facility-card {
         width: 100%;
         margin-bottom: 30px;
@@ -74,7 +70,6 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         box-sizing: border-box;
         overflow: hidden;
     }
-
     .facility-img-wrap {
         width: 100%;
         height: 250px; 
@@ -85,13 +80,11 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         background-color: var(--bg-grey); 
         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
-
     .facility-img-wrap a {
         display: block;
         width: 100%;
         height: 100%;
     }
-
     .facility-img-wrap img {
         width: 100% !important;  
         height: 100% !important; 
@@ -100,11 +93,11 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         transition: transform 0.5s ease;
         display: block;
     }
-    
     .facility-img-wrap:hover img {
         transform: scale(1.05);
     }
 
+    /* Placeholder No Image */
     .no-image-box {
         width: 100%;
         height: 100%;
@@ -122,6 +115,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 
     .facility-text { padding: 0 5px; }
 
+    /* Typography */
     .facility-title {
         font-size: 22px; 
         font-weight: 800;
@@ -136,7 +130,6 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         overflow: hidden;
         word-break: break-word; 
     }
-
     .facility-desc {
         font-size: 16px;
         color: var(--font-color);
@@ -150,79 +143,45 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         word-break: break-word; 
     }
 
-    /* ======================================================== */
-    /* --- CSS KHUSUS TOMBOL CLOSE (SILANG) - VERSI ANTI GAGAL --- */
-    /* ======================================================== */
-    
+    /* --- TOMBOL X (KITA TETAP PERTAHANKAN BIAR ADA DUA OPSI CLOSE) --- */
     #Choco_close {
-        /* Paksa posisi FIXED di layar (bukan di dalam div) */
         position: fixed !important;
-        top: 30px !important;
-        right: 30px !important;
-        
-        /* Z-Index Maksimal (di atas header, navbar, semuanya) */
-        z-index: 2147483647 !important; 
-        
-        /* Ukuran Tombol */
-        width: 45px !important;
-        height: 45px !important;
-        
-        /* Reset Background Bawaan Plugin */
-        background-image: none !important;
-        background-color: #000 !important; /* Lingkaran Hitam */
-        border: 2px solid #fff !important; /* Garis Putih */
+        top: 25px !important;
+        right: 25px !important;
+        z-index: 2147483647 !important;
+        width: 44px !important;
+        height: 44px !important;
+        background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") no-repeat center center !important;
+        background-color: rgba(0, 0, 0, 0.6) !important;
+        background-size: 24px 24px !important;
+        border: 2px solid rgba(255,255,255,0.8) !important;
         border-radius: 50% !important;
-        
-        /* Tampilkan Flex untuk tengahin huruf X */
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
         cursor: pointer !important;
-        opacity: 1 !important;
-        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        display: block !important; 
+        opacity: 1 !important;     
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
+        transition: transform 0.2s ease !important;
     }
-
-    /* Tanda "X" menggunakan huruf biasa (Bukan Icon) biar pasti muncul */
-    #Choco_close::after {
-        content: "X" !important;
-        color: #fff !important;
-        font-family: Arial, sans-serif !important; /* Font standar semua browser */
-        font-weight: bold !important;
-        font-size: 24px !important;
-        line-height: 1 !important;
-        margin-top: 2px; /* Sedikit adjustment posisi */
-    }
-
-    /* Efek Hover biar kelihatan aktif */
     #Choco_close:hover {
-        background-color: red !important; /* Jadi Merah pas disentuh */
-        transform: scale(1.1);
-        transition: 0.2s;
+        background-color: #dc3545 !important;
+        transform: scale(1.1) !important;
+        border-color: #fff !important;
     }
 
     /* RESPONSIVE */
     @media (max-width: 992px) {
-        ul.gallery_agile {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
+        ul.gallery_agile { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-
     @media (max-width: 768px) {
-        ul.gallery_agile { 
-            grid-template-columns: repeat(1, minmax(0, 1fr)); 
-        }
+        ul.gallery_agile { grid-template-columns: repeat(1, minmax(0, 1fr)); }
         .facility-img-wrap { height: 250px; }
         .facility-title { font-size: 20px; }
-        
-        /* Sesuaikan posisi tombol close di HP */
         #Choco_close {
-            top: 20px !important;
-            right: 20px !important;
-            width: 35px !important;
-            height: 35px !important;
-        }
-        #Choco_close::after {
-            font-size: 18px !important;
+            top: 15px !important;
+            right: 15px !important;
+            width: 36px !important;
+            height: 36px !important;
+            background-size: 18px 18px !important;
         }
     }
 </style>
@@ -232,9 +191,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         <div class="container">
             <div class="w3breadcrumb-gids">
                 <div class="w3breadcrumb-left text-center">
-                    <h2 class="inner-w3-title">
-                        Facility
-                    </h2>
+                    <h2 class="inner-w3-title">Facility</h2>
                 </div>
                 <div class="w3breadcrumb-right">
                     <ul class="breadcrumbs-custom-path">
@@ -249,7 +206,6 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 
 <section class="w3l-gallery facility-section-bg pb-5 pt-4">
     <div class="container pb-md-5 pt-3">
-        
         <div class="title-content text-center mb-5">
             <h6 class="title-subw3hny">Explore Our Labs</h6>
             <h3 class="title-w3l mb-4">Laboratory Facilities and Infrastructure</h3>
@@ -303,7 +259,6 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
                             <div class="facility-title">
                                 <?= htmlspecialchars($row['judul']) ?>
                             </div>
-
                             <div class="facility-desc">
                                 <?= nl2br(htmlspecialchars($row['deskripsi'])) ?>
                             </div>
@@ -317,16 +272,28 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
                 <h4 class="text-muted">Belum ada data fasilitas.</h4>
             </div>
         <?php endif; ?>
-        
     </div>
 </section>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         if (typeof $ !== 'undefined' && $.fn.Chocolat) {
+            
+            // 1. Inisialisasi Plugin
             $('.chocolat-image').Chocolat({
-                overlayOpacity: 0.9,
-                closeImg: '' // Matikan loading gambar close bawaan
+                imageSize: 'contain', 
+                loop: true,           
+                overlayOpacity: 0.9,  
+                closeImg: '', // Kosongkan biar pake SVG kita
+                leftImg: '',
+                rightImg: ''
+            });
+
+            // 2. LOGIKA TAMBAHAN: KLIK BACKGROUND = TUTUP
+            // Kita pasang event listener ke 'body' karena overlay dibuat dinamis
+            $('body').on('click', '#Choco_overlay', function() {
+                // Cari tombol close dan klik secara otomatis
+                $('#Choco_close').trigger('click');
             });
         }
     });
