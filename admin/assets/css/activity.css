@@ -1,176 +1,343 @@
-/* admin/assets/css/activity.css */
+/* admin/assets/css/activity-simple.css */
 
-/* --- LAYOUT GRID --- */
-.member-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
+/* --- MAIN CARD CONTAINER --- */
+.activity-main-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
 
-/* --- CARD STYLE (Base Style mirip Member) --- */
-.mit-card {
+/* --- CARD HEADER SECTION --- */
+.card-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fff;
+}
+
+.header-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e3a5f;
+}
+
+.search-section {
+    display: flex;
+    gap: 10px;
+}
+
+.search-input {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 350px;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #1e3a5f;
+}
+
+.btn-search {
+    padding: 10px 20px;
+    background-color: #1e3a5f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-search:hover {
+    background-color: #152d4a;
+}
+
+/* --- CONTENT AREA --- */
+.activity-content {
+    padding: 25px;
+}
+
+/* --- CATEGORY SECTION --- */
+.activity-category-section {
+    margin-bottom: 40px;
+}
+
+.category-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e3a5f;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    border-bottom: 3px solid #f4a728;
+    position: relative;
+}
+
+.category-title::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100px;
+    height: 3px;
+    background-color: #f4a728;
+}
+
+/* --- ACTIVITY GRID --- */
+.activity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* --- ACTIVITY ITEM CARD --- */
+.activity-item {
     background: #fff;
     border: 1px solid #e0e0e0;
-    padding: 20px !important;
-    border-radius: 4px;
-    transition: box-shadow 0.2s;
+    border-radius: 8px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    min-height: 420px;
-    position: relative;
-    overflow: hidden;
+    gap: 12px;
+    transition: all 0.2s;
 }
 
-.mit-card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+.activity-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
 }
 
-/* Header Role & Tanggal */
-.mit-card-role {
-    margin-bottom: 10px !important;
-    padding-bottom: 10px !important;
+/* Activity Item Header */
+.activity-item-header {
     display: flex;
-    
-    /* [UBAH BAGIAN INI] */
-    /* Hapus space-between, ganti jadi flex-start agar mepet kiri */
-    justify-content: flex-start !important; 
-    
-    /* Tambahkan gap agar tulisan Activity dan Projects tidak dempet banget */
-    gap: 8px; 
-
+    justify-content: space-between;
     align-items: center;
-    width: 100%;
-    font-size: 11px;
-    text-transform: uppercase;
+}
+
+.badge-activity {
+    background-color: #e0e0e0;
     color: #666;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
     font-weight: 600;
+    text-transform: uppercase;
 }
 
-.mit-card-role span:last-child {
-    margin-left: auto;
+.activity-date-small {
+    font-size: 12px;
+    color: #888;
 }
 
-.role-badge {
-    background-color: #eee;
-    padding: 2px 6px;
-    border-radius: 3px;
-}
-
-/* Judul Activity */
-.mit-card-name {
-    font-size: 1.25em !important;
-    margin: 10px 0 10px 0 !important;
-    line-height: 1.4 !important;
+/* Activity Item Title */
+.activity-item-title {
+    font-size: 18px;
     font-weight: 700;
-    color: #2c3e50;
-    display: block;
-    word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    width: 100%;
+    color: #1e3a5f;
+    margin: 0;
+    line-height: 1.3;
 }
 
-/* --- GAMBAR ACTIVITY (Pindahan dari Inline Style) --- */
-.mit-card-content {
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-.mit-activity-image {
+/* Activity Item Image */
+.activity-item-image {
     width: 100%;
     height: 180px;
-    min-height: 180px;
+    border-radius: 6px;
     overflow: hidden;
-    border-radius: 8px;
     background-color: #f5f5f5;
-    margin-bottom: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.mit-activity-image img {
+.activity-item-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
 }
 
-/* Placeholder No Image */
 .no-image {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
-    height: 180px;
+    justify-content: center;
     width: 100%;
-    background-color: #f0f0f0;
-    color: #999;
-    border-radius: 8px;
-    font-size: 14px;
+    height: 100%;
+    color: #ccc;
 }
 
 .no-image i {
     font-size: 48px;
-    margin-bottom: 10px;
 }
 
-/* --- DESKRIPSI & MEMBERS --- */
-.mit-bio {
-    word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    width: 100%;
-    padding: 10px 0 !important;
-    min-height: 60px;
-    flex-grow: 1;
+/* Activity Item Description */
+.activity-item-description {
     font-size: 13px;
     color: #555;
-    line-height: 1.4;
+    line-height: 1.6;
+    padding: 10px 0;
+    border-top: 1px solid #f0f0f0;
 }
 
-.activity-members {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #e0e0e0;
+/* Activity Item Members */
+.activity-item-members {
+    padding: 12px 0;
+    border-top: 1px solid #f0f0f0;
+}
+
+.members-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.members-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
 .member-tag {
     display: inline-flex;
     align-items: center;
-    padding: 6px 12px;
-    background-color: #f0f7f8;
-    color: #01B5B8;
-    border-radius: 20px;
-    font-size: 12px;
+    gap: 4px;
+    padding: 4px 10px;
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-radius: 12px;
+    font-size: 11px;
     font-weight: 500;
 }
 
-/* --- TOMBOL AKSI --- */
-.card-action-buttons {
-    margin-top: 15px !important;
-    display: flex !important;
-    gap: 10px !important;
+.member-tag i {
+    font-size: 9px;
 }
 
-.btn-card {
-    padding: 12px 24px !important;
-    font-size: 15px !important;
-    font-weight: 600 !important;
-    flex: 1 !important;
-    text-align: center !important;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #fff !important;
-    cursor: pointer;
+.no-members-text {
+    font-size: 12px;
+    color: #999;
+    font-style: italic;
+}
+
+/* Activity Item Actions */
+.activity-item-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-action {
+    flex: 1;
+    padding: 10px;
     border: none;
-    transition: background-color 0.2s;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
 }
 
-.btn-card-edit { background-color: #FE7C11; }
-.btn-card-edit:hover { background-color: #e66b00; }
+.btn-edit {
+    background-color: #FE7C11;
+    color: white;
+}
 
-.btn-card-delete { background-color: #e74c3c; }
-.btn-card-delete:hover { background-color: #c0392b; }
+.btn-edit:hover {
+    background-color: #e66b00;
+}
+
+.btn-delete {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #c0392b;
+}
+
+/* --- PAGINATION --- */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
+    gap: 5px;
+}
+
+.pagination-container button {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #1e3a5f;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.pagination-container button:hover:not(:disabled) {
+    background: #f0f0f0;
+}
+
+.pagination-container button.active {
+    background: #1e3a5f;
+    color: white;
+    border-color: #1e3a5f;
+}
+
+.pagination-container button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* --- EMPTY STATE --- */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #999;
+}
+
+.empty-state i {
+    font-size: 60px;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    font-size: 16px;
+    margin: 0;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .activity-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .card-header-section {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .search-section {
+        flex-direction: column;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+}

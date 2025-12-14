@@ -259,9 +259,18 @@ function deleteActivity(id) {
     })
     .then((response) => response.json()).then((data) => {
         if (data.status === "success") {
-            loadActivityList();
-            // Opsional: Tampilkan pesan sukses final dari server
+            // 1. Tampilkan notifikasi sukses
             displayAlert(data.message, "success");
+            
+            // 2. Refresh tabel saja (Panggil fungsi AJAX yang sudah ada)
+            loadActivityList();
+            
+            // (Opsional) Jika sedang dalam mode edit item yang barusan dihapus, reset formnya
+            // Cek apakah ada input hidden id_activity yang nilainya sama dengan id yang dihapus
+            const currentEditId = document.querySelector('input[name="id_activity"]');
+            if (currentEditId && currentEditId.value == id) {
+                cancelMemberForm(); // Reset form jadi kosong
+            }
         }
         else {
             displayAlert(data.message, "error");
@@ -312,14 +321,23 @@ document.addEventListener("DOMContentLoaded", function () {
             })
                 .then((response) => response.json())
                 .then((data) => {
+                    console.log('Save response:', data); // Debug log
+                    
                     if (data.status === "success") {
+                        // 1. Tampilkan pesan sukses
+                        displayAlert(data.message, "success");
+                        
+                        // 2. Refresh Tabel Data secara AJAX (Tanpa Reload Halaman)
                         loadActivityList();
 
-                        const isUpdate = formData.get("id_activity"); // Cek Primary Key
-                        loadEmptyActivityForm(data.message);
+                        // 3. Reset Form ke mode "Tambah Baru" yang bersih
+                        // Fungsi ini sudah kamu buat sebelumnya, jadi kita manfaatkan saja
+                        cancelMemberForm();
 
-                        if (isUpdate) {
-                            window.history.pushState({}, document.title, window.location.pathname + "?page=activity");
+                        // 4. (Opsional) Scroll ke tabel biar user langsung lihat data barunya
+                        const tableArea = document.getElementById("activity-list-container");
+                        if (tableArea) {
+                            tableArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }
                     } else {
                         // LOGIKA ERROR
@@ -347,6 +365,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
 /* =========================================
    7. FUNGSI FILTER MEMBER (DENGAN DEBOUNCE)
    ========================================= */

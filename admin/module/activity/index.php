@@ -13,7 +13,7 @@ $limit = 6;
 $offset = ($page - 1) * $limit;
 $searchKeyword = $_GET['keyword'] ?? null;
 $currentSortBy = $_GET['sort'] ?? 'id_activity'; 
-$currentSortOrder = $_GET['order'] ?? 'ASC';
+$currentSortOrder = $_GET['order'] ?? 'DESC';
 
 $totalRecords = getTotalActivityCount($pdo, $searchKeyword);
 $totalPages = ceil($totalRecords / $limit);
@@ -33,6 +33,7 @@ if (isset($_GET['edit'])) {
 <link rel="stylesheet" href="assets/css/components.css">
 <link rel="stylesheet" href="assets/css/forms.css">
 <link rel="stylesheet" href="assets/css/activity.css">
+<link rel="stylesheet" href="assets/css/activity-simple.css">
 
 
 <div class="header-title" style="margin-bottom: 20px;">
