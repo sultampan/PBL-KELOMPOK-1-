@@ -9,11 +9,24 @@ if (file_exists($koneksiPath)) {
     require_once $koneksiPath;
 }
 
+// --- LOGIKA PENCARIAN (SEARCH) ---
+$searchKeyword = '';
+if (isset($_GET['search'])) {
+    $searchKeyword = trim($_GET['search']);
+}
+
 $fasilitasList = [];
 if (isset($pdo)) {
     try {
-        $stmt = $pdo->prepare("SELECT * FROM fasilitas ORDER BY id_fasilitas DESC");
-        $stmt->execute();
+        if (!empty($searchKeyword)) {
+            // Jika ada pencarian, filter berdasarkan Judul atau Deskripsi
+            $stmt = $pdo->prepare("SELECT * FROM fasilitas WHERE judul LIKE :keyword OR deskripsi LIKE :keyword ORDER BY id_fasilitas DESC");
+            $stmt->execute(['keyword' => "%$searchKeyword%"]);
+        } else {
+            // Jika tidak ada pencarian, tampilkan semua
+            $stmt = $pdo->prepare("SELECT * FROM fasilitas ORDER BY id_fasilitas DESC");
+            $stmt->execute();
+        }
         $fasilitasList = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) { }
 }
@@ -27,7 +40,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 ?>
 
 <style>
-    /* --- CSS HEADER BANNER --- */
+    /* --- CSS UNTUK BANNER --- */
     .inner-banner.facility-banner {
         background: url('assets/images/header-facility.jpeg') no-repeat center;
         background-size: cover;
@@ -37,6 +50,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         display: grid;
         align-items: center;
     }
+
     .inner-banner.facility-banner:before {
         content: "";
         background: rgba(0, 0, 0, 0.6); 
@@ -48,11 +62,35 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         z-index: -1;
     }
 
-    /* --- CSS GRID FASILITAS --- */
+    /* --- CSS PENCARIAN --- */
+    .search-facility-box {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .search-facility-box input {
+        border-radius: 30px 0 0 30px;
+        border: 1px solid #ddd;
+        padding: 10px 20px;
+    }
+    .search-facility-box button {
+        border-radius: 0 30px 30px 0;
+        padding: 10px 25px;
+        font-weight: 600;
+    }
+    .btn-reset-search {
+        border-radius: 30px;
+        margin-left: 10px;
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+
+    /* --- CSS FASILITAS --- */
     .facility-section-bg {
         background-color: var(--bg-color); 
         transition: background-color 0.3s ease;
     }
+
+    /* Grid Layout */
     ul.gallery_agile {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr)); 
@@ -63,6 +101,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         width: 100%;
         align-items: start;
     }
+
     .facility-card {
         width: 100%;
         margin-bottom: 30px;
@@ -70,6 +109,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         box-sizing: border-box;
         overflow: hidden;
     }
+
     .facility-img-wrap {
         width: 100%;
         height: 250px; 
@@ -80,11 +120,13 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         background-color: var(--bg-grey); 
         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
+
     .facility-img-wrap a {
         display: block;
         width: 100%;
         height: 100%;
     }
+
     .facility-img-wrap img {
         width: 100% !important;  
         height: 100% !important; 
@@ -93,11 +135,11 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         transition: transform 0.5s ease;
         display: block;
     }
+    
     .facility-img-wrap:hover img {
         transform: scale(1.05);
     }
 
-    /* Placeholder No Image */
     .no-image-box {
         width: 100%;
         height: 100%;
@@ -115,7 +157,6 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 
     .facility-text { padding: 0 5px; }
 
-    /* Typography */
     .facility-title {
         font-size: 22px; 
         font-weight: 800;
@@ -130,6 +171,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         overflow: hidden;
         word-break: break-word; 
     }
+
     .facility-desc {
         font-size: 16px;
         color: var(--font-color);
@@ -143,7 +185,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         word-break: break-word; 
     }
 
-    /* --- TOMBOL X (KITA TETAP PERTAHANKAN BIAR ADA DUA OPSI CLOSE) --- */
+    /* --- CSS TOMBOL CLOSE (SVG) --- */
     #Choco_close {
         position: fixed !important;
         top: 25px !important;
@@ -162,6 +204,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
         box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
         transition: transform 0.2s ease !important;
     }
+
     #Choco_close:hover {
         background-color: #dc3545 !important;
         transform: scale(1.1) !important;
@@ -172,6 +215,7 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
     @media (max-width: 992px) {
         ul.gallery_agile { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
+
     @media (max-width: 768px) {
         ul.gallery_agile { grid-template-columns: repeat(1, minmax(0, 1fr)); }
         .facility-img-wrap { height: 250px; }
@@ -183,6 +227,9 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
             height: 36px !important;
             background-size: 18px 18px !important;
         }
+        .search-facility-box input { width: 100%; border-radius: 5px; margin-bottom: 10px; }
+        .search-facility-box button { width: 100%; border-radius: 5px; }
+        .search-facility-box form { flex-direction: column; }
     }
 </style>
 
@@ -206,9 +253,28 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 
 <section class="w3l-gallery facility-section-bg pb-5 pt-4">
     <div class="container pb-md-5 pt-3">
-        <div class="title-content text-center mb-5">
+        <div class="title-content text-center mb-4">
             <h6 class="title-subw3hny">Explore Our Labs</h6>
-            <h3 class="title-w3l mb-4">Laboratory Facilities and Infrastructure</h3>
+            <h3 class="title-w3l mb-2">Laboratory Facilities and Infrastructure</h3>
+        </div>
+
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-6 col-md-8">
+                <div class="search-facility-box">
+                    <form action="index.php" method="GET" class="d-flex">
+                        <input type="hidden" name="page" value="facility">
+                        
+                        <input type="text" name="search" class="form-control" placeholder="Cari fasilitas di sini..." value="<?= htmlspecialchars($searchKeyword) ?>">
+                        <button type="submit" class="btn btn-primary btn-style">Cari</button>
+                        
+                        <?php if(!empty($searchKeyword)): ?>
+                            <a href="index.php?page=facility" class="btn btn-danger btn-reset-search" title="Reset Pencarian">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        <?php endif; ?>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <?php if (!empty($fasilitasList)): ?>
@@ -269,7 +335,17 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
             </ul>
         <?php else: ?>
             <div class="text-center py-5">
-                <h4 class="text-muted">Belum ada data fasilitas.</h4>
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">
+                    <?php if(!empty($searchKeyword)): ?>
+                        Fasilitas "<?= htmlspecialchars($searchKeyword) ?>" tidak ditemukan.
+                    <?php else: ?>
+                        Belum ada data fasilitas.
+                    <?php endif; ?>
+                </h4>
+                <?php if(!empty($searchKeyword)): ?>
+                    <a href="index.php?page=facility" class="btn btn-primary mt-3">Lihat Semua</a>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     </div>
@@ -289,10 +365,8 @@ $serverImgPath   = $serverBase . '/uploads/fasilitas/';
                 rightImg: ''
             });
 
-            // 2. LOGIKA TAMBAHAN: KLIK BACKGROUND = TUTUP
-            // Kita pasang event listener ke 'body' karena overlay dibuat dinamis
+            // 2. LOGIKA KLIK BACKGROUND = TUTUP
             $('body').on('click', '#Choco_overlay', function() {
-                // Cari tombol close dan klik secara otomatis
                 $('#Choco_close').trigger('click');
             });
         }
