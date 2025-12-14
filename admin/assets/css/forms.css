@@ -375,6 +375,10 @@
     color: #555;
     line-height: 1.6;
     margin-top: 5px;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
 }
 
 .key-box {

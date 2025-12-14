@@ -2,29 +2,20 @@
 // ==========================================
 // 1. KONEKSI & LOGIKA DATA
 // ==========================================
-
-// Naik 2 level untuk mencari config (sesuaikan jika struktur folder berbeda)
 $rootPath = dirname(dirname(__DIR__)); 
 $koneksiPath = $rootPath . '/config/koneksi.php';
 
-// Cek file koneksi
-if (file_exists($koneksiPath)) {
-    require_once $koneksiPath;
-}
+if (file_exists($koneksiPath)) require_once $koneksiPath;
 
 // Helper Path
-$serverBase = $_SERVER['DOCUMENT_ROOT'] . '/public'; 
-// Path untuk browser (src)
 $webThumbPathMember = 'uploads/thumb/member-thumb/';
 $webImgPathMember   = 'uploads/member/';
-// Path untuk server (file_exists)
 $serverThumbPathMember = $rootPath . '/public/uploads/thumb/member-thumb/';
 $serverImgPathMember   = $rootPath . '/public/uploads/member/';
 
 $memberList = [];
 if (isset($pdo)) {
     try {
-        // 1. Ambil Member (Urutkan Head Lab paling atas)
         $stmt = $pdo->prepare("
             SELECT * FROM member 
             ORDER BY 
@@ -34,10 +25,11 @@ if (isset($pdo)) {
         $stmt->execute();
         $memberList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // 2. Ambil Link untuk setiap member
+        // Ambil Link
         foreach ($memberList as &$m) {
+            $id = $m['id_member'];
             $stmtLink = $pdo->prepare("SELECT * FROM member_link WHERE id_member = ?");
-            $stmtLink->execute([$m['id_member']]);
+            $stmtLink->execute([$id]);
             $m['links'] = $stmtLink->fetchAll(PDO::FETCH_ASSOC);
         }
         unset($m); 
@@ -47,7 +39,7 @@ if (isset($pdo)) {
 ?>
 
 <style>
-    /* --- 1. BANNER HEADER (Tetap Sama) --- */
+    /* --- CSS UTAMA --- */
     .inner-banner.facility-banner {
         background: url('assets/images/header-facility.jpeg') no-repeat center;
         background-size: cover;
@@ -59,114 +51,104 @@ if (isset($pdo)) {
     }
     .inner-banner.facility-banner:before {
         content: ""; background: rgba(0, 0, 0, 0.6);
-        position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: -1;
+        position: absolute; inset: 0; z-index: -1;
     }
     
-    /* --- 2. CSS MEMBER STYLE (Diambil dari member.css Admin) --- */
-    
-    /* Grid Container */
     .member-grid {
         display: grid;
-        /* Grid responsif: minimal lebar kartu 350px, sisanya flexible */
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 25px; 
-        margin-top: 20px;
+        gap: 25px; margin-top: 20px;
     }
 
-    /* Kartu Utama */
+    /* LINK WRAPPER */
+    .mit-card-link {
+        text-decoration: none; color: inherit; display: block; height: 100%;
+    }
+
+    /* CARD STYLE */
     .mit-card {
-        background: #fff; 
-        border: 1px solid #e0e0e0;
-        padding: 20px; 
-        border-radius: 6px;
-        transition: transform 0.2s, box-shadow 0.2s;
-        display: flex; 
-        flex-direction: column; 
-        gap: 0px;
-        position: relative;
-        overflow: hidden;
+        background: #fff; border: 1px solid #e0e0e0; padding: 20px; 
+        border-radius: 8px; transition: transform 0.2s, box-shadow 0.2s;
+        display: flex; flex-direction: column; position: relative; overflow: hidden;
+        height: 100%; 
     }
     
-    .mit-card:hover {
+    .mit-card-link:hover .mit-card {
         transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-        border-color: #FE7C11; /* Highlight warna oranye saat hover */
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08); border-color: #FE7C11; 
     }
 
-    /* Badge Role (Head/Member) */
     .mit-card-role {
-        display: flex; align-items: center; gap: 10px;
-        font-size: 11px; text-transform: uppercase; color: #666; font-weight: 600;
-        margin-bottom: 5px;
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 11px; text-transform: uppercase; color: #666; font-weight: 600; margin-bottom: 5px;
     }
     .role-badge { background-color: #eee; padding: 3px 8px; border-radius: 4px; }
     .role-badge-head { background-color: #FE7C11; color: #fff; padding: 3px 8px; border-radius: 4px; }
 
-    /* Nama Member */
-    .mit-card-name {
-        margin: 5px 0 10px 0 !important; 
-        font-size: 20px; 
-        font-weight: 700;
+    .mit-card-name { 
+        margin: 5px 0 5px 0 !important; 
+        font-size: 20px; font-weight: 700; color: #02406C; 
         line-height: 1.3;
-        color: #02406C;
-    }
-    .mit-card-name a { text-decoration: none; color: inherit; }
-
-    /* Konten Tengah (Avatar + Link) */
-    .mit-card-content {
-        display: flex; gap: 15px; align-items: flex-start; margin-top: 5px;
+        display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     
-    /* Avatar */
+    .mit-card-content { 
+        display: flex; gap: 15px; align-items: flex-start; margin-bottom: 15px;
+        min-height: 85px; 
+    }
     .mit-avatar img {
-        width: 80px; height: 80px; 
-        object-fit: cover;
-        border-radius: 50%; 
-        border: 3px solid #f8f9fa;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
-        background-color: #eee;
+        width: 80px; height: 80px; object-fit: cover; border-radius: 50%; 
+        border: 3px solid #f8f9fa; background-color: #eee; flex-shrink: 0;
     }
 
-    /* List Link Contact */
     .mit-contact { 
-        margin-top: 5px; 
-        display: flex; 
-        flex-direction: column; 
-        font-size: 13px; 
-        gap: 8px; 
+        margin-top: 5px; display: flex; flex-direction: column; 
+        font-size: 13px; gap: 6px; 
     }
     .mit-email-row { display: flex; align-items: center; gap: 8px; }
-    
-    /* Styling Link agar menarik */
     .mit-contact a { 
-        color: #01B5B8; 
-        text-decoration: none; 
-        font-weight: 600; 
-        transition: color 0.2s;
+        color: #01B5B8; text-decoration: none; font-weight: 600; transition: color 0.2s;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; display: inline-block;
     }
     .mit-contact a:hover { color: #008c8e; text-decoration: underline; }
 
-    /* Bio / Deskripsi */
-    .mit-bio {
-        /* Spacing & Border */
-        margin-top: 15px; 
+    /* --- [UPDATE] AREA EXPERTISE (BADGE STYLE) --- */
+    .mit-expertise-box {
+        margin-top: auto; 
         padding-top: 15px;
         border-top: 1px solid #f0f0f0;
-        
-        /* Typography */
-        font-size: 14px; 
-        color: #555; 
-        line-height: 1.6;
+    }
+    
+    .mit-expertise-label {
+        font-size: 10px; color: #999; text-transform: uppercase; font-weight: 700; 
+        margin-bottom: 8px; display: block; letter-spacing: 0.5px;
+    }
 
-        /* --- SETTING FIX 2 BARIS --- */
-        height: 42px;       /* Tinggi pas untuk 2 baris (14px * 1.6 * 2) */
-        overflow: hidden;   /* Sembunyikan sisa teks */
-        
-        /* Efek titik-titik (...) di akhir baris ke-2 */
-        display: -webkit-box;
-        line-clamp: 2; /* Batas maksimal 2 baris */
-        -webkit-box-orient: vertical;
-        text-overflow: ellipsis;
+    .mit-expertise-items {
+        /* Fix height agar kartu seragam */
+        height: 55px; 
+        overflow: hidden; /* Sembunyikan jika ada badge yang bablas */
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 5px;
+        align-content: flex-start;
+    }
+
+    /* Style Badge (Mirip Detail tapi lebih kecil) */
+    .skill-tag {
+        display: inline-block; 
+        padding: 4px 10px; 
+        background: #e0f7fa; 
+        color: #006064;
+        border-radius: 15px; 
+        font-size: 11px; 
+        font-weight: 600; 
+        border: 1px solid #b2ebf2;
+        white-space: nowrap;
+    }
+    
+    .skill-more {
+        font-size: 11px; color: #777; font-weight: 600; padding: 4px 5px;
     }
 </style>
 
@@ -198,94 +180,108 @@ if (isset($pdo)) {
 
         <?php if (!empty($memberList)): ?>
             <div class="member-grid">
-                <?php foreach ($memberList as $row): ?>
-                    <?php 
-                        // Persiapan Data
-                        $nama      = $row['nama_member'];
-                        $nidn      = $row['nidn'];
-                        $jabatan   = $row['jabatan'];
-                        $deskripsi = $row['deskripsi'];
-                        $links     = $row['links'] ?? [];
-                        
-                        // Cek Role untuk Badge Warna
-                        $isHead = ($jabatan === 'Head of Laboratory');
-                        $badgeLabel = $isHead ? 'HEAD LAB' : 'MEMBER';
-                        $badgeClass = $isHead ? 'role-badge-head' : 'role-badge';
+                <?php foreach ($memberList as $row): 
+                    // Variabel Tampilan
+                    $id        = $row['id_member'];
+                    $nama      = $row['nama_member'];
+                    $nidn      = $row['nidn'];
+                    $jabatan   = $row['jabatan'];
+                    $keahlian  = $row['keahlian'] ?? ''; 
+                    
+                    $isHead = ($jabatan === 'Head of Laboratory');
+                    $badgeLabel = $isHead ? 'HEAD LAB' : 'MEMBER';
+                    $badgeClass = $isHead ? 'role-badge-head' : 'role-badge';
 
-                        // Logic Gambar (Persis Admin)
-                        $defaultImg = 'https://ui-avatars.com/api/?name=' . urlencode($nama) . '&background=random&color=fff&size=128&length=1';
-                        $imgSrc = $defaultImg;
-                        $gambar = $row['gambar'];
+                    // Logic Gambar
+                    $defaultImg = 'https://ui-avatars.com/api/?name=' . urlencode($nama) . '&background=02406C&color=fff&size=128&length=1';
+                    $imgSrc = $defaultImg;
+                    if (!empty($row['gambar'])) {
+                        $ext = pathinfo($row['gambar'], PATHINFO_EXTENSION);
+                        $thumbName = pathinfo($row['gambar'], PATHINFO_FILENAME) . '-thumb.' . $ext;
+                        if (file_exists($serverThumbPathMember . $thumbName)) $imgSrc = $webThumbPathMember . $thumbName;
+                        elseif (file_exists($serverImgPathMember . $row['gambar'])) $imgSrc = $webImgPathMember . $row['gambar'];
+                        if ($imgSrc !== $defaultImg) $imgSrc .= '?' . time();
+                    }
+                ?>
 
-                        // Cek Gambar Fisik
-                        if (!empty($gambar)) {
-                            $ext = pathinfo($gambar, PATHINFO_EXTENSION);
-                            $filename = pathinfo($gambar, PATHINFO_FILENAME);
-                            $thumbName = $filename . '-thumb.' . $ext;
-                            
-                            // Prioritas 1: Thumbnail
-                            if (file_exists($serverThumbPathMember . $thumbName)) {
-                                $imgSrc = $webThumbPathMember . $thumbName;
-                            } 
-                            // Prioritas 2: Gambar Asli
-                            elseif (file_exists($serverImgPathMember . $gambar)) {
-                                $imgSrc = $webImgPathMember . $gambar;
-                            }
-                            // Tambahkan timestamp agar refresh cache
-                            if ($imgSrc !== $defaultImg) $imgSrc .= '?' . time();
-                        }
-                    ?>
-
+                <a href="index.php?page=member-detail&id=<?= $id ?>" class="mit-card-link">
                     <div class="mit-card">
                         
                         <div class="mit-card-role">
                             <span class="<?= $badgeClass ?>"><?= $badgeLabel ?></span>
-                            <?php if(!empty($nidn)): ?>
-                                <span><?= htmlspecialchars($nidn) ?></span>
-                            <?php endif; ?>
+                            <?php if($nidn): ?><span><?= htmlspecialchars($nidn) ?></span><?php endif; ?>
                         </div>
 
-                        <h2 class="mit-card-name">
-                            <?= htmlspecialchars($nama) ?>
-                        </h2>
+                        <div class="mit-card-name"><?= htmlspecialchars($nama) ?></div>
 
                         <div class="mit-card-content">
                             <div class="mit-avatar">
                                 <img src="<?= $imgSrc ?>" alt="<?= htmlspecialchars($nama) ?>">
                             </div>
-
-                            <div class="mit-contact">
-                                <?php if (!empty($links)): ?>
-                                    <?php foreach ($links as $link): 
-                                        $url = $link['url_link'];
-                                        // Fix URL
-                                        if (strpos($url, 'http') === false) $url = 'https://' . $url;
-                                    ?>
-                                        <div class="mit-email-row">
-                                            <i class="fas fa-link" style="color:#ccc; font-size:12px;"></i>
-                                            <a href="<?= $url ?>" target="_blank" title="<?= htmlspecialchars($link['judul_link']) ?>">
-                                                <?= htmlspecialchars($link['judul_link']) ?>
-                                            </a>
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    
+                            
+                            <div class="mit-contact" style="flex:1;">
+                                <?php 
+                                if (!empty($row['links']) && is_array($row['links'])): 
+                                    $showLinks = array_slice($row['links'], 0, 3);
+                                    foreach ($showLinks as $link):
+                                        $judulLink = $link['judul_link'];
+                                        $urlLink   = $link['url_link'];
+                                        if (strpos($urlLink, 'http') === false) $urlLink = 'https://' . $urlLink;
+                                ?>
+                                    <div class="mit-email-row">
+                                        <i class="fas fa-link" style="color:#ccc; font-size:12px; margin-right:6px;"></i>
+                                        <span style="color: #01B5B8; font-weight: 600; font-size: 13px;">
+                                            <?= htmlspecialchars($judulLink) ?>
+                                        </span>
+                                    </div>
+                                <?php 
+                                    endforeach;
+                                else:
+                                ?>
+                                    <span style="color:#ccc; font-style:italic; font-size:12px;">No contact info</span>
                                 <?php endif; ?>
                             </div>
                         </div>
+                        
+                        <div class="mit-expertise-box">
+                            <span class="mit-expertise-label">Expertise</span>
+                            <div class="mit-expertise-items">
+                                <?php 
+                                    if($keahlian) {
+                                        $skillsArr = explode(',', $keahlian);
+                                        // Filter yg kosong & trim spasi
+                                        $skillsArr = array_filter(array_map('trim', $skillsArr));
+                                        
+                                        // Ambil 3 pertama saja
+                                        $limit = 3;
+                                        $showSkills = array_slice($skillsArr, 0, $limit);
+                                        $sisa = count($skillsArr) - $limit;
 
-                        <div class="mit-bio">
-                            <?= nl2br(htmlspecialchars($deskripsi)) ?>
+                                        foreach ($showSkills as $sk) {
+                                            echo "<span class='skill-tag'>".htmlspecialchars($sk)."</span>";
+                                        }
+
+                                        // Jika ada sisa, tampilkan +X
+                                        if($sisa > 0) {
+                                            echo "<span class='skill-more'>+$sisa</span>";
+                                        }
+                                    } else {
+                                        echo '<span style="color:#999; font-size:12px;">-</span>';
+                                    }
+                                ?>
+                            </div>
                         </div>
-
+                        
+                        <div style="margin-top:10px; padding-top:10px; font-size:12px; color:#01B5B8; font-weight:600; text-align:right;">
+                            View Full Profile <i class="fas fa-arrow-right" style="font-size:10px;"></i>
+                        </div>
                     </div>
-                    <?php endforeach; ?>
-            </div>
+                </a>
 
-        <?php else: ?>
-            <div class="text-center py-5">
-                <h4 class="text-muted">Belum ada data member.</h4>
+                <?php endforeach; ?>
             </div>
+        <?php else: ?>
+            <div class="text-center py-5"><h4 class="text-muted">Belum ada data member.</h4></div>
         <?php endif; ?>
         
     </div>

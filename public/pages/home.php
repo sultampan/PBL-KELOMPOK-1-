@@ -1,5 +1,3 @@
-
-
     <!--//Header-->
     <!--/Banner-Start-->
     <!-- main-slider -->

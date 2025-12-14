@@ -42,6 +42,14 @@ $link3 = $links[2] ?? null; // Slot 3
     </div>
 
     <div class="mb-3">
+        <label class="form-label">Keahlian / Expertise <span style="color: red">*</span></label>
+        <input type="text" name="keahlian" class="form-control" 
+               placeholder="Contoh: Web Development, AI, Data Mining"
+               value="<?= htmlspecialchars($formData['keahlian'] ?? '') ?>" required>
+        <small style="color: #888; font-size: 12px;">Pisahkan dengan koma jika lebih dari satu.</small>
+    </div>
+
+    <div class="mb-3">
         <label class="form-label">Deskripsi</label>
         <textarea name="deskripsi" rows="4" class="form-control"><?= $formData['deskripsi'] ?? '' ?></textarea>
     </div>

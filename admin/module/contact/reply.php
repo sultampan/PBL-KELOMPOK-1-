@@ -11,7 +11,7 @@ use PHPMailer\PHPMailer\Exception;
 $id = $_GET['id'] ?? 0;
 
 // =================================================================
-// PROSES KIRIM (TANPA ENKRIPSI)
+// PROSES KIRIM (URUTAN DIBALIK: EMAIL DULU -> BARU DB)
 // =================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $balasan      = $_POST['balasan'];
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idAdmin      = $_SESSION['id_admin'] ?? 1;
 
     try {
-        // 1. AMBIL KREDENSIAL DARI DB
+        // 1. AMBIL KREDENSIAL ADMIN DARI DB
         $stmtAdmin = $pdo->prepare("SELECT email, email_password FROM admin WHERE id_admin = :id");
         $stmtAdmin->execute([':id' => $idAdmin]);
         $adminData = $stmtAdmin->fetch(PDO::FETCH_ASSOC);
@@ -34,15 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $senderEmail = $adminData['email'];
         $senderPass  = $adminData['email_password'];
 
-        // 2. SIMPAN BALASAN KE DB
-        $stmt = $pdo->prepare("INSERT INTO contact_reply (id_contact, id_admin, balasan) VALUES (:idc, :ida, :bls)");
-        $stmt->execute([':idc' => $idContact, ':ida' => $idAdmin, ':bls' => $balasan]);
-
-        // 3. UPDATE STATUS
-        $upd = $pdo->prepare("UPDATE contact SET status = 'replied'::contact_status WHERE id_contact = :idc");
-        $upd->execute([':idc' => $idContact]);
-
-        // 4. KIRIM EMAIL
+        // -----------------------------------------------------------
+        // 2. COBA KIRIM EMAIL TERLEBIH DAHULU
+        // -----------------------------------------------------------
+        // Jika ini gagal, kode di bawahnya tidak akan dieksekusi
+        // dan langsung loncat ke catch (Database aman/tidak berubah)
+        
         $mail = new PHPMailer(true);
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
@@ -73,34 +70,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail->Body = $bodyContent;
         $mail->AltBody = strip_tags($balasan);
 
-        $mail->send();
+        $mail->send(); 
+        // ^^^ Jika baris ini error, program stop dan pindah ke catch
 
-        // --- PERUBAHAN DISINI (REDIRECT LANGSUNG) ---
-        // Kita kirim parameter ?status=success ke index.php
+        // -----------------------------------------------------------
+        // 3. SIMPAN KE DB (HANYA JIKA EMAIL SUKSES)
+        // -----------------------------------------------------------
+        
+        // A. Simpan ke tabel reply
+        $stmt = $pdo->prepare("INSERT INTO contact_reply (id_contact, id_admin, balasan) VALUES (:idc, :ida, :bls)");
+        $stmt->execute([':idc' => $idContact, ':ida' => $idAdmin, ':bls' => $balasan]);
+
+        // B. Update status pesan jadi 'replied'
+        $upd = $pdo->prepare("UPDATE contact SET status = 'replied'::contact_status WHERE id_contact = :idc");
+        $upd->execute([':idc' => $idContact]);
+
+        // -----------------------------------------------------------
+        // 4. REDIRECT SUKSES
+        // -----------------------------------------------------------
         header("Location: index.php?page=contact&status=success");
         exit;
 
     } catch (Exception $e) {
+        // JIKA ERROR (Email Gagal):
+        // Database belum tersentuh, jadi status pesan masih 'pending'/'read'.
+        // Tombol balas akan tetap muncul.
+        
         $msg = (isset($mail)) ? $mail->ErrorInfo : $e->getMessage();
-        // Redirect dengan pesan error
-        header("Location: index.php?page=contact&status=error&msg=" . urlencode($msg));
+        header("Location: index.php?page=contact&status=error&msg=" . urlencode("Gagal kirim email: " . $msg));
         exit;
     } catch (PDOException $e) {
-        header("Location: index.php?page=contact&status=error&msg=" . urlencode($e->getMessage()));
+        // Jika error database
+        header("Location: index.php?page=contact&status=error&msg=" . urlencode("Database Error: " . $e->getMessage()));
         exit;
     }
 }
 
-// ... Sisa kode HTML form di bawah tetap sama ...
-// (Bagian SELECT data pesan dan form HTML biarkan saja seperti sebelumnya)
-// Hanya saja tambahkan kode ini jika ingin memastikan data terambil:
-
+// ... Bagian Tampilan Form (Tidak Berubah) ...
 $stmt = $pdo->prepare("SELECT * FROM contact WHERE id_contact = :id");
 $stmt->execute([':id' => $id]);
 $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$data) exit("<div class='alert warning'>Data pesan tidak ditemukan.</div>");
 
+// Tandai 'read' hanya jika membuka halaman ini, tapi jangan ubah kalau sudah replied
 if ($data['status'] == 'pending') {
     $pdo->prepare("UPDATE contact SET status = 'read'::contact_status WHERE id_contact = ?")->execute([$id]);
 }
