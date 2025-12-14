@@ -268,42 +268,49 @@ $totalPages = ceil($totalData / $limit);
     
     /* WRAPPER TEKS */
     .facility-text { padding: 0 5px; width: 100%; text-align: left !important; flex-grow: 1; }
-    
-   /* JUDUL (Maksimal 2 Baris) */
-   /* JUDUL (Maksimal 2 Baris) */
-   .facility-title {
+  
+/* JUDUL (Fleksibel tanpa tinggi minimal) */
+.facility-title {
         font-size: 22px; 
         font-weight: 800; 
         text-transform: uppercase; 
         color: var(--heading-color); 
-        margin-bottom: 10px; 
+        
+        /* Jarak ke deskripsi diperkecil (sebelumnya 10px) */
+        margin-bottom: 5px; 
         line-height: 1.4; 
         
-        /* CSS Line Clamp (Untuk Ellipsis) */
+        /* Membatasi max 2 baris */
         display: -webkit-box; 
-        -webkit-line-clamp: 2; /* Batas 2 baris */
+        -webkit-line-clamp: 2; 
         -webkit-box-orient: vertical; 
         overflow: hidden; 
-        text-overflow: ellipsis; /* Tambahkan titik-titik */
+        text-overflow: ellipsis; 
         
-        min-height: 62px; /* Menjaga tinggi agar sejajar */
+        /* HAPUS MIN-HEIGHT AGAR TIDAK ADA JARAK KOSONG */
+        min-height: auto !important; 
+        height: auto !important;
+        
         text-align: left !important;
     }
     
-    /* DESKRIPSI (Maksimal 2 Baris) */
+    /* DESKRIPSI (Fleksibel) */
     .facility-desc {
         font-size: 16px; 
         color: var(--font-color); 
         line-height: 1.6; 
         
-        /* CSS Line Clamp (Untuk Ellipsis) */
+        /* Membatasi max 3 baris */
         display: -webkit-box; 
-        -webkit-line-clamp: 2; /* Batas 2 baris */
+        -webkit-line-clamp: 3; 
         -webkit-box-orient: vertical; 
         overflow: hidden; 
-        text-overflow: ellipsis; /* Tambahkan titik-titik */
+        text-overflow: ellipsis; 
         
-        min-height: 52px; /* Menjaga tinggi agar sejajar (sekitar 16px * 1.6 * 2) */
+        /* Hapus min-height agar teks bawahnya rapat */
+        min-height: auto !important;
+        height: auto !important;
+        
         text-align: left !important;
     }
 
