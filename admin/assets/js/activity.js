@@ -132,7 +132,63 @@ function resetSearchActivity() {
 }
 
 /* =========================================
-   4. FUNGSI ALERT & UTILITY
+   4. FUNGSI PAGINATION PER KATEGORI
+   ========================================= */
+
+/**
+ * Fungsi untuk navigasi pagination per kategori
+ * @param {string} paramName - Nama parameter URL untuk kategori (contoh: 'page_research')
+ * @param {number} pageNumber - Nomor halaman yang dituju
+ */
+function navigatePage(paramName, pageNumber) {
+    const url = new URL(window.location.href);
+    url.searchParams.set(paramName, pageNumber);
+    
+    // Scroll ke kategori yang di-klik (smooth scroll)
+    const categorySection = document.querySelector(`[data-category="${paramName}"]`);
+    if (categorySection) {
+        // Set timeout agar scroll terjadi setelah halaman reload
+        sessionStorage.setItem('scrollToCategory', paramName);
+    }
+    
+    window.location.href = url.toString();
+}
+
+/**
+ * Fungsi untuk reset semua pagination (opsional)
+ * Mengembalikan semua kategori ke halaman 1
+ */
+function resetAllPagination() {
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    
+    // Hapus semua parameter pagination
+    for (const key of [...params.keys()]) {
+        if (key.startsWith('page_')) {
+            params.delete(key);
+        }
+    }
+    
+    window.location.href = url.toString();
+}
+
+/**
+ * Fungsi untuk smooth scroll ke kategori tertentu
+ * @param {string} categoryName - Nama kategori
+ */
+function scrollToCategory(categoryName) {
+    const element = document.querySelector(`[data-category="page_${categoryName}"]`);
+    if (element) {
+        element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start',
+            inline: 'nearest'
+        });
+    }
+}
+
+/* =========================================
+   5. FUNGSI ALERT & UTILITY
    ========================================= */
 function displayAlert(message, type) {
     let toastContainer = document.getElementById("toast-container");
@@ -156,7 +212,7 @@ function displayAlert(message, type) {
 }
 
 /* =========================================
-   5. FUNGSI CRUD AJAX (LOAD, DELETE, SAVE)
+   6. FUNGSI CRUD AJAX (LOAD, DELETE, SAVE)
    ========================================= */
 function loadActivityList() {
     const listContainer = document.getElementById("activity-list-container");
@@ -296,12 +352,27 @@ function attachSearchListener() {
 }
 
 /* =========================================
-   6. EVENT LISTENER UTAMA (DOM READY)
+   7. EVENT LISTENER UTAMA (DOM READY)
    ========================================= */
 document.addEventListener("DOMContentLoaded", function () {
     
     // Pasang listener untuk search pertama kali load
     attachSearchListener();
+    
+    // Cek apakah ada kategori yang perlu di-scroll setelah pagination
+    const scrollTarget = sessionStorage.getItem('scrollToCategory');
+    if (scrollTarget) {
+        setTimeout(() => {
+            const categorySection = document.querySelector(`[data-category="${scrollTarget}"]`);
+            if (categorySection) {
+                categorySection.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }
+            sessionStorage.removeItem('scrollToCategory');
+        }, 100);
+    }
 
     document.addEventListener("submit", function (e) {
         // Pastikan ID form sesuai dengan yang di form-fields.php (activityForm)
@@ -367,7 +438,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /* =========================================
-   7. FUNGSI FILTER MEMBER (DENGAN DEBOUNCE)
+   8. FUNGSI FILTER MEMBER (DENGAN DEBOUNCE)
    ========================================= */
 
 let memberSearchTimeout = null; // Variabel timer global
@@ -407,4 +478,46 @@ function filterMemberSelection() {
             if (noResult) noResult.style.display = "none";
         }
     }, 300); // 300ms
+/**
+ * Fungsi untuk navigasi pagination per kategori
+ * @param {string} paramName - Nama parameter URL untuk kategori (contoh: 'page_research')
+ * @param {number} pageNumber - Nomor halaman yang dituju
+ */
+function navigatePage(paramName, pageNumber) {
+    const url = new URL(window.location.href);
+    url.searchParams.set(paramName, pageNumber);
+    window.location.href = url.toString();
+}
+
+/**
+ * Fungsi untuk reset semua pagination (opsional)
+ * Mengembalikan semua kategori ke halaman 1
+ */
+function resetAllPagination() {
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    
+    // Hapus semua parameter pagination
+    for (const key of params.keys()) {
+        if (key.startsWith('page_')) {
+            params.delete(key);
+        }
+    }
+    
+    window.location.href = url.toString();
+}
+
+/**
+ * Fungsi untuk smooth scroll ke kategori tertentu
+ * @param {string} categoryId - ID element kategori
+ */
+function scrollToCategory(categoryId) {
+    const element = document.getElementById(categoryId);
+    if (element) {
+        element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }
+}
 }
