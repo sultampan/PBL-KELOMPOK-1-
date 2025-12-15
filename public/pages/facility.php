@@ -10,7 +10,7 @@ if (file_exists($koneksiPath)) {
 }
 
 // --- CONFIG ---
-$limit = 6; 
+$limit = 5; 
 $page = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
 if ($page < 1) $page = 1;
 $offset = ($page - 1) * $limit;
@@ -18,13 +18,13 @@ $searchKeyword = isset($_GET['search']) ? trim($_GET['search']) : '';
 
 // --- PATH DEFINITIONS ---
 $webThumbPath = 'uploads/thumb/fasilitas-thumb/';
-$webImgPath   = 'uploads/fasilitas/';
+$webImgPath   = 'uploads/fasilitas/'; // Path gambar asli (HD)
 $serverBase   = $rootPath . '/public'; 
 $serverThumbPath = $serverBase . '/uploads/thumb/fasilitas-thumb/';
 $serverImgPath   = $serverBase . '/uploads/fasilitas/';
 
 // ==========================================
-// 2. FUNGSI GENERATOR HTML (AGAR KONSISTEN)
+// 2. FUNGSI GENERATOR HTML
 // ==========================================
 
 function renderFacilityGrid($dataList, $serverThumbPath, $webThumbPath, $serverImgPath, $webImgPath) {
@@ -35,59 +35,58 @@ function renderFacilityGrid($dataList, $serverThumbPath, $webThumbPath, $serverI
                 </div>';
     }
 
-    $html = '<ul class="gallery_agile">';
+    $html = '<div class="facility-list-container">';
     
     foreach ($dataList as $row) {
         $gambar = $row['gambar'];
         $hasImage = false; 
-        $srcThumb = ''; 
-        $srcFull  = '';
+        $displayImage = ''; // Variabel untuk menampung gambar yang akan ditampilkan
 
         if (!empty($gambar)) {
             $ext = pathinfo($gambar, PATHINFO_EXTENSION);
             $filename = pathinfo($gambar, PATHINFO_FILENAME);
             $thumbName = $filename . '-thumb.' . $ext;
             
-            if (file_exists($serverThumbPath . $thumbName)) {
-                $srcThumb = $webThumbPath . $thumbName;
+            // LOGIKA PERBAIKAN HD:
+            // Cek gambar asli (Full Size) dulu agar tajam/HD
+            if (file_exists($serverImgPath . $gambar)) {
+                $displayImage = $webImgPath . $gambar;
                 $hasImage = true;
-            } elseif (file_exists($serverImgPath . $gambar)) {
-                $srcThumb = $webImgPath . $gambar;
+            } 
+            // Jika gambar asli rusak/hilang, baru pakai thumbnail sebagai cadangan
+            elseif (file_exists($serverThumbPath . $thumbName)) {
+                $displayImage = $webThumbPath . $thumbName;
                 $hasImage = true;
             }
-            
-            $srcFull = (file_exists($serverImgPath . $gambar)) ? $webImgPath . $gambar : $srcThumb;
         }
 
-        $html .= '<li class="facility-card">';
+        // ROW WRAPPER
+        $html .= '<div class="facility-row">';
         
-        // WRAPPER GAMBAR (Height 250px Fixed)
-        $html .= '<div class="facility-img-wrap">';
-        
+        // BAGIAN GAMBAR (KIRI)
+        $html .= '<div class="facility-img-col">';
         if ($hasImage) {
-            // JIKA ADA GAMBAR
-            $html .= '<a href="'.$srcFull.'" class="chocolat-image" title="'.htmlspecialchars($row['judul']).'">
-                        <img src="'.$srcThumb.'" alt="'.htmlspecialchars($row['judul']).'" />
-                      </a>';
+            // Tampilkan Gambar HD, Tanpa Link, Tanpa Zoom
+            $html .= '<img src="'.$displayImage.'" alt="'.htmlspecialchars($row['judul']).'" />';
         } else {
-            // JIKA TIDAK ADA GAMBAR (PLACEHOLDER)
             $html .= '<div class="no-image-box">
                         <i class="fa fa-image"></i>
-                        <span>Tidak ada gambar</span>
+                        <span>No Image</span>
                       </div>';
         }
         $html .= '</div>'; 
 
-        // TEXT (JUDUL & DESKRIPSI)
-        $html .= '<div class="facility-text">
-                    <div class="facility-title">'.htmlspecialchars($row['judul']).'</div>
-                    <div class="facility-desc">'.nl2br(htmlspecialchars($row['deskripsi'])).'</div>
+        // BAGIAN TEXT (KANAN)
+        $html .= '<div class="facility-text-col">
+                    <h3 class="facility-list-title">'.htmlspecialchars($row['judul']).'</h3>
+                    <div class="title-line"></div>
+                    <div class="facility-list-desc">'.nl2br(htmlspecialchars($row['deskripsi'])).'</div>
                   </div>';
         
-        $html .= '</li>';
+        $html .= '</div>'; 
     }
     
-    $html .= '</ul>';
+    $html .= '</div>'; 
     return $html;
 }
 
@@ -205,116 +204,133 @@ $totalPages = ceil($totalData / $limit);
         content: ""; background: rgba(0, 0, 0, 0.6); position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: -1;
     }
 
-    /* 3. SEARCH BAR */
-    .search-wrapper-center { display: flex; justify-content: center; width: 100%; margin-top: 15px; margin-bottom: 40px; padding: 0 15px; }
-    .search-facility-box { width: 100%; max-width: 600px; position: relative; }
-    .search-facility-box input {
-        width: 100%; border: 1px solid #ccc; border-radius: 50px; padding: 15px 60px 15px 30px;
-        background-color: #fff; color: #333; font-size: 18px; outline: none; transition: all 0.3s ease;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05); 
+    /* ======================================================== */
+    /* 3. SEARCH BAR (STYLE ASLI - UKURAN DIPERKECIL)           */
+    /* ======================================================== */
+    .search-wrapper-center { 
+        display: flex; justify-content: center; width: 100%; 
+        margin-top: 20px; margin-bottom: 50px; 
+        padding: 0 15px; 
     }
-    .search-facility-box input:focus { border-color: var(--primary-color, #007bff); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
-    .search-icon-static { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 22px; pointer-events: none; }
-    .search-loading { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 22px; display: none; }
-
-    /* 4. GRID SYSTEM (STRICT ANTI-GESER) */
-    .facility-section-bg { background-color: var(--bg-color); }
-    
-    ul.gallery_agile {
-        display: grid; 
-        grid-template-columns: repeat(3, minmax(0, 1fr)); 
-        gap: 30px; 
-        padding: 0 !important; margin: 0 !important;
-        list-style: none !important; width: 100%; 
-        align-items: stretch; /* MEMAKSA TINGGI KARTU SAMA */
-    }
-    
-    .facility-card {
-        width: 100%; margin-bottom: 30px; box-sizing: border-box; overflow: hidden;
-        display: flex; flex-direction: column; height: 100%;
-        text-align: left !important; align-items: flex-start !important; justify-content: flex-start !important;
-    }
-
-    /* WRAPPER GAMBAR (TINGGI DIKUNCI) */
-    .facility-img-wrap {
+    .search-facility-box { 
         width: 100%; 
-        height: 250px !important; /* TINGGI FIXED */
-        border-radius: var(--border-radius); 
-        overflow: hidden; 
-        margin-bottom: 20px; 
-        position: relative;
-        background-color: var(--bg-grey); 
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        max-width: 450px; /* Ukuran search diperkecil */ 
+        position: relative; 
+    }
+    .search-facility-box input {
+        width: 100%; 
+        border: 1px solid #ccc; 
+        border-radius: 50px; 
+        padding: 10px 45px 10px 20px; 
+        background-color: #fff; 
+        color: #333; 
+        font-size: 15px;
+        outline: none; 
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.05); 
+        height: 45px;
+    }
+    .search-facility-box input:focus { 
+        border-color: var(--primary-color, #007bff); 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+    }
+    .search-icon-static { 
+        position: absolute; right: 18px; top: 50%; transform: translateY(-50%); 
+        color: #aaa; font-size: 16px; pointer-events: none; 
+    }
+    .search-loading { 
+        position: absolute; right: 18px; top: 50%; transform: translateY(-50%); 
+        color: #aaa; font-size: 16px; display: none; 
+    }
+
+    /* ======================================================== */
+    /* 4. MODERN LIST LAYOUT (STATIC IMAGE - NO ZOOM)           */
+    /* ======================================================== */
+    .facility-section-bg { background-color: #fff; } 
+    
+    .facility-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 50px;
+        max-width: 960px;
+        margin: 0 auto;
+    }
+
+    .facility-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 40px;
+        padding-bottom: 40px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .facility-row:last-child {
+        border-bottom: none;
+    }
+
+    /* BAGIAN GAMBAR (KIRI) */
+    .facility-img-col {
+        width: 380px; /* Lebar fix */
+        height: 250px; /* Tinggi fix */
         flex-shrink: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        background-color: #f4f4f4;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        cursor: default; /* Cursor biasa, bukan pointer link */
     }
-    
-    .facility-img-wrap img {
-        width: 100% !important; height: 100% !important; 
-        object-fit: cover; object-position: center; display: block;
-        transition: transform 0.5s ease;
-    }
-    .facility-img-wrap:hover img { transform: scale(1.05); }
 
-    /* PLACEHOLDER NO IMAGE */
+    .facility-img-col img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        /* TRANSISI & TRANSFORM DIHAPUS agar tidak ada efek zoom */
+        display: block;
+    }
+
+    /* No Image Placeholder */
     .no-image-box {
-        width: 100%; height: 100%; 
-        background-color: var(--bg-lightgrey);
+        width: 100%; height: 100%;
         display: flex; flex-direction: column; justify-content: center; align-items: center;
-        color: var(--font-color); text-align: center !important;
-        border: 1px solid #dee2e6; /* Border tipis biar tegas */
+        background-color: #f8f9fa; color: #ced4da;
     }
-    .no-image-box i { font-size: 42px; margin-bottom: 8px; color: #ced4da; }
-    .no-image-box span { font-size: 16px; font-weight: 600; font-family: sans-serif; color: #adb5bd; }
-    
-    /* WRAPPER TEKS */
-    .facility-text { padding: 0 5px; width: 100%; text-align: left !important; flex-grow: 1; }
-  
-/* JUDUL (Fleksibel tanpa tinggi minimal) */
-.facility-title {
-        font-size: 22px; 
-        font-weight: 800; 
-        text-transform: uppercase; 
-        color: var(--heading-color); 
-        
-        /* Jarak ke deskripsi diperkecil (sebelumnya 10px) */
-        margin-bottom: 5px; 
-        line-height: 1.4; 
-        
-        /* Membatasi max 2 baris */
-        display: -webkit-box; 
-        -webkit-line-clamp: 2; 
-        -webkit-box-orient: vertical; 
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-        
-        /* HAPUS MIN-HEIGHT AGAR TIDAK ADA JARAK KOSONG */
-        min-height: auto !important; 
-        height: auto !important;
-        
-        text-align: left !important;
-    }
-    
-    /* DESKRIPSI (Fleksibel) */
-    .facility-desc {
-        font-size: 16px; 
-        color: var(--font-color); 
-        line-height: 1.6; 
-        
-        /* Membatasi max 3 baris */
-        display: -webkit-box; 
-        -webkit-line-clamp: 3; 
-        -webkit-box-orient: vertical; 
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-        
-        /* Hapus min-height agar teks bawahnya rapat */
-        min-height: auto !important;
-        height: auto !important;
-        
-        text-align: left !important;
+    .no-image-box i { font-size: 40px; margin-bottom: 5px; }
+
+    /* BAGIAN TEKS (KANAN) */
+    .facility-text-col {
+        flex-grow: 1;
+        padding-top: 5px;
+        text-align: left;
     }
 
-    /* 5. PAGINASI STYLE (KOTAK ROUNDED) */
+    .facility-list-title {
+        font-size: 26px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #222;
+        margin-bottom: 12px;
+        line-height: 1.3;
+        letter-spacing: -0.5px;
+    }
+
+    .title-line {
+        width: 60px;
+        height: 4px;
+        background-color: #ff9800;
+        margin-bottom: 20px;
+        border-radius: 2px;
+    }
+
+    .facility-list-desc {
+        font-size: 16px;
+        line-height: 1.8;
+        color: #666;
+        font-family: 'Source Sans Pro', sans-serif;
+    }
+
+    /* ======================================================== */
+    /* 5. PAGINATION (STYLE ASLI)                               */
+    /* ======================================================== */
     .pagination-wrapper { margin-top: 50px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
     
     .page-btn {
@@ -328,7 +344,7 @@ $totalPages = ceil($totalData / $limit);
     .page-btn:hover:not(.disabled):not(.active) { background-color: #f1f1f1; border-color: #ccc; }
     
     .page-btn.active { 
-        background-color: #ff9800; /* WARNA BIRU TUA */
+        background-color: #ff9800; 
         color: #ffffff; border-color: #ff9800; cursor: default; 
     }
     
@@ -339,23 +355,20 @@ $totalPages = ceil($totalData / $limit);
     .page-btn i { font-size: 12px; }
 
     /* RESPONSIVE */
-    @media (max-width: 992px) { ul.gallery_agile { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 768px) { 
-        ul.gallery_agile { grid-template-columns: 1fr; } 
-        .search-facility-box input { padding: 12px 50px 12px 20px; font-size: 16px; }
+    @media (max-width: 992px) {
+        .facility-img-col { width: 320px; height: 220px; }
+        .facility-list-title { font-size: 22px; }
+    }
+
+    @media (max-width: 768px) {
+        .facility-row { flex-direction: column; gap: 20px; text-align: left; }
+        .facility-img-col { width: 100%; height: 240px; }
+        .facility-text-col { width: 100%; padding-top: 0; }
+        .title-line { margin-bottom: 15px; }
+        
+        .search-facility-box input { padding: 10px 40px 10px 20px; font-size: 14px; height: 40px; }
         .page-btn { min-width: 35px; height: 35px; font-size: 14px; border-radius: 6px; }
     }
-    
-    /* CLOSE BUTTON POPUP */
-    #Choco_close, .chocolat-close {
-        position: fixed !important; top: 25px !important; right: 25px !important;
-        z-index: 2147483647 !important; width: 44px !important; height: 44px !important;
-        background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") no-repeat center center !important;
-        background-color: rgba(0, 0, 0, 0.6) !important; background-size: 24px 24px !important;
-        border: 2px solid #fff !important; border-radius: 50% !important;
-        cursor: pointer !important; opacity: 1 !important; transition: transform 0.2s ease;
-    }
-    #Choco_close:hover, .chocolat-close:hover { background-color: #dc3545 !important; transform: scale(1.1); }
 </style>
 
 <div class="inner-banner facility-banner">
@@ -400,25 +413,9 @@ $totalPages = ceil($totalData / $limit);
 </section>
 
 <script>
-    function initChocolat() {
-        if (typeof $ !== 'undefined' && $.fn.Chocolat) {
-            if ($('.chocolat-image').data('chocolat')) {
-                $('.chocolat-image').data('chocolat').destroy();
-            }
-            $('.chocolat-image').Chocolat({
-                imageSize: 'contain', loop: true, overlayOpacity: 0.9, overlayClose: true, closeImg: '',
-            });
-        }
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        initChocolat();
-        $('body').off('click.chocoOverlay').on('click.chocoOverlay', '#Choco_overlay, .chocolat-overlay', function (e) {
-            e.preventDefault(); e.stopPropagation();
-            if ($('#Choco_close').length) $('#Choco_close').trigger('click');
-            else if ($('.chocolat-close').length) $('.chocolat-close').trigger('click');
-        });
-    });
+    // FUNGSI CHOCOLAT (POPUP) HAPUS SAJA KARENA TIDAK DIPAKAI
+    // TAPI TETAP SAYA BIARKAN KOSONG AGAR TIDAK ERROR JIKA ADA SISA JS LAIN
+    function initChocolat() { }
 
     let searchTimeout;
     function goToPage(pageNum) {
@@ -457,7 +454,6 @@ $totalPages = ceil($totalData / $limit);
                 .then(html => {
                     if(container) {
                         container.innerHTML = html;
-                        initChocolat();
                         container.style.opacity = '1';
                     }
                     if(spinner) spinner.style.display = 'none';
