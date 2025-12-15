@@ -442,7 +442,7 @@ if (!$activity) {
                 <div class="detail-section">
                     <h3 class="section-title">Description</h3>
                     <div class="activity-description">
-                        <?= $deskripsi ? nl2br(htmlspecialchars($deskripsi)) : 'There is no description for this activity.'; ?>
+                        <?= $deskripsi ? nl2br(htmlspecialchars($deskripsi)) : 'There is no description for this activity..'; ?>
                     </div>
                 </div>
 
@@ -458,7 +458,7 @@ if (!$activity) {
                                 $isHead = ($member_jabatan === 'Head of Laboratory');
                                 
                                 // Setup Avatar
-                                $defaultImg = 'https://ui-avatars.com/api/?name=' . urlencode($member_name) . '&background=02406C&color=fff&size=128&length=1';
+                               $defaultImg = 'https://ui-avatars.com/api/?name=' . urlencode($member_name) . '&background=random&color=fff&size=128&length=1';
                                 $imgSrc = $defaultImg;
                                 
                                 if (!empty($member['gambar'])) {

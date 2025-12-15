@@ -44,8 +44,8 @@ try {
         throw new Exception("Judul wajib diisi");
     }
     
-    if (strlen($judul) > 50) {
-        throw new Exception("Judul maksimal 50 karakter");
+    if (strlen($judul) > 255) {
+    throw new Exception("Judul maksimal 255 karakter");
     }
     
     if (!$tanggal) {

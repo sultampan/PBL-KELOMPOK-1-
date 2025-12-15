@@ -1,17 +1,174 @@
 // admin/assets/js/activity.js
 
 /* =========================================
-   1. FUNGSI GAMBAR & FILE UPLOAD
+   1. STARTUP & EVENT LISTENERS
+   ========================================= */
+document.addEventListener("DOMContentLoaded", function () {
+    
+    // 1. Inisialisasi Paginasi saat halaman dimuat
+    initActivityPagination();
+
+    // 2. Pasang Listener Search (Enter Key)
+    attachSearchListener();
+    
+    // 3. Inisialisasi state button batal
+    updateBatalButtonState();
+    
+    // 4. Pasang listener untuk perubahan form
+    attachFormChangeListeners();
+    
+    // 5. Cek Scroll (jika habis reload)
+    const scrollTarget = sessionStorage.getItem('scrollToCategory');
+    if (scrollTarget) {
+        setTimeout(() => {
+            const categorySection = document.querySelector(`[data-category="${scrollTarget}"]`);
+            if (categorySection) {
+                categorySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            sessionStorage.removeItem('scrollToCategory');
+        }, 100);
+    }
+
+    // 6. Listener Submit Form Global
+    document.addEventListener("submit", function (e) {
+        if (e.target && e.target.id === "activityForm") {
+            handleActivitySubmit(e);
+        }
+    });
+});
+
+
+/* =========================================
+   2. CLIENT-SIDE PAGINATION (STYLE PARTNER + FIRST/LAST)
+   ========================================= */
+
+function initActivityPagination() {
+    const grids = document.querySelectorAll('.paginated-grid');
+
+    if (grids.length === 0) return;
+
+    grids.forEach(grid => {
+        const items = grid.querySelectorAll('.grid-item');
+        const limit = parseInt(grid.dataset.itemsPerPage) || 6; 
+        const totalItems = items.length;
+        const totalPages = Math.ceil(totalItems / limit);
+        
+        // Ambil ID container pagination
+        const paginationContainerId = grid.id.replace('grid-', 'pagination-');
+        const paginationContainer = document.getElementById(paginationContainerId);
+
+        if (totalItems === 0) return;
+
+        // Fungsi Tampilkan Halaman
+        const showPage = (page) => {
+            grid.dataset.currentPage = page;
+
+            const start = (page - 1) * limit;
+            const end = start + limit;
+
+            items.forEach((item, index) => {
+                if (index >= start && index < end) {
+                    item.style.display = 'flex'; 
+                    item.style.opacity = '0';
+                    setTimeout(() => item.style.opacity = '1', 50);
+                } else {
+                    item.style.display = 'none'; 
+                }
+            });
+
+            // Render Tombol Navigasi
+            renderPaginationControls(paginationContainer, page, totalPages, showPage);
+        };
+
+        // Mulai dari halaman 1
+        showPage(1);
+    });
+}
+
+function renderPaginationControls(container, currentPage, totalPages, onPageClick) {
+    if (!container) return;
+    
+    if (totalPages <= 1) {
+        container.innerHTML = ""; 
+        return;
+    }
+
+    // --- LOGIKA SLIDING WINDOW ---
+    const maxVisible = 6;
+    let startPage = currentPage - 2;
+    
+    if (startPage < 1) startPage = 1;
+    
+    let endPage = startPage + maxVisible - 1;
+    
+    if (endPage > totalPages) {
+        endPage = totalPages;
+        startPage = endPage - maxVisible + 1;
+        if (startPage < 1) startPage = 1;
+    }
+
+    // --- HTML GENERATOR (STYLE SAMA DENGAN PARTNER) ---
+    // Menggunakan class dari components.css (.page-link, .page-num, .page-arrow)
+    let html = `<div class="pagination" style="margin-top: 20px; justify-content: center; display: flex; gap: 5px;">`;
+
+    // Helper untuk generate class string
+    const getClass = (type, active, disabled) => {
+        let cls = 'page-link'; // Class dasar
+        if (type === 'num') cls += ' page-num';
+        if (type === 'arrow') cls += ' page-arrow';
+        if (active) cls += ' active';
+        if (disabled) cls += ' disabled';
+        return cls;
+    };
+
+    // 1. TOMBOL PREV (<)
+    html += `<a href="javascript:void(0)" class="${getClass('arrow', false, currentPage === 1)}" data-page="${currentPage - 1}" title="Sebelumnya">&lsaquo;</a>`;
+
+    // 2. TOMBOL FIRST PAGE (<<)
+    html += `<a href="javascript:void(0)" class="${getClass('arrow', false, currentPage === 1)}" data-page="1" title="Halaman Pertama">&laquo;</a>`;
+
+    // 3. ANGKA HALAMAN
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<a href="javascript:void(0)" class="${getClass('num', i === currentPage, false)}" data-page="${i}">${i}</a>`;
+    }
+
+    // 4. TOMBOL LAST PAGE (>>)
+    html += `<a href="javascript:void(0)" class="${getClass('arrow', false, currentPage === totalPages)}" data-page="${totalPages}" title="Halaman Terakhir">&raquo;</a>`;
+
+    // 5. TOMBOL NEXT (>)
+    html += `<a href="javascript:void(0)" class="${getClass('arrow', false, currentPage === totalPages)}" data-page="${currentPage + 1}" title="Selanjutnya">&rsaquo;</a>`;
+
+    html += `</div>`;
+    container.innerHTML = html;
+
+    // Pasang Event Listener
+    container.querySelectorAll('a').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Cek apakah tombol disabled atau sedang aktif
+            if (btn.classList.contains('disabled') || btn.classList.contains('active')) return;
+            
+            const targetPage = parseInt(btn.dataset.page);
+            if (!isNaN(targetPage) && targetPage > 0 && targetPage <= totalPages) {
+                onPageClick(targetPage);
+            }
+        });
+    });
+}
+
+
+/* =========================================
+   3. FUNGSI GAMBAR & FILE UPLOAD
    ========================================= */
 function previewActivityImage(event) {
     const input = event.target;
     const imgPreview = document.getElementById("imgPreview");
-    const previewBox = document.getElementById("previewBox"); // Ambil elemen Kotak
+    const previewBox = document.getElementById("previewBox"); 
+    const errorContainer = document.getElementById("fileError");
     
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; 
     const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-    const errorContainer = document.getElementById("fileError");
     if (errorContainer) {
         errorContainer.textContent = "";
         errorContainer.style.display = "none";
@@ -23,53 +180,51 @@ function previewActivityImage(event) {
         const fileExt = fileName.split('.').pop().toLowerCase();
 
         if (!ALLOWED_EXT.includes(fileExt)) {
-            errorContainer.textContent = `Ekstensi tidak diizinkan.`;
-            errorContainer.style.display = "block";
-            input.value = "";
-            
-            // Sembunyikan kotak jika error
-            if(previewBox) previewBox.style.display = "none";
-            
+            showFileError(input, previewBox, "Ekstensi file harus JPG, PNG, GIF, atau WEBP.");
             updateActivityFileName(input);
+            updateBatalButtonState();
             return;
         }
         if (file.size > MAX_FILE_SIZE) {
-            errorContainer.textContent = "File terlalu besar (Max 5MB).";
-            errorContainer.style.display = "block";
-            input.value = "";
-            
-            // Sembunyikan kotak jika error
-            if(previewBox) previewBox.style.display = "none";
-            
+            showFileError(input, previewBox, "Ukuran file terlalu besar (Max 5MB).");
             updateActivityFileName(input);
+            updateBatalButtonState();
             return;
         }
 
         const reader = new FileReader();
         reader.onload = function (e) {
             imgPreview.src = e.target.result;
-            // Tampilkan kotak dengan flex agar gambar di tengah
             if(previewBox) previewBox.style.display = "flex";
         };
         reader.readAsDataURL(file);
     } else {
-        imgPreview.src = "";
-        // Sembunyikan kotak jika tidak ada file
+        if(imgPreview) imgPreview.src = "";
         if(previewBox) previewBox.style.display = "none";
     }
+    updateActivityFileName(input);
+    updateBatalButtonState();
+}
+
+function showFileError(input, previewBox, msg) {
+    const errorContainer = document.getElementById("fileError");
+    if(errorContainer) {
+        errorContainer.textContent = msg;
+        errorContainer.style.display = "block";
+    }
+    input.value = "";
+    if(previewBox) previewBox.style.display = "none";
 }
 
 function removeActivityImage() {
     const input = document.getElementById("inputGambar");
     const img = document.getElementById("imgPreview");
-    const previewBox = document.getElementById("previewBox"); // Ambil elemen Kotak
+    const previewBox = document.getElementById("previewBox");
     const removeBtn = document.getElementById("removeImageBtn");
     const fileNameText = document.getElementById("fileNameText");
 
     if (input) input.value = "";
     if (img) img.src = "";
-    
-    // Sembunyikan kotak saat dihapus
     if (previewBox) previewBox.style.display = "none";
 
     if (fileNameText) fileNameText.textContent = "Tidak ada file yang dipilih...";
@@ -77,6 +232,8 @@ function removeActivityImage() {
 
     const removeExisting = document.getElementById("removeExistingImage");
     if (removeExisting) removeExisting.value = "1";
+    
+    updateBatalButtonState();
 }
 
 function updateActivityFileName(input) {
@@ -93,212 +250,271 @@ function updateActivityFileName(input) {
     if (removeExisting) removeExisting.value = "0";
 }
 
+
 /* =========================================
-   2. FUNGSI DYNAMIC ROW (TEAM/MEMBER)
+   4. FUNGSI TEAM MEMBER & FILTER
    ========================================= */
 function addTeamRow() {
     const container = document.getElementById('team-container');
     const template = document.getElementById('teamRowTemplate');
-    
     if (container && template) {
-        // Clone isi template
         const clone = template.content.cloneNode(true);
         container.appendChild(clone);
+        
+        // Pasang listener untuk select yang baru ditambahkan
+        const newSelects = container.querySelectorAll('select[name="member_ids[]"]');
+        if (newSelects.length > 0) {
+            const lastSelect = newSelects[newSelects.length - 1];
+            lastSelect.addEventListener('change', updateBatalButtonState);
+        }
+        
+        updateBatalButtonState();
     }
 }
 
 function removeTeamRow(btn) {
-    // Cari elemen induk .link-row terdekat dan hapus
     const row = btn.closest('.link-row');
     if (row) {
         row.remove();
+        updateBatalButtonState();
     }
 }
 
-/* =========================================
-   3. FUNGSI SEARCH (PENCARIAN)
-   ========================================= */
-function searchActivity() {
-    const input = document.getElementById('searchActivityInput');
-    if (input) {
-        const keyword = input.value;
-        // Redirect GET standar agar halaman reload dengan parameter search
-        window.location.href = '?page=activity&keyword=' + encodeURIComponent(keyword);
-    }
+let memberSearchTimeout = null;
+function filterMemberSelection() {
+    clearTimeout(memberSearchTimeout);
+    memberSearchTimeout = setTimeout(() => {
+        const input = document.getElementById('searchMemberInput');
+        const filter = input.value.toLowerCase();
+        
+        const container = document.getElementById('memberListContainer');
+        const items = container.getElementsByClassName('member-item');
+        const noResult = document.getElementById('noMemberFound');
+        
+        let visibleCount = 0;
+        for (let i = 0; i < items.length; i++) {
+            const label = items[i].getElementsByTagName("span")[0];
+            const txtValue = label.textContent || label.innerText;
+            if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                items[i].style.display = ""; 
+                visibleCount++;
+            } else {
+                items[i].style.display = "none";
+            }
+        }
+        if (noResult) noResult.style.display = (visibleCount === 0) ? "block" : "none";
+    }, 300);
 }
 
-function resetSearchActivity() {
-    window.location.href = '?page=activity';
-}
 
 /* =========================================
-   4. FUNGSI PAGINATION PER KATEGORI
+   5. BUTTON BATAL STATE MANAGEMENT
    ========================================= */
 
 /**
- * Fungsi untuk navigasi pagination per kategori
- * @param {string} paramName - Nama parameter URL untuk kategori (contoh: 'page_research')
- * @param {number} pageNumber - Nomor halaman yang dituju
+ * Fungsi untuk mengecek apakah form sudah terisi atau belum
+ * @returns {boolean} - true jika form sudah terisi, false jika masih kosong
  */
-function navigatePage(paramName, pageNumber) {
-    const url = new URL(window.location.href);
-    url.searchParams.set(paramName, pageNumber);
+function isFormFilled() {
+    const form = document.getElementById('activityForm');
+    if (!form) return false;
     
-    // Scroll ke kategori yang di-klik (smooth scroll)
-    const categorySection = document.querySelector(`[data-category="${paramName}"]`);
-    if (categorySection) {
-        // Set timeout agar scroll terjadi setelah halaman reload
-        sessionStorage.setItem('scrollToCategory', paramName);
-    }
+    // Cek input text judul
+    const judulInput = form.querySelector('input[name="judul"]');
+    if (judulInput && judulInput.value.trim() !== '') return true;
     
-    window.location.href = url.toString();
-}
-
-/**
- * Fungsi untuk reset semua pagination (opsional)
- * Mengembalikan semua kategori ke halaman 1
- */
-function resetAllPagination() {
-    const url = new URL(window.location.href);
-    const params = url.searchParams;
+    // Cek select kategori
+    const kategoriSelect = form.querySelector('select[name="kategori"]');
+    if (kategoriSelect && kategoriSelect.value !== '') return true;
     
-    // Hapus semua parameter pagination
-    for (const key of [...params.keys()]) {
-        if (key.startsWith('page_')) {
-            params.delete(key);
+    // Cek input tanggal
+    const tanggalInput = form.querySelector('input[name="tanggal_kegiatan"]');
+    if (tanggalInput && tanggalInput.value !== '') return true;
+    
+    // Cek textarea deskripsi
+    const deskripsiTextarea = form.querySelector('textarea[name="deskripsi"]');
+    if (deskripsiTextarea && deskripsiTextarea.value.trim() !== '') return true;
+    
+    // Cek apakah ada member yang dipilih (checkbox atau select)
+    const memberCheckboxes = form.querySelectorAll('input[name="member_ids[]"]:checked');
+    if (memberCheckboxes && memberCheckboxes.length > 0) return true;
+    
+    const memberSelects = form.querySelectorAll('select[name="member_ids[]"]');
+    if (memberSelects) {
+        for (let select of memberSelects) {
+            if (select.value !== '') return true;
         }
     }
     
-    window.location.href = url.toString();
+    // Cek apakah ada file gambar yang dipilih
+    const gambarInput = form.querySelector('input[name="gambar"]');
+    if (gambarInput && gambarInput.files && gambarInput.files.length > 0) return true;
+    
+    // Cek apakah ada gambar lama (mode edit)
+    const gambarLamaInput = form.querySelector('input[name="gambar_lama"]');
+    if (gambarLamaInput && gambarLamaInput.value !== '') return true;
+    
+    return false;
 }
 
 /**
- * Fungsi untuk smooth scroll ke kategori tertentu
- * @param {string} categoryName - Nama kategori
+ * Fungsi untuk update state button batal
  */
-function scrollToCategory(categoryName) {
-    const element = document.querySelector(`[data-category="page_${categoryName}"]`);
-    if (element) {
-        element.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start',
-            inline: 'nearest'
+function updateBatalButtonState() {
+    const batalBtn = document.querySelector('.btn-secondary');
+    if (!batalBtn) return;
+    
+    if (isFormFilled()) {
+        batalBtn.disabled = false;
+        batalBtn.style.opacity = '1';
+        batalBtn.style.cursor = 'pointer';
+    } else {
+        batalBtn.disabled = true;
+        batalBtn.style.opacity = '0.5';
+        batalBtn.style.cursor = 'not-allowed';
+    }
+}
+
+/**
+ * Fungsi untuk pasang listener pada semua input form
+ */
+function attachFormChangeListeners() {
+    const form = document.getElementById('activityForm');
+    if (!form) return;
+    
+    // Listener untuk semua input text, date, textarea, dan select
+    const inputs = form.querySelectorAll('input[type="text"], input[type="date"], textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', updateBatalButtonState);
+        input.addEventListener('change', updateBatalButtonState);
+    });
+    
+    // Listener untuk checkbox member
+    const checkboxes = form.querySelectorAll('input[name="member_ids[]"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBatalButtonState);
+    });
+    
+    // Listener untuk file input
+    const fileInput = form.querySelector('input[name="gambar"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', updateBatalButtonState);
+    }
+}
+
+
+/* =========================================
+   6. SEARCH & AJAX LOAD (Tanpa Reload)
+   ========================================= */
+
+function searchActivity() {
+    const input = document.getElementById('searchActivityInput');
+    const keyword = input ? input.value.trim() : '';
+    
+    const url = new URL(window.location.href);
+    if (keyword) {
+        url.searchParams.set('keyword', keyword);
+    } else {
+        url.searchParams.delete('keyword');
+    }
+    
+    // Update URL bar
+    window.history.pushState(null, "", url);
+    
+    // Reload tabel
+    loadActivityList();
+}
+
+function attachSearchListener() {
+    const searchInput = document.getElementById('searchActivityInput');
+    if (searchInput) {
+        const newInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newInput, searchInput);
+        
+        newInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchActivity();
         });
     }
 }
 
-/* =========================================
-   5. FUNGSI ALERT & UTILITY
-   ========================================= */
-function displayAlert(message, type) {
-    let toastContainer = document.getElementById("toast-container");
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'toast-container';
-        document.body.appendChild(toastContainer);
-    }
-    const toast = document.createElement('div');
-    toast.className = `alert toast ${type}`;
-    toast.innerHTML = message;
-    toastContainer.appendChild(toast);
-    setTimeout(() => {
-        toast.classList.add('hide');
-        setTimeout(() => {
-            toast.remove();
-            if (toastContainer.children.length === 0) toastContainer.remove();
-        }, 300);
-    }, 4000);
-}
-
-/* =========================================
-   6. FUNGSI CRUD AJAX (LOAD, DELETE, SAVE)
-   ========================================= */
 function loadActivityList() {
     const listContainer = document.getElementById("activity-list-container");
     if (!listContainer) return;
-    
-    const currentParams = new URLSearchParams(window.location.search);
-    const url = "module/activity/table-load.php" + window.location.search;
 
-    listContainer.innerHTML = '<div style="text-align:center; padding:20px;">Memuat data...</div>';
+    listContainer.style.opacity = "0.5";
 
-    fetch(url).then((response) => response.text()).then((html) => {
-        // Buat elemen temporary untuk mengecek isi HTML yang baru diterima
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = html;
-        
-        const currentPage = parseInt(currentParams.get("p")) || 1;
-        
-        // [PERBAIKAN DISINI]
-        // Kita hitung jumlah card (.mit-card) yang ada di respon baru.
-        const totalCards = tempDiv.querySelectorAll(".mit-card").length;
+    const timestamp = new Date().getTime();
+    const url = "module/activity/table-load.php" + window.location.search + "&_t=" + timestamp;
 
-        // Logika: Jika kita ada di halaman > 1 TAPI tidak ada card satupun (kosong)
-        // Maka otomatis mundur 1 halaman.
-        if (currentPage > 1 && totalCards === 0) {
-            currentParams.set("p", currentPage - 1);
-            
-            // Update URL browser tanpa reload
-            window.history.pushState(null, "", window.location.pathname + "?" + currentParams.toString());
-            
-            // Panggil fungsi ini lagi untuk memuat halaman sebelumnya
-            loadActivityList(); 
-            return;
-        }
-
-        // Jika data ada, tampilkan seperti biasa
+    fetch(url)
+    .then(response => response.text())
+    .then(html => {
         listContainer.innerHTML = html;
+        listContainer.style.opacity = "1";
         
-        // Pasang ulang listener search
-        attachSearchListener(); 
-
-    }).catch((error) => {
+        // Re-init Paginasi agar tombol muncul kembali
+        initActivityPagination();
+        
+        attachSearchListener();
+    })
+    .catch(error => {
         console.error("Error loading table:", error);
         listContainer.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat tabel.</div>';
+        listContainer.style.opacity = "1";
     });
 }
 
-function loadEmptyActivityForm(successMessage) {
-    const formContainer = document.getElementById("form-content-wrapper");
-    if (!formContainer) return;
-    const url = "module/activity/form-load.php?success_msg=" + encodeURIComponent(successMessage);
 
-    displayAlert(successMessage, "success");
+/* =========================================
+   7. FORM HANDLERS (SAVE & DELETE)
+   ========================================= */
 
-    fetch(url).then((response) => response.text()).then((html) => {
-        formContainer.innerHTML = html;
-        const newNameInput = document.querySelector('#activityForm input[name="judul"]');
-        if (newNameInput) setTimeout(() => {
-            newNameInput.focus();
-        }, 50);
-    }).catch((error) => {
-        console.error("Error loading form:", error);
-    });
-}
+function handleActivitySubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const url = "module/activity/save.php";
 
-// Diganti namanya jadi cancelMemberForm agar sesuai dengan onclick di HTML
-function cancelMemberForm() {
-    const formContainer = document.getElementById("form-content-wrapper");
-    if (!formContainer) return;
-    formContainer.innerHTML = '<div style="text-align:center; padding:20px;">Mereset form...</div>';
+    const submitBtn = document.getElementById("submitBtn");
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Memproses...";
 
-    fetch("module/activity/form-load.php").then((response) => response.text()).then((html) => {
-        formContainer.innerHTML = html;
-        const currentUrl = new URL(window.location);
-        currentUrl.searchParams.delete('edit');
-        window.history.pushState({}, '', currentUrl);
+    fetch(url, { method: "POST", body: formData })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            displayAlert(data.message, "success");
+            
+            // 1. Refresh Table
+            loadActivityList();
 
-        const judulInput = document.querySelector('#activityForm input[name="judul"]');
-        if (judulInput) setTimeout(() => {
-            judulInput.focus();
-        }, 50);
+            // 2. Reset Form
+            cancelMemberForm();
+            
+            // 3. Scroll ke atas
+            const tableArea = document.getElementById("activity-list-container");
+            if (tableArea) tableArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        document.querySelector('.card h2').scrollIntoView({
-            behavior: 'smooth'
-        });
-    }).catch((error) => {
-        console.error("Error resetting form:", error);
+        } else {
+            displayAlert(data.message, "error");
+            
+            // Reset gambar jika error upload
+            const input = document.getElementById('inputGambar');
+            if (input && data.message.includes("upload")) {
+                 removeActivityImage();
+            }
+        }
+    })
+    .catch(error => {
+        console.error("AJAX Error:", error);
+        displayAlert("Terjadi kesalahan jaringan.", "error");
+    })
+    .finally(() => {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
     });
 }
 
@@ -309,215 +525,70 @@ function deleteActivity(id) {
     const formData = new FormData();
     formData.append("id", id);
 
-    fetch(url, {
-        method: "POST",
-        body: formData
-    })
-    .then((response) => response.json()).then((data) => {
+    fetch(url, { method: "POST", body: formData })
+    .then(response => response.json())
+    .then(data => {
         if (data.status === "success") {
-            // 1. Tampilkan notifikasi sukses
             displayAlert(data.message, "success");
+            loadActivityList(); 
             
-            // 2. Refresh tabel saja (Panggil fungsi AJAX yang sudah ada)
-            loadActivityList();
-            
-            // (Opsional) Jika sedang dalam mode edit item yang barusan dihapus, reset formnya
-            // Cek apakah ada input hidden id_activity yang nilainya sama dengan id yang dihapus
             const currentEditId = document.querySelector('input[name="id_activity"]');
             if (currentEditId && currentEditId.value == id) {
-                cancelMemberForm(); // Reset form jadi kosong
+                cancelMemberForm();
             }
-        }
-        else {
+        } else {
             displayAlert(data.message, "error");
         }
-    }).catch((error) => {
-        console.error("AJAX Delete Error:", error);
-        displayAlert("Terjadi kesalahan jaringan.", "error");
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        displayAlert("Gagal menghapus data.", "error");
     });
 }
 
-// Fungsi helper untuk event listener search (Enter key)
-function attachSearchListener() {
-    const searchInput = document.getElementById('searchActivityInput');
-    if (searchInput) {
-        // Hapus listener lama (cloning element trick) biar ga double
-        const newInput = searchInput.cloneNode(true);
-        searchInput.parentNode.replaceChild(newInput, searchInput);
+function cancelMemberForm() {
+    const formContainer = document.getElementById("form-content-wrapper");
+    if (!formContainer) return;
+    
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.delete('edit');
+    window.history.pushState({}, '', currentUrl);
+
+    fetch("module/activity/form-load.php")
+    .then(response => response.text())
+    .then(html => {
+        formContainer.innerHTML = html;
         
-        newInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') searchActivity();
-        });
-    }
+        // Re-attach form listeners setelah form di-reset
+        attachFormChangeListeners();
+        updateBatalButtonState();
+        
+        document.querySelector('.card h2').scrollIntoView({ behavior: 'smooth' });
+    });
 }
 
-/* =========================================
-   7. EVENT LISTENER UTAMA (DOM READY)
-   ========================================= */
-document.addEventListener("DOMContentLoaded", function () {
+function displayAlert(message, type) {
+    let toastContainer = document.getElementById("toast-container");
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
+    }
     
-    // Pasang listener untuk search pertama kali load
-    attachSearchListener();
+    const toast = document.createElement('div');
+    toast.className = `alert toast ${type}`;
+    toast.innerHTML = message;
     
-    // Cek apakah ada kategori yang perlu di-scroll setelah pagination
-    const scrollTarget = sessionStorage.getItem('scrollToCategory');
-    if (scrollTarget) {
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    setTimeout(() => {
+        toast.style.opacity = "0";
         setTimeout(() => {
-            const categorySection = document.querySelector(`[data-category="${scrollTarget}"]`);
-            if (categorySection) {
-                categorySection.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-            }
-            sessionStorage.removeItem('scrollToCategory');
-        }, 100);
-    }
-
-    document.addEventListener("submit", function (e) {
-        // Pastikan ID form sesuai dengan yang di form-fields.php (activityForm)
-        if (e.target && e.target.id === "activityForm") {
-            e.preventDefault();
-            const form = e.target;
-            const formData = new FormData(form);
-            const url = "module/activity/save.php";
-
-            const submitBtn = document.getElementById("submitBtn");
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Memproses...";
-
-            fetch(url, {
-                method: "POST",
-                body: formData
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    console.log('Save response:', data); // Debug log
-                    
-                    if (data.status === "success") {
-                        // 1. Tampilkan pesan sukses
-                        displayAlert(data.message, "success");
-                        
-                        // 2. Refresh Tabel Data secara AJAX (Tanpa Reload Halaman)
-                        loadActivityList();
-
-                        // 3. Reset Form ke mode "Tambah Baru" yang bersih
-                        // Fungsi ini sudah kamu buat sebelumnya, jadi kita manfaatkan saja
-                        cancelMemberForm();
-
-                        // 4. (Opsional) Scroll ke tabel biar user langsung lihat data barunya
-                        const tableArea = document.getElementById("activity-list-container");
-                        if (tableArea) {
-                            tableArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                    } else {
-                        // LOGIKA ERROR
-                        displayAlert(data.message, "error");
-
-                        const input = document.getElementById('inputGambar');
-                        const img = document.getElementById('imgPreview');
-                        if (input) input.value = '';
-                        if (img) img.style.display = 'none';
-                        updateActivityFileName(input);
-                    }
-                })
-                .catch((error) => {
-                    console.error("AJAX Error:", error);
-                    displayAlert("Terjadi kesalahan jaringan/server.", "error");
-                })
-                .finally(() => {
-                    const finalBtn = document.getElementById("submitBtn");
-                    if (finalBtn) {
-                        finalBtn.disabled = false;
-                        const isEditMode = formData.get("id_activity");
-                        finalBtn.textContent = isEditMode ? "Update" : "Simpan";
-                    }
-                });
-        }
-    });
-});
-
-/* =========================================
-   8. FUNGSI FILTER MEMBER (DENGAN DEBOUNCE)
-   ========================================= */
-
-let memberSearchTimeout = null; // Variabel timer global
-
-function filterMemberSelection() {
-    // 1. Reset timer setiap kali user mengetik
-    clearTimeout(memberSearchTimeout);
-
-    // 2. Set timer baru (tunggu 300ms setelah ketikan terakhir)
-    memberSearchTimeout = setTimeout(() => {
-        
-        // --- LOGIKA PENCARIAN DIMULAI DI SINI ---
-        const input = document.getElementById('searchMemberInput');
-        const filter = input.value.toLowerCase();
-        
-        const container = document.getElementById('memberListContainer');
-        const items = container.getElementsByClassName('member-item');
-        const noResult = document.getElementById('noMemberFound');
-        
-        let visibleCount = 0;
-
-        for (let i = 0; i < items.length; i++) {
-            const label = items[i].getElementsByTagName("span")[0];
-            const txtValue = label.textContent || label.innerText;
-            
-            if (txtValue.toLowerCase().indexOf(filter) > -1) {
-                items[i].style.display = ""; 
-                visibleCount++;
-            } else {
-                items[i].style.display = "none";
-            }
-        }
-
-        if (visibleCount === 0) {
-            if (noResult) noResult.style.display = "block";
-        } else {
-            if (noResult) noResult.style.display = "none";
-        }
-    }, 300); // 300ms
-/**
- * Fungsi untuk navigasi pagination per kategori
- * @param {string} paramName - Nama parameter URL untuk kategori (contoh: 'page_research')
- * @param {number} pageNumber - Nomor halaman yang dituju
- */
-function navigatePage(paramName, pageNumber) {
-    const url = new URL(window.location.href);
-    url.searchParams.set(paramName, pageNumber);
-    window.location.href = url.toString();
-}
-
-/**
- * Fungsi untuk reset semua pagination (opsional)
- * Mengembalikan semua kategori ke halaman 1
- */
-function resetAllPagination() {
-    const url = new URL(window.location.href);
-    const params = url.searchParams;
-    
-    // Hapus semua parameter pagination
-    for (const key of params.keys()) {
-        if (key.startsWith('page_')) {
-            params.delete(key);
-        }
-    }
-    
-    window.location.href = url.toString();
-}
-
-/**
- * Fungsi untuk smooth scroll ke kategori tertentu
- * @param {string} categoryId - ID element kategori
- */
-function scrollToCategory(categoryId) {
-    const element = document.getElementById(categoryId);
-    if (element) {
-        element.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-        });
-    }
-}
+            toast.remove();
+            if (toastContainer.children.length === 0) toastContainer.remove();
+        }, 300);
+    }, 4000);
 }

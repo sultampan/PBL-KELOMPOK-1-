@@ -71,8 +71,9 @@
     /* --- CARD STYLE --- */
     .activity-card {
         background: white;
-        min-width: 320px;
-        max-width: 320px;
+        min-width: 280px;
+        max-width: 280px;
+        height: 520px;
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -91,7 +92,7 @@
     .activity-image-wrapper {
         position: relative;
         width: 100%;
-        height: 200px;
+        height: 180px;
         overflow: hidden;
         background-color: #e0e0e0;
     }
@@ -125,6 +126,7 @@
         display: flex;
         flex-direction: column;
         flex-grow: 1;
+        height: 280px;
     }
 
     .activity-title-main {
@@ -133,33 +135,74 @@
         color: #333;
         margin-bottom: 10px;
         line-height: 1.4;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
+        height: 46px;
         overflow: hidden;
+        display: block;
     }
 
     .activity-date {
-        color: #888; font-size: 0.85rem; margin-bottom: 10px;
-        display: flex; align-items: center; gap: 5px;
+        color: #888; 
+        font-size: 0.85rem; 
+        margin-bottom: 10px;
+        display: flex; 
+        align-items: center; 
+        gap: 5px;
+        height: 24px;
     }
 
     .activity-description {
-        color: #666; font-size: 0.9rem; line-height: 1.6; margin-bottom: 15px;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
-        -webkit-box-orient: vertical;
+        color: #666; 
+        font-size: 0.9rem; 
+        line-height: 1.6; 
+        margin-bottom: 15px;
+        height: 72px;
         overflow: hidden;
+        display: block;
     }
 
     /* Members Section */
     .activity-members {
-        font-size: 0.85rem; color: #333; font-weight: 600;
-        margin-top: auto; padding-top: 10px; border-top: 1px solid #eee;
+        font-size: 0.75rem;
+        color: #333;
+        font-weight: 600;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+        height: 70px;
     }
-    .activity-members span { font-weight: normal; color: #555; }
+
+    .activity-members-label {
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .activity-members-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-content: flex-start;
+    }
+
+    .member-tag {
+        display: inline-block;
+        padding: 5px 12px;
+        background: #e0f7fa;
+        color: #006064;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border: 1px solid #b2ebf2;
+        white-space: nowrap;
+    }
+
+    .member-more {
+        display: inline-block;
+        padding: 5px 12px;
+        background: #f5f5f5;
+        color: #666;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
 
     /* View More Button (Style mirip member) */
     .activity-footer {
@@ -346,18 +389,29 @@
                                                 </div>
 
                                                 <div class="activity-members">
-                                                    Member: 
-                                                    <?php 
-                                                    if (!empty($row['members'])) {
-                                                        $members_array = explode(',', $row['members']);
-                                                        $display_members = array_slice($members_array, 0, 2);
-                                                        echo '<span>' . htmlspecialchars(implode(', ', $display_members));
-                                                        if(count($members_array) > 2) echo ', ...';
-                                                        echo '</span>';
-                                                    } else {
-                                                        echo '<span>-</span>';
-                                                    }
-                                                    ?>
+                                                    <div class="activity-members-label">Member:</div>
+                                                    <div class="activity-members-tags">
+                                                        <?php 
+                                                        if (!empty($row['members'])) {
+                                                            $members_array = explode(',', $row['members']);
+                                                            $members_array = array_map('trim', $members_array);
+                                                            
+                                                            // Tampilkan maksimal 2 member
+                                                            $display_count = min(2, count($members_array));
+                                                            for ($i = 0; $i < $display_count; $i++) {
+                                                                echo '<span class="member-tag">' . htmlspecialchars($members_array[$i]) . '</span>';
+                                                            }
+                                                            
+                                                            // Jika ada lebih dari 2, tampilkan +X
+                                                            $remaining = count($members_array) - $display_count;
+                                                            if ($remaining > 0) {
+                                                                echo '<span class="member-more">+' . $remaining . '</span>';
+                                                            }
+                                                        } else {
+                                                            echo '<span class="member-tag" style="background: #f5f5f5; color: #888; border-color: #e0e0e0;">-</span>';
+                                                        }
+                                                        ?>
+                                                    </div>
                                                 </div>
                                             </div>
                                         
@@ -398,7 +452,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const track = wrapper.querySelector('.activity-track');
         const prevBtn = wrapper.querySelector('.prev-btn');
         const nextBtn = wrapper.querySelector('.next-btn');
-        const scrollAmount = 340;
+        const scrollAmount = 300;
 
         const checkArrows = () => {
             const maxScrollLeft = track.scrollWidth - track.clientWidth - 1;

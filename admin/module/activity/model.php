@@ -11,71 +11,28 @@ function getAllMembersOption($pdo) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function getActivityAll(
-    $pdo,
-    $limit,
-    $offset,
-    $keyword = null,
-    $sortBy = 'id_activity',
-    $sortOrder = 'ASC'
-) {
+function getActivityAll($pdo, $keyword = null) {
     checkPdo($pdo);
 
-    $allowedColumns = ['id_activity', 'judul', 'deskripsi', 'tanggal_kegiatan'];
-    if (!in_array($sortBy, $allowedColumns)) $sortBy = 'id_activity';
-    $sortOrder = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
-
+    $sql = "SELECT * FROM activity ";
     $params = [];
 
-    $sql = "
-        SELECT 
-            a.*,
-            COALESCE(
-                json_agg(
-                    DISTINCT jsonb_build_object(
-                        'id_member', m.id_member,
-                        'nama_member', m.nama_member
-                    )
-                ) FILTER (WHERE m.id_member IS NOT NULL),
-                '[]'
-            ) AS members
-        FROM activity a
-        LEFT JOIN activity_member am ON a.id_activity = am.id_activity
-        LEFT JOIN member m ON am.id_member = m.id_member
-    ";
-
     if ($keyword) {
-        $sql .= " WHERE a.judul ILIKE :keyword OR a.deskripsi ILIKE :keyword ";
+        $sql .= "WHERE judul ILIKE :keyword OR deskripsi ILIKE :keyword ";
         $params[':keyword'] = '%' . $keyword . '%';
     }
 
-    $sql .= "
-        GROUP BY a.id_activity
-        ORDER BY a.$sortBy $sortOrder
-        LIMIT :limit OFFSET :offset
-    ";
+    // Urutkan Kategori dulu (A-Z), baru ID terbaru
+    $sql .= "ORDER BY kategori ASC, id_activity DESC";
 
     $stmt = $pdo->prepare($sql);
-
-    foreach ($params as $k => $v) {
-        $stmt->bindValue($k, $v, PDO::PARAM_STR);
+    if ($keyword) {
+        $stmt->bindValue(':keyword', $params[':keyword']);
     }
-
-    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
 
     $stmt->execute();
-
-    // json_agg dikembalikan sebagai string → decode ke array
-    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($data as &$row) {
-        $row['members'] = json_decode($row['members'], true);
-    }
-    unset($row);
-
-    return $data;
+    return $stmt->fetchAll(PDO::FETCH_ASSOC); // Return semua data
 }
-
 
 function getTotalActivityCount($pdo, $keyword = null) {
     checkPdo($pdo);
@@ -91,28 +48,10 @@ function getTotalActivityCount($pdo, $keyword = null) {
 }
 
 function getActivityById($pdo, $id) {
-    checkPdo($pdo); 
-    
-    // 1. Ambil Data Induk (Activity)
+    checkPdo($pdo);
     $stmt = $pdo->prepare("SELECT * FROM activity WHERE id_activity = :id");
     $stmt->execute([':id' => $id]);
-    $activity = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($activity) {
-        // 2. Ambil Data Anak (Member) dari tabel activity_member
-        // JOIN ke tabel member biar dapat namanya
-        $sqlMem = "SELECT am.id_member, m.nama_member 
-                   FROM activity_member am 
-                   JOIN member m ON am.id_member = m.id_member 
-                   WHERE am.id_activity = ? 
-                   ORDER BY am.id_activity_member ASC";
-        
-        $stmtMem = $pdo->prepare($sqlMem);
-        $stmtMem->execute([$id]);
-        $activity['team'] = $stmtMem->fetchAll(PDO::FETCH_ASSOC);
-    }
-    
-    return $activity; // ← RETURN DI AKHIR
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 function insertActivity($pdo, $judul, $deskripsi, $tanggal, $kategori, $gambar, $id_admin) {

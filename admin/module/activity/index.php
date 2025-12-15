@@ -8,22 +8,14 @@ $webThumbDir = '../public/uploads/thumb/activity-thumb/';
 
 require_once "model.php";
 
-$page = (int)($_GET['p'] ?? 1);
-$limit = 6;
-$offset = ($page - 1) * $limit;
+// [PERBAIKAN] Hapus limit & offset agar sesuai strategi Client-Side Pagination
 $searchKeyword = $_GET['keyword'] ?? null;
-$currentSortBy = $_GET['sort'] ?? 'id_activity'; 
-$currentSortOrder = $_GET['order'] ?? 'DESC';
 
-$totalRecords = getTotalActivityCount($pdo, $searchKeyword);
-$totalPages = ceil($totalRecords / $limit);
-$list = getActivityAll($pdo, $limit, $offset, $searchKeyword, $currentSortBy, $currentSortOrder) ?: [];
+// Ambil SEMUA data (tanpa parameter limit/offset)
+// Fungsi getActivityAll di model.php kamu sudah benar (hanya terima $pdo dan $keyword)
+$list = getActivityAll($pdo, $searchKeyword) ?: [];
 
-$paginationData = [
-    'currentPage' => $page, 'totalPages' => $totalPages, 'searchKeyword' => $searchKeyword,
-    'limit' => $limit, 'currentSortBy' => $currentSortBy, 'currentSortOrder' => $currentSortOrder, 'list' => $list
-];
-
+// Cek mode edit
 $editData = null; 
 if (isset($_GET['edit'])) {
     $editData = getActivityById($pdo, (int)$_GET['edit']);
@@ -34,7 +26,6 @@ if (isset($_GET['edit'])) {
 <link rel="stylesheet" href="assets/css/forms.css">
 <link rel="stylesheet" href="assets/css/activity.css">
 <link rel="stylesheet" href="assets/css/activity-simple.css">
-
 
 <div class="header-title" style="margin-bottom: 20px;">
 </div>
