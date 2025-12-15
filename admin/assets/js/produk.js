@@ -1,15 +1,19 @@
 // admin/assets/js/produk.js
 
 /* =========================================
-   1. FUNGSI GAMBAR & FILE UPLOAD (LOGIK ACTIVITY ADAPTED)
+   1. FUNGSI GAMBAR & FILE UPLOAD (LOGIKA SAMA DENGAN FASILITAS)
    ========================================= */
+
 function previewProductImage(event) {
     const input = event.target;
+    const previewContainer = document.getElementById("previewContainer");
     const imgPreview = document.getElementById("imgPreview");
+    const errorContainer = document.getElementById("fileError");
+
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-    const errorContainer = document.getElementById("fileError");
+    // Reset Error
     if (errorContainer) {
         errorContainer.textContent = "";
         errorContainer.style.display = "none";
@@ -20,65 +24,83 @@ function previewProductImage(event) {
         const fileName = file.name;
         const fileExt = fileName.split('.').pop().toLowerCase();
 
-        if (!ALLOWED_EXT.includes(fileExt)) {
-            errorContainer.textContent = `Ekstensi tidak diizinkan.`;
-            errorContainer.style.display = "block";
-            input.value = "";
-            imgPreview.style.display = "none";
-            updateProductFileName(input);
-            return;
-        }
-        if (file.size > MAX_FILE_SIZE) {
-            errorContainer.textContent = "File terlalu besar (Max 5MB).";
-            errorContainer.style.display = "block";
-            input.value = "";
-            imgPreview.style.display = "none";
+        // Validasi Ekstensi & Ukuran
+        if (!ALLOWED_EXT.includes(fileExt) || file.size > MAX_FILE_SIZE) {
+            const msg = !ALLOWED_EXT.includes(fileExt) ? "Ekstensi tidak diizinkan." : "File max 5MB.";
+            
+            if (errorContainer) {
+                errorContainer.textContent = msg;
+                errorContainer.style.display = "block";
+            }
+            
+            input.value = ""; // Reset input
+            if (previewContainer) previewContainer.style.display = "none";
             updateProductFileName(input);
             return;
         }
 
+        // Tampilkan Preview
         const reader = new FileReader();
         reader.onload = function (e) {
-            imgPreview.src = e.target.result;
-            imgPreview.style.display = "block";
+            if (imgPreview && previewContainer) {
+                imgPreview.src = e.target.result;
+                imgPreview.style.display = "block";
+                previewContainer.style.display = "flex"; // Gunakan flex untuk centering
+            }
         };
         reader.readAsDataURL(file);
     } else {
-        imgPreview.src = "";
-        imgPreview.style.display = "none";
+        if (previewContainer) previewContainer.style.display = "none";
     }
-}
-
-function removeProductImage() {
-    const input = document.getElementById("inputGambar");
-    const img = document.getElementById("imgPreview");
-    const removeBtn = document.getElementById("removeImageBtn");
-    const fileNameText = document.getElementById("fileNameText");
-
-    if (input) input.value = "";
-    if (img) {
-        img.src = "";
-        img.style.display = "none";
-    }
-    if (fileNameText) fileNameText.textContent = "Tidak ada file yang dipilih...";
-    if (removeBtn) removeBtn.style.display = "none";
-
-    const removeExisting = document.getElementById("removeExistingImage");
-    if (removeExisting) removeExisting.value = "1";
 }
 
 function updateProductFileName(input) {
     const fileNameText = document.getElementById("fileNameText");
     const removeBtn = document.getElementById("removeImageBtn");
+    
     if (input.files && input.files.length > 0) {
         fileNameText.textContent = input.files[0].name;
+        fileNameText.style.color = "#333"; // Warna teks aktif
         if (removeBtn) removeBtn.style.display = "block";
     } else {
         fileNameText.textContent = "Tidak ada file yang dipilih...";
+        fileNameText.style.color = "#aaa"; // Warna placeholder
         if (removeBtn) removeBtn.style.display = "none";
     }
+    
+    // Jika user memilih file baru, batalkan flag hapus gambar lama
     const removeExisting = document.getElementById("removeExistingImage");
-    if (removeExisting) removeExisting.value = "0";
+    if (removeExisting && input.files.length > 0) {
+        removeExisting.value = "0";
+    }
+}
+
+function removeProductImage() {
+    const input = document.getElementById("inputGambar");
+    const previewContainer = document.getElementById("previewContainer");
+    const imgPreview = document.getElementById("imgPreview");
+    const removeBtn = document.getElementById("removeImageBtn");
+    const fileNameText = document.getElementById("fileNameText");
+
+    // Reset Input File
+    if (input) input.value = "";
+    
+    // Sembunyikan Preview
+    if (imgPreview) imgPreview.src = "";
+    if (previewContainer) previewContainer.style.display = "none";
+    
+    // Reset Text Label
+    if (fileNameText) {
+        fileNameText.textContent = "Tidak ada file yang dipilih...";
+        fileNameText.style.color = "#aaa";
+    }
+    
+    // Sembunyikan Tombol X
+    if (removeBtn) removeBtn.style.display = "none";
+
+    // Set Flag Hapus Gambar Lama (untuk Backend)
+    const removeExisting = document.getElementById("removeExistingImage");
+    if (removeExisting) removeExisting.value = "1";
 }
 
 /* =========================================
@@ -88,6 +110,9 @@ function addTeamToTable() {
     const select = document.getElementById("memberSelect");
     const roleInput = document.getElementById("roleInput");
     const tableBody = document.querySelector("#teamTable tbody");
+
+    // Validasi input
+    if (!select || !roleInput) return;
 
     const memberId = select.value;
     const memberName = select.options[select.selectedIndex].text;
@@ -112,7 +137,10 @@ function addTeamToTable() {
         <td style="text-align:center;"><button type="button" class="btn btn-danger btn-sm" onclick="removeTeamRowTable(this)">✕</button></td>
     `;
     tableBody.appendChild(row);
-    select.value = ""; roleInput.value = "";
+    
+    // Reset input setelah tambah
+    select.value = ""; 
+    roleInput.value = "";
 }
 
 function removeTeamRowTable(btn) {
@@ -136,11 +164,18 @@ function searchProduct() {
     }
 }
 
-function resetSearchProduct() {
-    const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.delete('keyword');
-    currentUrl.searchParams.set('p', '1');
-    window.location.href = currentUrl.toString();
+function attachSearchListener() {
+    const searchInput = document.getElementById('searchProductInput');
+    if (searchInput) {
+        // Hindari duplikasi listener dengan clone
+        const newInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newInput, searchInput);
+        newInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchProduct();
+        });
+        // Fokus otomatis jika ada nilai (optional)
+        // newInput.focus();
+    }
 }
 
 /* =========================================
@@ -174,20 +209,19 @@ function loadProductList() {
     const listContainer = document.getElementById("product-list-container");
     if (!listContainer) return;
     
-    // Tambahkan timestamp (&_t) untuk anti-cache
     const url = "module/produk/table-load.php" + window.location.search + "&_t=" + new Date().getTime();
 
-    listContainer.innerHTML = '<div style="text-align:center; padding:20px;">Memuat data...</div>';
+    listContainer.style.opacity = "0.5";
 
     fetch(url).then((response) => response.text()).then((html) => {
         const tempDiv = document.createElement("div");
         tempDiv.innerHTML = html;
         const listContent = tempDiv.querySelector("#product-list-container");
         
-        // Ambil isi baru, atau fallback ke full html jika selector ga ketemu
         listContainer.innerHTML = listContent ? listContent.innerHTML : html;
+        listContainer.style.opacity = "1";
         
-        attachSearchListener(); // Pasang ulang listener Enter
+        attachSearchListener(); 
     }).catch((error) => {
         console.error("Error loading table:", error);
         listContainer.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat tabel.</div>';
@@ -198,13 +232,15 @@ function loadEmptyProductForm(successMessage) {
     const formContainer = document.getElementById("form-content-wrapper");
     if (!formContainer) return;
     
-    // Tambahkan timestamp agar form benar-benar baru
     const url = "module/produk/form-load.php?_t=" + new Date().getTime();
 
     if(successMessage) displayAlert(successMessage, "success");
 
     fetch(url).then((response) => response.text()).then((html) => {
         formContainer.innerHTML = html;
+        // Scroll ke atas sedikit jika perlu
+        const header = document.querySelector('.card h2');
+        if(header) header.scrollIntoView({ behavior: 'smooth' });
     }).catch((error) => {
         console.error("Error loading form:", error);
     });
@@ -218,7 +254,6 @@ function cancelProductForm() {
     fetch("module/produk/form-load.php").then((response) => response.text()).then((html) => {
         formContainer.innerHTML = html;
         
-        // Hapus parameter edit dari URL tanpa reload
         const currentUrl = new URL(window.location);
         currentUrl.searchParams.delete('edit');
         window.history.pushState({}, '', currentUrl);
@@ -238,7 +273,7 @@ function deleteProduct(id) {
     fetch(url, { method: "POST", body: formData })
         .then((response) => response.json()).then((data) => {
             if (data.status === "success") {
-                loadProductList(); // Refresh list tanpa reload
+                loadProductList(); 
                 displayAlert(data.message, "success");
             } else {
                 displayAlert(data.message, "error");
@@ -248,18 +283,6 @@ function deleteProduct(id) {
         });
 }
 
-function attachSearchListener() {
-    const searchInput = document.getElementById('searchProductInput');
-    if (searchInput) {
-        const newInput = searchInput.cloneNode(true);
-        searchInput.parentNode.replaceChild(newInput, searchInput);
-        newInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') searchProduct();
-        });
-        newInput.focus();
-    }
-}
-
 /* =========================================
    6. EVENT LISTENER UTAMA
    ========================================= */
@@ -267,7 +290,6 @@ document.addEventListener("DOMContentLoaded", function () {
     attachSearchListener();
 
     document.addEventListener("submit", function (e) {
-        // ID Form HARUS 'productForm'
         if (e.target && e.target.id === "productForm") {
             e.preventDefault();
             const form = e.target;
@@ -275,31 +297,34 @@ document.addEventListener("DOMContentLoaded", function () {
             const url = "module/produk/save.php";
 
             const submitBtn = document.getElementById("submitBtn");
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Memproses...";
+            if(submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Memproses...";
+            }
 
             fetch(url, { method: "POST", body: formData })
                 .then((response) => response.json())
                 .then((data) => {
                     if (data.status === "success") {
-                        
-                        // 1. REFRESH TABEL (AJAX)
                         loadProductList(); 
-
-                        // 2. CEK APAKAH UPDATE ATAU INSERT
+                        
+                        // Cek update
                         const isUpdate = formData.get("id_produk"); 
                         
-                        // 3. RESET FORM
                         loadEmptyProductForm(data.message);
 
-                        // 4. JIKA UPDATE, BERSIHKAN URL (HILANGKAN ?edit=...)
                         if (isUpdate) {
                             const cleanUrl = window.location.pathname + "?page=produk";
                             window.history.pushState({}, document.title, cleanUrl);
                         }
-
                     } else {
                         displayAlert(data.message, "error");
+                        // Jika gagal, reset input file agar user bisa coba lagi
+                        const input = document.getElementById('inputGambar');
+                        if (input) {
+                            input.value = '';
+                            updateProductFileName(input);
+                        }
                     }
                 })
                 .catch((error) => {
@@ -310,7 +335,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     const finalBtn = document.getElementById("submitBtn");
                     if (finalBtn) {
                         finalBtn.disabled = false;
-                        // Kembalikan text tombol sesuai kondisi form yang baru diload (biasanya Simpan)
                         finalBtn.textContent = "Simpan"; 
                     }
                 });
