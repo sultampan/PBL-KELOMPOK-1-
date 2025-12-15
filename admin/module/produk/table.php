@@ -122,8 +122,13 @@
                         </div>
 
                         <div class="card-action-buttons">
-                            <a href="?page=produk&edit=<?= $row['id_produk'] ?>" class="btn-card btn-card-edit">Edit</a>
-                            <a href="javascript:void(0)" onclick="deleteProduct(<?= (int)$row['id_produk'] ?>)" class="btn-card btn-card-delete">Hapus</a>
+                            <a href="?page=produk&edit=<?= $row['id_produk'] ?>" class="btn-card btn-card-edit">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+
+                            <a href="javascript:void(0)" onclick="deleteProduct(<?= (int)$row['id_produk'] ?>)" class="btn-card btn-card-delete">
+                                <i class="fas fa-trash"></i> Hapus
+                            </a>
                         </div>
                     </div>
                 <?php endforeach; ?>

@@ -1,25 +1,15 @@
 <?php
 // admin/module/fasilitas/index.php
 
-// 1. DEFINISI PATH (Sama seperti produk, tapi folder tujuannya beda)
-// Path Server (untuk pengecekan file_exists di PHP)
-$serverUploadDir = __DIR__ . '/../../../public/uploads/fasilitas/'; 
-$serverThumbDir = __DIR__ . '/../../../public/uploads/thumb/fasilitas-thumb/';
-
-// Path Web (untuk tag <img src="...">)
-// Kita gunakan path relatif dari root admin
-$webUploadDir = '../public/uploads/fasilitas/'; 
-$webThumbDir = '../public/uploads/thumb/fasilitas-thumb/';
-
-// 2. LOGIKA UTAMA
+// 1. LOGIKA UTAMA (PHP)
 require_once "model.php";
 
-// A. Paginasi & Pencarian
+// A. Paginasi Awal
 $page = (int)($_GET['p'] ?? 1);
 $limit = 6;
 $offset = ($page - 1) * $limit;
 $searchKeyword = $_GET['keyword'] ?? null;
-$currentSortBy = $_GET['sort'] ?? 'id_galery'; // Default sort ID
+$currentSortBy = $_GET['sort'] ?? 'id_fasilitas';
 $currentSortOrder = $_GET['order'] ?? 'ASC';
 
 // B. Ambil Data
@@ -27,7 +17,7 @@ $totalRecords = getTotalFasilitasCount($pdo, $searchKeyword);
 $totalPages = ceil($totalRecords / $limit);
 $list = getFasilitasAll($pdo, $limit, $offset, $searchKeyword, $currentSortBy, $currentSortOrder) ?: [];
 
-// Data untuk dikirim ke table.php
+// Data untuk table.php
 $paginationData = [
     'currentPage' => $page,
     'totalPages' => $totalPages,
@@ -38,7 +28,7 @@ $paginationData = [
     'list' => $list
 ];
 
-// C. Logika Mode Edit
+// C. Mode Edit
 $editData = null;
 $oldInput = [];
 if (isset($_GET['edit'])) {
@@ -52,11 +42,30 @@ if (isset($_GET['edit'])) {
 <link rel="stylesheet" href="assets/css/components.css">
 
 <div class="header-title" style="margin-bottom: 20px;">
-    <!-- <h2>Manajemen Fasilitas</h2> -->
-</div>
+    </div>
 
 <?php include __DIR__ . '/form.php'; ?>
 
-<?php include __DIR__ . '/table.php'; ?>
+
+<div class="fasilitas-grid-container">
+    
+    <div class="toolbar-header">
+        <h3 class="header-title">Daftar Fasilitas</h3>
+
+        <div class="search-form">
+            <div class="search-group">
+                <input type="text" id="searchFasilitasInput" class="search-input" 
+                       placeholder="Cari fasilitas..." 
+                       value="<?= htmlspecialchars($searchKeyword ?? '') ?>"
+                       autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <div id="fasilitas-data-content">
+        <?php include __DIR__ . '/table.php'; ?>
+    </div>
+
+</div>
 
 <script src="assets/js/fasilitas.js"></script>
