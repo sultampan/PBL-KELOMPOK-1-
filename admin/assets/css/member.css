@@ -30,7 +30,7 @@
     margin: 0;
 }
 
-/* --- 3. SEARCH BOX --- */
+/* --- 3. SEARCH BOX (UKURAN FIXED SEPERTI FASILITAS) --- */
 .member-search-group {
     display: flex;
     align-items: center;
@@ -38,32 +38,42 @@
 }
 
 .member-search-input {
-    padding: 8px 15px 8px 35px; /* Padding kiri untuk icon */
+    /* PENTING: box-sizing agar padding tidak menambah dimensi elemen */
+    box-sizing: border-box; 
+    
+    /* UKURAN PERSIS FASILITAS */
+    width: 250px;  /* Lebar disamakan (sekitar 249-250px) */
+    height: 34px;  /* Tinggi disamakan (34px) */
+    
+    /* Padding disesuaikan: Kiri 32px untuk ikon, Kanan 15px */
+    padding: 0 15px 0 32px; 
+    
     border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 14px;
-    
-    /* UBAH UKURAN DISINI: */
-    width: 200px; /* Lebih kecil (sebelumnya 250px) */
-    
+    border-radius: 4px; /* Sudut sedikit melengkung (standar input) */
+    font-size: 13px;
     outline: none;
-    height: 38px; /* Sedikit lebih ramping */
     color: #333;
     transition: all 0.2s ease;
+    
+    /* Agar teks vertikal di tengah secara presisi */
+    line-height: 32px; 
     
     /* Icon Kaca Pembesar */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: 12px center; 
+    background-position: 10px center; 
 }
 
 .member-search-input:focus {
     border-color: #02406C;
 }
 
+/* Tombol Reset (X) */
 .btn-reset-input {
     position: absolute;
-    right: 10px;
+    right: 8px; /* Sedikit digeser biar pas */
+    top: 50%;
+    transform: translateY(-50%);
     background: none;
     border: none;
     color: #999;
@@ -72,6 +82,9 @@
     padding: 0;
     display: flex;
     align-items: center;
+    justify-content: center;
+    height: 34px; /* Samakan tinggi agar area klik nyaman */
+    width: 20px;
 }
 .btn-reset-input:hover { color: #dc3545; }
 
@@ -82,18 +95,15 @@
     background: #fff;
 }
 
-/* --- 5. GRID SYSTEM (UBAH JADI 2 KOLOM) --- */
+/* --- 5. GRID SYSTEM (2 KOLOM) --- */
 .member-grid {
     display: grid;
-    
-    /* UBAH DISINI: Memaksa 2 kolom rata */
     grid-template-columns: repeat(2, 1fr); 
-    
     gap: 25px; 
     margin-top: 0;
 }
 
-/* Responsive: Kalau di HP jadi 1 kolom */
+/* Responsive */
 @media (max-width: 768px) {
     .member-grid { grid-template-columns: 1fr; }
     .member-header { flex-direction: column; gap: 15px; align-items: flex-start; }
