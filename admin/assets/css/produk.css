@@ -8,24 +8,30 @@
     margin-top: 20px;
 }
 
-/* --- FORM TIM PENGEMBANG (Layout Rapi) --- */
+/* --- FORM TIM PENGEMBANG (Layout Vertikal Full) --- */
 .team-input-row {
-    display: flex; 
-    gap: 15px; /* Jarak antar elemen */
+    display: flex;
+    flex-direction: column; /* Menyusun elemen dari atas ke bawah */
+    gap: 10px; /* Jarak antar baris input */
     margin-bottom: 15px; 
-    align-items: center; 
+    width: 100%;
 }
 
+/* Mengatur agar Select, Input, dan Button lebarnya 100% */
 .team-input-row select,
-.team-input-row input[type="text"] {
-    flex: 1; /* Input mengisi ruang kosong */
+.team-input-row input[type="text"],
+.team-input-row button {
+    width: 100%; /* Memaksa lebar penuh */
     height: 38px; 
+    box-sizing: border-box; /* Agar padding tidak menambah lebar elemen */
 }
 
-.team-input-row button {
-    flex-shrink: 0; 
-    height: 38px; 
-    padding: 6px 12px;
+/* Pastikan style tombol success tetap terjaga tapi lebarnya mengikuti parent */
+.team-input-row button.btn-success {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 }
 
 /* --- CARD STYLE (Base Style) --- */
@@ -114,7 +120,7 @@
     min-height: 180px;
     overflow: hidden;
     border-radius: 8px;
-    background-color: #f5f5f5;
+    background-color: #ffffff; /* Background abu-abu akan terlihat jika rasio gambar beda */
     margin-bottom: 15px;
     display: flex;
     align-items: center;
@@ -124,7 +130,10 @@
 .mit-activity-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    
+    /* GANTI DARI 'cover' MENJADI 'contain' */
+    object-fit: contain; 
+    
     object-position: center;
 }
 
@@ -279,4 +288,123 @@
 .btn-card-delete:active { 
     background-color: #c0392b !important; 
     color: #fff !important;
+}
+
+/* --- SCROLL MEMBER LIST (HORIZONTAL / KESAMPING) --- */
+.member-scroll-box {
+    display: flex;
+    flex-wrap: nowrap; /* PENTING: Mencegah elemen turun ke bawah */
+    gap: 8px;
+    width: 100%;
+    
+    /* Aktifkan scroll horizontal */
+    overflow-x: auto; 
+    overflow-y: hidden;
+    
+    /* Beri sedikit ruang di bawah untuk scrollbar & padding agar tidak terpotong */
+    padding-bottom: 8px; 
+    padding-top: 2px;
+    
+    /* Agar scroll halus di HP */
+    -webkit-overflow-scrolling: touch; 
+}
+
+/* Pastikan tag member tidak gepeng saat discroll */
+.member-scroll-box .member-tag {
+    flex-shrink: 0; /* PENTING: Agar tag tidak mengecil/gepeng dipaksa masuk container */
+    white-space: nowrap; /* Mencegah teks di dalam tag turun baris */
+}
+
+/* --- KUSTOMISASI SCROLLBAR (Horizontal) --- */
+/* Scrollbar Bar */
+.member-scroll-box::-webkit-scrollbar {
+    height: 6px; /* Tinggi scrollbar horizontal (bukan width) */
+}
+
+/* Track (Jalur) */
+.member-scroll-box::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+/* Handle (Batang Geser) */
+.member-scroll-box::-webkit-scrollbar-thumb {
+    background: #ccc; 
+    border-radius: 4px;
+}
+
+.member-scroll-box::-webkit-scrollbar-thumb:hover {
+    background: #bbb; 
+}
+/* admin/assets/css/produk.css */
+
+/* --- 1. TOOLBAR HEADER (JUDUL & SEARCH) --- */
+/* Style ini hasil copy dari fasilitas.css */
+.toolbar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    
+    /* Padding kiri-kanan 0, biarkan container card yang mengaturnya */
+    padding: 20px 0; 
+    
+    /* Garis pemisah */
+    border-bottom: 1px solid #eaeaea; 
+    
+    margin-bottom: 25px;
+}
+
+/* Judul (Daftar Produk) */
+.header-title {
+    font-size: 20px; /* Ukuran sama dengan fasilitas */
+    font-weight: 700;
+    color: #2c3e50;
+    letter-spacing: 0.5px;
+    margin: 0; /* Pastikan margin reset */
+}
+
+/* Area Form Pencarian */
+.search-form {
+    display: flex;
+    align-items: center;
+}
+
+.search-group {
+    display: flex;
+    align-items: center;
+}
+
+/* Style Input Pencarian (Persis Fasilitas) */
+.search-input-fasilitas {
+    padding: 8px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 6px; /* Radius 6px (Kotak Tumpul) */
+    font-size: 14px;
+    width: 200px; /* Ukuran kecil sesuai fasilitas */
+    outline: none;
+    transition: all 0.2s ease;
+    color: #333;
+    
+    /* Icon kaca pembesar di dalam input (background) */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    padding-left: 32px; /* Jarak teks supaya tidak menabrak icon */
+}
+
+.search-input-fasilitas:focus {
+    border-color: #02406C; /* Biru Tua saat fokus */
+}
+
+/* Responsif di HP */
+@media (max-width: 600px) {
+    .toolbar-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .search-input-fasilitas {
+        width: 100%;
+    }
 }

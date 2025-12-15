@@ -400,3 +400,30 @@
     color: #d35400; /* Oranye tua */
     font-weight: 700;
 }
+
+/* =========================================
+   STYLE KHUSUS DISABLED (MATI)
+   ========================================= */
+button:disabled,
+.btn:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled,
+button[disabled] {
+    background-color: #e6e6e6 !important; /* Warna Abu-abu Terang */
+    color: #999999 !important;             /* Teks Abu-abu Gelap */
+    border: 1px solid #d0d0d0 !important;  /* Border samar */
+    
+    cursor: not-allowed !important;        /* Kursor jadi tanda 'Dilarang' 🚫 */
+    
+    /* Hilangkan efek hover/tekan */
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 0.7;
+}
+
+/* Pastikan saat di-hover pun tetap abu-abu */
+button:disabled:hover,
+.btn:disabled:hover {
+    background-color: #e6e6e6 !important;
+    transform: none !important;
+}

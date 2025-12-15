@@ -51,7 +51,7 @@ function getProdukById($pdo, $id) {
 /* ============================================================
    GET LIST PRODUK UNTUK TABEL
    ============================================================ */
-function getProdukAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_produk', $sortOrder = 'ASC') {
+function getProdukAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_produk', $sortOrder = 'DESC') {
     checkPdo($pdo);
 
     $allowed = ['id_produk', 'nama', 'deskripsi'];
@@ -59,7 +59,7 @@ function getProdukAll($pdo, $limit, $offset, $keyword = null, $sortBy = 'id_prod
         $sortBy = 'id_produk';
     }
 
-    $sortOrder = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
+    $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
 
     $sql = "SELECT * FROM produk";
     $params = [];

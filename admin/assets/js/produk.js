@@ -1,11 +1,12 @@
 // admin/assets/js/produk.js
 
 /* =========================================
-   1. FUNGSI GAMBAR & FILE UPLOAD (LOGIK ACTIVITY ADAPTED)
+   1. FUNGSI GAMBAR & FILE UPLOAD
    ========================================= */
-function previewProductImage(event) {
+   function previewProductImage(event) {
     const input = event.target;
     const imgPreview = document.getElementById("imgPreview");
+    const previewContainer = document.getElementById("previewContainer"); // Tambah ini
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
@@ -24,7 +25,10 @@ function previewProductImage(event) {
             errorContainer.textContent = `Ekstensi tidak diizinkan.`;
             errorContainer.style.display = "block";
             input.value = "";
-            imgPreview.style.display = "none";
+            
+            // Sembunyikan container, bukan cuma img
+            if(previewContainer) previewContainer.style.display = "none"; 
+            
             updateProductFileName(input);
             return;
         }
@@ -32,7 +36,10 @@ function previewProductImage(event) {
             errorContainer.textContent = "File terlalu besar (Max 5MB).";
             errorContainer.style.display = "block";
             input.value = "";
-            imgPreview.style.display = "none";
+            
+            // Sembunyikan container
+            if(previewContainer) previewContainer.style.display = "none";
+            
             updateProductFileName(input);
             return;
         }
@@ -40,31 +47,40 @@ function previewProductImage(event) {
         const reader = new FileReader();
         reader.onload = function (e) {
             imgPreview.src = e.target.result;
-            imgPreview.style.display = "block";
+            // Tampilkan container
+            if(previewContainer) previewContainer.style.display = "flex"; 
         };
         reader.readAsDataURL(file);
     } else {
         imgPreview.src = "";
-        imgPreview.style.display = "none";
+        // Sembunyikan container
+        if(previewContainer) previewContainer.style.display = "none";
     }
+    
+    // Panggil validasi tombol simpan/batal
+    validateFormState();
 }
 
 function removeProductImage() {
     const input = document.getElementById("inputGambar");
     const img = document.getElementById("imgPreview");
+    const previewContainer = document.getElementById("previewContainer"); // Tambah ini
     const removeBtn = document.getElementById("removeImageBtn");
     const fileNameText = document.getElementById("fileNameText");
 
     if (input) input.value = "";
-    if (img) {
-        img.src = "";
-        img.style.display = "none";
-    }
+    if (img) img.src = "";
+    
+    // Sembunyikan container kotak
+    if (previewContainer) previewContainer.style.display = "none";
+    
     if (fileNameText) fileNameText.textContent = "Tidak ada file yang dipilih...";
     if (removeBtn) removeBtn.style.display = "none";
 
     const removeExisting = document.getElementById("removeExistingImage");
     if (removeExisting) removeExisting.value = "1";
+    
+    validateFormState();
 }
 
 function updateProductFileName(input) {
@@ -79,6 +95,7 @@ function updateProductFileName(input) {
     }
     const removeExisting = document.getElementById("removeExistingImage");
     if (removeExisting) removeExisting.value = "0";
+    validateFormState();
 }
 
 /* =========================================
@@ -113,10 +130,12 @@ function addTeamToTable() {
     `;
     tableBody.appendChild(row);
     select.value = ""; roleInput.value = "";
+    validateFormState();
 }
 
 function removeTeamRowTable(btn) {
     btn.closest("tr").remove();
+    validateFormState();
 }
 
 /* =========================================
@@ -132,7 +151,9 @@ function searchProduct() {
         if (keyword) currentUrl.searchParams.set('keyword', keyword);
         else currentUrl.searchParams.delete('keyword');
 
-        window.location.href = currentUrl.toString();
+        // Menggunakan pushState agar tidak reload halaman (AJAX Search)
+        window.history.pushState(null, "", currentUrl.toString());
+        loadProductList();
     }
 }
 
@@ -140,7 +161,10 @@ function resetSearchProduct() {
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.delete('keyword');
     currentUrl.searchParams.set('p', '1');
-    window.location.href = currentUrl.toString();
+    
+    // Menggunakan pushState agar tidak reload halaman
+    window.history.pushState(null, "", currentUrl.toString());
+    loadProductList();
 }
 
 /* =========================================
@@ -177,7 +201,7 @@ function loadProductList() {
     // Tambahkan timestamp (&_t) untuk anti-cache
     const url = "module/produk/table-load.php" + window.location.search + "&_t=" + new Date().getTime();
 
-    listContainer.innerHTML = '<div style="text-align:center; padding:20px;">Memuat data...</div>';
+    listContainer.style.opacity = "0.6"; // Efek loading
 
     fetch(url).then((response) => response.text()).then((html) => {
         const tempDiv = document.createElement("div");
@@ -186,11 +210,13 @@ function loadProductList() {
         
         // Ambil isi baru, atau fallback ke full html jika selector ga ketemu
         listContainer.innerHTML = listContent ? listContent.innerHTML : html;
+        listContainer.style.opacity = "1";
         
         attachSearchListener(); // Pasang ulang listener Enter
     }).catch((error) => {
         console.error("Error loading table:", error);
         listContainer.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat tabel.</div>';
+        listContainer.style.opacity = "1";
     });
 }
 
@@ -205,6 +231,7 @@ function loadEmptyProductForm(successMessage) {
 
     fetch(url).then((response) => response.text()).then((html) => {
         formContainer.innerHTML = html;
+        attachFormValidators();
     }).catch((error) => {
         console.error("Error loading form:", error);
     });
@@ -224,6 +251,7 @@ function cancelProductForm() {
         window.history.pushState({}, '', currentUrl);
 
         document.querySelector('.card h2').scrollIntoView({ behavior: 'smooth' });
+        attachFormValidators();
     }).catch((error) => {
         console.error("Error resetting form:", error);
     });
@@ -248,23 +276,79 @@ function deleteProduct(id) {
         });
 }
 
+/* =========================================
+   FUNGSI LIVE SEARCH DENGAN DEBOUNCE
+   ========================================= */
 function attachSearchListener() {
     const searchInput = document.getElementById('searchProductInput');
+    let debounceTimeout;
+
     if (searchInput) {
+        // Clone node untuk membersihkan listener lama (biar gak numpuk)
         const newInput = searchInput.cloneNode(true);
         searchInput.parentNode.replaceChild(newInput, searchInput);
-        newInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') searchProduct();
+
+        // EVENT 1: INPUT (Saat user mengetik)
+        newInput.addEventListener('input', function(e) {
+            // Reset timer setiap kali user ngetik huruf baru
+            clearTimeout(debounceTimeout);
+            
+            // Tunggu 500ms (setengah detik) setelah user BERHENTI ngetik
+            debounceTimeout = setTimeout(() => {
+                searchProduct();
+            }, 500); 
         });
-        newInput.focus();
+
+        // EVENT 2: ENTER (Biar pencarian instan kalau user neken Enter)
+        newInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                clearTimeout(debounceTimeout); // Batalkan timer debounce
+                searchProduct(); // Cari langsung
+            }
+        });
+        
+        // PENTING: Fokus dikembalikan ke input agar kursor tidak hilang (opsional)
+        // newInput.focus(); 
     }
 }
 
 /* =========================================
-   6. EVENT LISTENER UTAMA
+   6. HANDLE PAGINATION CLICKS (AJAX) - BARU!
+   ========================================= */
+document.addEventListener('click', function(e) {
+    // Cek jika elemen yang diklik memiliki class 'page-link'
+    if (e.target && e.target.classList.contains('page-link')) {
+        e.preventDefault(); // Stop reload halaman
+        
+        const href = e.target.getAttribute('href'); // Ambil URL target (?page=produk&p=2)
+        
+        // Jika URL valid dan tombol tidak disabled
+        if (href && !e.target.classList.contains('disabled')) {
+            // Update URL browser
+            window.history.pushState(null, "", href);
+            
+            // Panggil fungsi load AJAX
+            loadProductList();
+            
+            // Scroll halus ke atas daftar produk
+            const listContainer = document.getElementById("product-list-container");
+            if(listContainer) {
+                listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+});
+
+/* =========================================
+   7. EVENT LISTENER UTAMA
    ========================================= */
 document.addEventListener("DOMContentLoaded", function () {
     attachSearchListener();
+
+    // Handle Back/Forward Browser Button
+    window.addEventListener('popstate', function(event) {
+        loadProductList();
+    });
 
     document.addEventListener("submit", function (e) {
         // ID Form HARUS 'productForm'
@@ -310,10 +394,112 @@ document.addEventListener("DOMContentLoaded", function () {
                     const finalBtn = document.getElementById("submitBtn");
                     if (finalBtn) {
                         finalBtn.disabled = false;
-                        // Kembalikan text tombol sesuai kondisi form yang baru diload (biasanya Simpan)
                         finalBtn.textContent = "Simpan"; 
                     }
                 });
         }
     });
+});
+
+/* =========================================
+   8. LOGIKA TOMBOL BATAL & SIMPAN (AUTO DISABLE)
+   ========================================= */
+
+function validateFormState() {
+    const submitBtn = document.getElementById("submitBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const form = document.getElementById("productForm");
+    
+    if (!submitBtn || !cancelBtn || !form) return;
+
+    // 1. CEK UNTUK TOMBOL SIMPAN (MANDATORY CHECK)
+    // Ambil input yang punya atribut 'required'
+    const requiredInputs = form.querySelectorAll('[required]');
+    let allFilled = true;
+
+    requiredInputs.forEach(input => {
+        if (!input.value.trim()) {
+            allFilled = false;
+        }
+    });
+
+    // Aktifkan/Matikan Tombol Simpan
+    submitBtn.disabled = !allFilled;
+
+
+    // 2. CEK UNTUK TOMBOL BATAL (DIRTY/EMPTY CHECK)
+    // Tombol Batal nyala jika:
+    // a. Mode Edit (karena form pasti terisi data lama)
+    // b. Mode Tambah TAPI user sudah mengetik/upload sesuatu
+    
+    const isEditMode = document.querySelector('input[name="id_produk"]');
+    
+    if (isEditMode) {
+        // Kalau mode edit, tombol batal SELALU NYALA (biar bisa cancel edit)
+        cancelBtn.disabled = false;
+    } else {
+        // Kalau mode tambah, cek apakah form kotor (ada isinya)
+        let isDirty = false;
+
+        // Cek semua input text/textarea
+        const allInputs = form.querySelectorAll('input[type="text"], textarea');
+        allInputs.forEach(input => {
+            if (input.value.trim() !== "") isDirty = true;
+        });
+
+        // Cek input file
+        const fileInput = document.getElementById("inputGambar");
+        if (fileInput && fileInput.files.length > 0) isDirty = true;
+
+        // Cek tabel member (apakah ada baris di tbody)
+        const tableBody = document.querySelector("#teamTable tbody");
+        if (tableBody && tableBody.children.length > 0) isDirty = true;
+
+        // Aktifkan/Matikan Tombol Batal
+        cancelBtn.disabled = !isDirty;
+    }
+}
+
+/* =========================================
+   FUNGSI RE-ATTACH LISTENER (SOLUSI AJAX)
+   ========================================= */
+function attachFormValidators() {
+    const form = document.getElementById("productForm");
+    
+    if (form) {
+        // Hapus listener lama (opsional, untuk kebersihan memori)
+        form.removeEventListener("input", validateFormState);
+        form.removeEventListener("change", validateFormState);
+
+        // Pasang listener BARU
+        form.addEventListener("input", validateFormState);
+        form.addEventListener("change", validateFormState);
+        
+        // Cek kondisi awal form baru
+        validateFormState();
+    }
+}
+
+// PASANG EVENT LISTENER AGAR REALTIME
+// PASANG EVENT LISTENER AGAR REALTIME
+document.addEventListener("DOMContentLoaded", function() {
+    attachSearchListener();
+
+    // Handle Back/Forward Browser Button
+    window.addEventListener('popstate', function(event) {
+        loadProductList();
+    });
+
+    document.addEventListener("submit", function (e) {
+        // ... (KODE SUBMIT TETAP SAMA JANGAN DIUBAH) ...
+        // ID Form HARUS 'productForm'
+        if (e.target && e.target.id === "productForm") {
+             // ... (Isi logika submit kamu yang panjang tadi biarkan saja) ...
+             e.preventDefault();
+             // ... dst ...
+        }
+    });
+
+    // PANGGIL FUNGSI INI SAAT PERTAMA KALI LOAD
+    attachFormValidators(); 
 });

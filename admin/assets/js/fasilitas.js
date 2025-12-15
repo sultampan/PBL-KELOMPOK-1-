@@ -1,52 +1,101 @@
 // admin/assets/js/fasilitas.js
 
 // =========================================================
-// 1. PENCARIAN (SEARCH)
+// 1. REAL-TIME SEARCH (Live Typing)
 // =========================================================
+let searchTimeout = null;
 
-function searchFasilitas() {
-  const input = document.getElementById('searchFasilitasInput');
-  if (!input) return;
-
-  const keyword = input.value.trim();
-  const currentUrl = new URL(window.location.href);
-  
-  // Set parameter keyword di URL
-  if (keyword) {
-      currentUrl.searchParams.set('keyword', keyword);
-  } else {
-      currentUrl.searchParams.delete('keyword'); 
-  }
-  
-  // Reset ke halaman 1 saat mencari baru
-  currentUrl.searchParams.set('p', 1);
-
-  // Update URL Browser dan Load Data
-  window.history.pushState(null, "", currentUrl);
-  loadFasilitasList();
-}
-
-// Event Listener untuk tombol Enter di Search Box
-document.addEventListener('keydown', function(e) {
-  if (e.target && e.target.id === 'searchFasilitasInput' && e.key === 'Enter') {
-      e.preventDefault(); 
-      searchFasilitas();
-  }
+document.addEventListener('input', function(e) {
+    if (e.target && e.target.id === 'searchFasilitasInput') {
+        clearTimeout(searchTimeout);
+        // Delay 300ms (Debounce standard)
+        searchTimeout = setTimeout(() => {
+            const keyword = e.target.value.trim();
+            executeSearch(keyword);
+        }, 300); 
+    }
 });
 
+function executeSearch(keyword) {
+    const currentUrl = new URL(window.location.href);
+    if (keyword) {
+        currentUrl.searchParams.set('keyword', keyword);
+    } else {
+        currentUrl.searchParams.delete('keyword'); 
+    }
+    currentUrl.searchParams.set('p', 1); // Reset ke hal 1
+    window.history.pushState(null, "", currentUrl);
+    
+    loadFasilitasList(); 
+}
+
+// Mencegah Enter refresh halaman
+document.addEventListener('keydown', function(e) {
+    if (e.target && e.target.id === 'searchFasilitasInput' && e.key === 'Enter') {
+        e.preventDefault(); 
+    }
+});
 
 // =========================================================
-// 2. VALIDASI FORM & LOGIKA TOMBOL (SIMPAN/BATAL)
+// 2. LOAD TABLE AJAX & PAGINATION
+// =========================================================
+
+function loadFasilitasList() {
+  const listContainer = document.getElementById("fasilitas-data-content");
+  if (!listContainer) return;
+  
+  // Tambahkan timestamp untuk mencegah cache browser
+  const url = "module/fasilitas/table-load.php" + window.location.search + "&_t=" + new Date().getTime();
+  
+  listContainer.style.opacity = "0.5";
+
+  fetch(url)
+  .then((response) => response.text())
+  .then((html) => {
+      listContainer.innerHTML = html;
+      listContainer.style.opacity = "1";
+  })
+  .catch((error) => {
+      console.error("Error:", error);
+      listContainer.style.opacity = "1";
+  });
+}
+
+// Handle Pagination Klik
+document.addEventListener('click', function(e) {
+    // Cek apakah klik pada elemen page-link
+    if (e.target && e.target.classList.contains('page-link')) {
+        e.preventDefault();
+        
+        const href = e.target.getAttribute('href');
+        
+        // Pastikan href valid dan bukan tombol disabled
+        if (href && !e.target.classList.contains('disabled')) {
+            window.history.pushState(null, "", href);
+            
+            // Muat data baru
+            loadFasilitasList();
+            
+            // Scroll halus ke bagian atas list
+            const header = document.querySelector('.toolbar-header');
+            if(header) {
+                header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+});
+
+// =========================================================
+// 3. VALIDASI FORM & LOGIKA TOMBOL (SIMPAN/BATAL)
 // =========================================================
 
 let initialFormString = ""; 
 
-// Mengambil snapshot form untuk mendeteksi perubahan
 function getFormString() {
   const form = document.getElementById("fasilitasForm");
   if (!form) return "";
   const formData = new FormData(form);
-  formData.delete("gambar"); // File dicek terpisah
+  formData.delete("gambar"); 
   return new URLSearchParams(formData).toString();
 }
 
@@ -56,16 +105,13 @@ function captureInitialState() {
 
 function validateFormState() {
   const btnSimpan = document.getElementById("submitBtn");
-  // Ambil tombol batal (bisa ID btnCancel atau class btn-secondary)
   const btnBatal = document.getElementById("btnCancel") || document.querySelector(".button-group .btn-secondary");
 
   if (!btnSimpan) return;
 
-  // 1. CEK MODE (EDIT/TAMBAH)
   const idInput = document.querySelector('input[name="id_fasilitas"]');
   const isEditMode = idInput && idInput.value !== "";
 
-  // 2. DETEKSI PERUBAHAN
   let hasChanges = false;
   const currentString = getFormString();
   if (currentString !== initialFormString) hasChanges = true;
@@ -73,38 +119,31 @@ function validateFormState() {
   const fileInput = document.getElementById('inputGambar');
   if (fileInput && fileInput.files.length > 0) hasChanges = true;
 
-  // 3. ATUR TOMBOL BATAL (KIRI)
+  const removeExisting = document.getElementById("removeExistingImage");
+  if (removeExisting && removeExisting.value === "1") hasChanges = true;
+
   if (btnBatal) {
       if (isEditMode) {
-          enableBtn(btnBatal); // Mode Edit: Batal selalu aktif
+          enableBtn(btnBatal); 
       } else {
-          // Mode Tambah: Batal aktif jika form sudah terisi (kotor)
           if (hasChanges) enableBtn(btnBatal);
           else disableBtn(btnBatal);
       }
   }
 
-  // 4. ATUR TOMBOL SIMPAN (KANAN)
   const judulInput = document.querySelector('input[name="judul"]'); 
   const deskripsiInput = document.querySelector('[name="deskripsi"]'); 
   
   const judul = judulInput ? judulInput.value.trim() : "";
   const deskripsi = deskripsiInput ? deskripsiInput.value.trim() : "";
-
-  // SYARAT WAJIB: Judul & Deskripsi harus terisi
   const isRequiredFilled = (judul !== "" && deskripsi !== "");
 
-  // Tombol Nyala Jika: (Data Lengkap) DAN (Ada Perubahan)
   if (isRequiredFilled && hasChanges) {
       enableBtn(btnSimpan);
       btnSimpan.textContent = isEditMode ? "Update" : "Simpan";
   } else {
       disableBtn(btnSimpan);
-      if (isEditMode && !hasChanges) {
-          btnSimpan.textContent = "Tidak ada perubahan";
-      } else {
-          btnSimpan.textContent = isEditMode ? "Update" : "Simpan";
-      }
+      btnSimpan.textContent = isEditMode ? "Update" : "Simpan";
   }
 }
 
@@ -144,9 +183,8 @@ function setupFormValidation() {
   }
 }
 
-
 // =========================================================
-// 3. IMAGE HANDLING
+// 4. IMAGE HANDLING
 // =========================================================
 
 function previewFasilitasImage(event) {
@@ -168,7 +206,6 @@ function previewFasilitasImage(event) {
       if (!ALLOWED_EXT.includes(fileExt) || file.size > MAX_FILE_SIZE) {
           const msg = !ALLOWED_EXT.includes(fileExt) ? "Ekstensi tidak diizinkan." : "File max 5MB.";
           if (errorContainer) { errorContainer.textContent = msg; errorContainer.style.display = "block"; }
-          
           input.value = ""; 
           if(previewContainer) previewContainer.style.display = "none";
           updateFasilitasFileName(input); 
@@ -225,50 +262,9 @@ function removeFasilitasImage() {
   validateFormState();
 }
 
-
 // =========================================================
-// 4. ACTION HANDLERS (LOAD, CANCEL, DELETE, SUBMIT)
+// 5. CRUD ACTION HANDLERS
 // =========================================================
-
-// Handle Klik Pagination
-document.addEventListener('click', function(e) {
-  if (e.target && e.target.classList.contains('page-link')) {
-      e.preventDefault();
-      const href = e.target.getAttribute('href');
-      if (href) {
-          window.history.pushState(null, "", href);
-          loadFasilitasList();
-      }
-  }
-});
-
-function loadFasilitasList() {
-  const listContainer = document.getElementById("fasilitas-list-container");
-  if (!listContainer) return;
-  const currentParams = new URLSearchParams(window.location.search);
-  const url = "module/fasilitas/table-load.php" + window.location.search;
-
-  listContainer.style.opacity = "0.5";
-
-  fetch(url)
-  .then((response) => response.text())
-  .then((html) => {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const newContent = doc.getElementById('fasilitas-list-container');
-      if (newContent) {
-          listContainer.innerHTML = newContent.innerHTML;
-      } else {
-          listContainer.innerHTML = html;
-      }
-      listContainer.style.opacity = "1";
-  })
-  .catch((error) => {
-      console.error("Error loading table:", error);
-      listContainer.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat tabel.</div>';
-      listContainer.style.opacity = "1";
-  });
-}
 
 function cancelFasilitasForm() {
   const isEditMode = document.querySelector('input[name="id_fasilitas"]');
@@ -289,7 +285,8 @@ function cancelFasilitasForm() {
               setupFormValidation();
               const judulInput = document.querySelector('#fasilitasForm input[name="judul"]');
               if (judulInput) setTimeout(() => { judulInput.focus(); }, 50);
-              document.querySelector('.card h2').scrollIntoView({ behavior: 'smooth' });
+              const card = document.querySelector('.card');
+              if(card) card.scrollIntoView({ behavior: 'smooth' });
           });
   } else {
       document.getElementById("fasilitasForm").reset();
@@ -305,7 +302,8 @@ function loadEmptyFasilitasForm(successMessage) {
   const formContainer = document.getElementById("form-content-wrapper"); 
   if (!formContainer) return;
 
-  const url = "module/fasilitas/form-load.php?success_msg=" + encodeURIComponent(successMessage);
+  // Tambahkan timestamp di request form juga
+  const url = "module/fasilitas/form-load.php?success_msg=" + encodeURIComponent(successMessage) + "&_t=" + new Date().getTime();
   displayAlert(successMessage, "success");
 
   fetch(url)
@@ -313,8 +311,6 @@ function loadEmptyFasilitasForm(successMessage) {
       .then((html) => {
           formContainer.innerHTML = html;
           setupFormValidation();
-          const newNameInput = document.querySelector('#fasilitasForm input[name="judul"]');
-          if (newNameInput) setTimeout(() => { newNameInput.focus(); }, 50); 
       });
 }
 
@@ -361,10 +357,16 @@ function displayAlert(message, type) {
   }, 4000); 
 }
 
-// Startup
+// STARTUP
 document.addEventListener("DOMContentLoaded", function () {
   setupFormValidation();
 
+  // Handle Back/Forward Browser
+  window.addEventListener('popstate', function(event) {
+    loadFasilitasList();
+  });
+
+  // Handle Submit Form
   document.addEventListener("submit", function (e) {
       if (e.target && e.target.id === "fasilitasForm") {
           e.preventDefault(); 
@@ -392,11 +394,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   }
               } else {
                   displayAlert(data.message, "error");
-                  const input = document.getElementById('inputGambar');
-                  const previewContainer = document.getElementById('previewContainer');
-                  if (input) input.value = ''; 
-                  if (previewContainer) previewContainer.style.display = 'none'; 
-                  updateFasilitasFileName(input);
               }
           })
           .catch((error) => {
@@ -405,7 +402,7 @@ document.addEventListener("DOMContentLoaded", function () {
           })
           .finally(() => {
               const finalBtn = document.getElementById("submitBtn");
-              if (finalBtn && finalBtn.disabled) {
+              if (finalBtn) {
                   finalBtn.disabled = false;
                   finalBtn.textContent = "Simpan";
               }

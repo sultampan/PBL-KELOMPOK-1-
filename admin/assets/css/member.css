@@ -1,76 +1,145 @@
-/* --- MEMBER GRID --- */
+/* admin/assets/css/member.css */
+
+/* --- 1. WRAPPER UTAMA --- */
+.member-wrapper {
+    background: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    margin-bottom: 25px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 0 25px; /* Jarak kiri-kanan wrapper */
+}
+
+/* --- 2. HEADER BAR --- */
+.member-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 20px 0; 
+    border-bottom: 1px solid #eaeaea; /* Garis pemisah */
+}
+
+.header-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+}
+
+/* --- 3. SEARCH BOX (UKURAN FIXED SEPERTI FASILITAS) --- */
+.member-search-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.member-search-input {
+    /* PENTING: box-sizing agar padding tidak menambah dimensi elemen */
+    box-sizing: border-box; 
+    
+    /* UKURAN PERSIS FASILITAS */
+    width: 250px;  /* Lebar disamakan (sekitar 249-250px) */
+    height: 34px;  /* Tinggi disamakan (34px) */
+    
+    /* Padding disesuaikan: Kiri 32px untuk ikon, Kanan 15px */
+    padding: 0 15px 0 32px; 
+    
+    border: 1px solid #ced4da;
+    border-radius: 4px; /* Sudut sedikit melengkung (standar input) */
+    font-size: 13px;
+    outline: none;
+    color: #333;
+    transition: all 0.2s ease;
+    
+    /* Agar teks vertikal di tengah secara presisi */
+    line-height: 32px; 
+    
+    /* Icon Kaca Pembesar */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 10px center; 
+}
+
+.member-search-input:focus {
+    border-color: #02406C;
+}
+
+/* Tombol Reset (X) */
+.btn-reset-input {
+    position: absolute;
+    right: 8px; /* Sedikit digeser biar pas */
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px; /* Samakan tinggi agar area klik nyaman */
+    width: 20px;
+}
+.btn-reset-input:hover { color: #dc3545; }
+
+
+/* --- 4. AREA KONTEN --- */
+.member-content-area {
+    padding: 25px 0; 
+    background: #fff;
+}
+
+/* --- 5. GRID SYSTEM (2 KOLOM) --- */
 .member-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px; margin-top: 20px;
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 25px; 
+    margin-top: 0;
 }
 
-/* --- MIT CARD STYLE --- */
+/* Responsive */
+@media (max-width: 768px) {
+    .member-grid { grid-template-columns: 1fr; }
+    .member-header { flex-direction: column; gap: 15px; align-items: flex-start; }
+    .member-search-group, .member-search-input { width: 100%; }
+}
+
+/* --- 6. STYLE KARTU MEMBER --- */
 .mit-card {
-    background: #fff; border: 1px solid #e0e0e0;
-    padding: 15px; border-radius: 4px;
-    transition: box-shadow 0.2s;
-    display: flex; flex-direction: column; gap: 0px;
+    background: #fff; 
+    border: 1px solid #eaeaea;
+    padding: 0; 
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    display: flex; flex-direction: column; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
-
-.mit-card-role {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 11px; text-transform: uppercase; color: #666; font-weight: 600;
+.mit-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    border-color: #01B5B8;
 }
-.role-badge { background-color: #eee; padding: 2px 6px; border-radius: 3px; }
-.role-badge-head { background-color: #FE7C11; color: #fff; padding: 2px 8px; border-radius: 3px; }
-
-.mit-card-name {
-    margin: 5px 0 2px 0 !important; font-size: 18px; font-weight: 700;
-    height: 48px; display: grid; align-items: center; align-content: center;
-}
-.mit-card-name a {
-    text-decoration: none; color: #02406C; line-height: 1.2;
-    display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1;
-    -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;
-}
-.mit-card-name a:hover { color: #02406C; }
-.mit-card-title {
-    font-size: 14px; color: #444; margin-top: -25px; margin-bottom: 10px; font-weight: 500;
-}
-
-.mit-card-content {
-    display: flex; gap: 15px; align-items: flex-start; margin-top: 0px !important;
-}
-.mit-avatar img {
-    width: 80px; height: 80px; object-fit: cover;
-    border-radius: 50%; border: 2px solid #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); background-color: #eee;
-}
-
-.mit-contact { margin-top: 10px; display: flex; flex-direction: column; font-size: 13px; gap: 5px; }
-.mit-email-row { display: flex; align-items: center; gap: 8px; }
-.mit-icon { font-weight: bold; color: #999; }
-.mit-contact a { color: #01B5B8; text-decoration: none; }
-
-.mit-bio {
-    height: 54px; overflow: hidden; margin-top: 8px; padding-top: 8px;
-    font-size: 13px; color: #555; line-height: 1.4;
-    border-top: 1px solid #f0f0f0;
-    display: -webkit-box; line-clamp: 3; -webkit-box-orient: vertical;
-    word-break: break-all; overflow-wrap: break-word;
-}
-
-/* --- CARD BUTTONS (Edit/Delete) --- */
-.card-action-buttons {
-    margin-top: auto; display: flex; gap: 10px;
-    border-top: 1px solid #eee; padding-top: 15px;
-}
-.btn-card {
-    flex: 1; text-align: center; padding: 8px 0; border-radius: 4px;
-    font-size: 13px; font-weight: 600; text-decoration: none !important;
-    cursor: pointer; border: none; color: #fff !important;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-}
-.btn-card:active { transform: translateY(1px); }
-
-.btn-card-edit { background-color: #FE7C11; }
-.btn-card-edit:hover { background-color: #e66b00; }
-
-.btn-card-delete { background-color: #e74c3c; }
+.mit-card-header { padding: 15px 15px 5px 15px; }
+.mit-card-role { display: flex; align-items: center; gap: 10px; font-size: 11px; text-transform: uppercase; color: #666; font-weight: 600; }
+.role-badge { background-color: #f0f0f0; padding: 3px 8px; border-radius: 4px; color: #555; }
+.role-badge-head { background-color: #e67e22; color: #fff; padding: 3px 8px; border-radius: 4px; }
+.mit-card-name { padding: 0 15px; margin: 5px 0 10px 0 !important; font-size: 18px; font-weight: 700; line-height: 1.3; }
+.mit-card-name a { text-decoration: none; color: #2c3e50; transition: color 0.2s; }
+.mit-card-name a:hover { color: #01B5B8; }
+.mit-card-body { padding: 0 15px 15px 15px; display: flex; gap: 15px; align-items: flex-start; }
+.mit-avatar img { width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background-color: #eee; }
+.mit-contact { display: flex; flex-direction: column; gap: 6px; font-size: 13px; margin-top: 5px; }
+.mit-bio { padding: 10px 15px; background-color: #fcfcfc; border-top: 1px solid #f0f0f0; font-size: 12px; color: #666; height: 60px; overflow: hidden; }
+.card-action-buttons { margin-top: auto; display: flex; gap: 10px; padding: 15px; border-top: 1px solid #eee; }
+.btn-card { flex: 1; text-align: center; padding: 8px 0; border-radius: 5px; font-size: 13px; font-weight: 600; text-decoration: none !important; cursor: pointer; border: none; color: #fff !important; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.btn-card-edit { background-color: #E67E22; }
+.btn-card-edit:hover { background-color: #d35400; }
+.btn-card-delete { background-color: #D35442; }
 .btn-card-delete:hover { background-color: #c0392b; }
