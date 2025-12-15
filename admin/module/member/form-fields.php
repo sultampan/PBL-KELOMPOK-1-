@@ -26,7 +26,7 @@ $link3 = $links[2] ?? null; // Slot 3
     </div>
 
     <div class="mb-3">
-        <label class="form-label">NIDN <span style="color: red">*</span></label>
+        <label class="form-label">NIDN/NIM <span style="color: red">*</span></label>
         <input type="text" name="nidn" class="form-control"
                value="<?= $formData['nidn'] ?? '' ?>" inputmode="numeric" 
                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
@@ -39,6 +39,14 @@ $link3 = $links[2] ?? null; // Slot 3
             <option value="Head of Laboratory" <?= ($formData['jabatan'] ?? '') == 'Head of Laboratory' ? 'selected' : '' ?>>Head of Laboratory</option>
             <option value="Member Lab" <?= ($formData['jabatan'] ?? '') == 'Member Lab' ? 'selected' : '' ?>>Member Lab</option>
         </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Keahlian / Expertise <span style="color: red">*</span></label>
+        <input type="text" name="keahlian" class="form-control" 
+               placeholder="Contoh: Web Development, AI, Data Mining"
+               value="<?= htmlspecialchars($formData['keahlian'] ?? '') ?>" required>
+        <small style="color: #888; font-size: 12px;">Pisahkan dengan koma jika lebih dari satu.</small>
     </div>
 
     <div class="mb-3">

@@ -34,6 +34,7 @@ $id        = $_POST['id_member'] ?? null;
 $nama      = trim($_POST['nama_member'] ?? '');
 $nidn      = trim($_POST['nidn'] ?? '');
 $jabatan   = trim($_POST['jabatan'] ?? '');
+$keahlian  = trim($_POST['keahlian'] ?? '');
 $deskripsi = trim($_POST['deskripsi'] ?? '');
 $oldImg    = $_POST['gambar_lama'] ?? null;
 
@@ -78,10 +79,10 @@ try {
         // 1. Update Tabel Induk
         $stmt = $pdo->prepare("
             UPDATE member
-            SET nama_member = ?, nidn = ?, jabatan = ?, deskripsi = ?, gambar = ?
+            SET nama_member = ?, nidn = ?, jabatan = ?, keahlian = ?, deskripsi = ?, gambar = ?
             WHERE id_member = ?
         ");
-        $stmt->execute([$nama, $nidn, $jabatan, $deskripsi, $gambar, $id]);
+        $stmt->execute([$nama, $nidn, $jabatan, $keahlian, $deskripsi, $gambar, $id]);
         
         // 2. Update Link (Strategi: Hapus Semua Link Lama, Insert yang Baru)
         $stmtDel = $pdo->prepare("DELETE FROM member_link WHERE id_member = ?");
@@ -97,11 +98,11 @@ try {
         
         // 1. Insert Induk (Pakai RETURNING id_member untuk PostgreSQL)
         $stmt = $pdo->prepare("
-            INSERT INTO member (nama_member, nidn, jabatan, deskripsi, gambar, created_by)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO member (nama_member, nidn, jabatan, keahlian, deskripsi, gambar, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             RETURNING id_member
         ");
-        $stmt->execute([$nama, $nidn, $jabatan, $deskripsi, $gambar, $id_admin]);
+        $stmt->execute([$nama, $nidn, $jabatan, $keahlian, $deskripsi, $gambar, $id_admin]);
         
         // Ambil ID yang baru dibuat
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
