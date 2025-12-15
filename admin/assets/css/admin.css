@@ -1,125 +1,188 @@
-/* admin/assets/css/admin.css */
-
-/* ==================== SIDEBAR ==================== */
+/* ==================== SIDEBAR MODERN (SLIM VERSION) ==================== */
 .sidebar {
-    width: 200px;
-    background: #02406C; /* utk hover #012B49 */
+    width: 200px; /* Balik ke 200px biar gak kegedean */
+    background: #02406C;
     height: 100vh;
     position: fixed;
     left: 0;
     top: 0;
     color: white;
-    transition: 0.3s ease;
-    overflow: hidden;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    
+    /* Flexbox Layout */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
 }
 
-/* Collapsed mode */
-.sidebar.collapsed {
-    width: 80px;
+/* --- 1. HEADER --- */
+.sidebar-header {
+    height: 70px; /* <--- KUNCI UTAMA: Tinggi dipatenkan */
+    display: flex;
+    align-items: center; /* Pastikan selalu di tengah vertikal */
+    justify-content: center; /* Pastikan selalu di tengah horizontal */
+    padding: 0; /* Hapus padding, biar Flexbox yang atur */
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Opsional: Biar ada batas samar */
 }
 
-/* ==================== TITLE ==================== */
 .sidebar-title {
-    margin: 20px;
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    line-height: 1; /* Pastikan tinggi baris stabil */
+    color: #fff;
 }
 
-.sidebar.collapsed .sidebar-title span {
-    display: none;
+/* --- 2. MENU WRAPPER (SCROLLABLE) --- */
+.sidebar-menu {
+    flex-grow: 1;
+    overflow-y: hidden;
+    padding: 10px; /* Padding kiri-kanan lebih tipis */
+    /* scrollbar-width: none; */
 }
+.sidebar-menu::-webkit-scrollbar { display: none; }
 
-/* ==================== MENU ITEMS ==================== */
-.sidebar a {
-    color: white;
+/* --- ITEM MENU --- */
+.sidebar a.menu-item {
+    color: rgba(255, 255, 255, 0.8);
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 15px;
+    gap: 12px;
+    
+    /* --- PERBAIKAN STABILITAS --- */
+    height: 44px; /* Kita kunci tingginya! */
+    padding: 0 12px; /* Padding atas-bawah 0, biar Flexbox yang atur tengah */
+    box-sizing: border-box; /* Pastikan padding tidak nambah ukuran */
+    /* --------------------------- */
+    
     text-decoration: none;
-    /* border-radius: 6px; */
-    margin-bottom: 10px;
-    transition: background 0.2s ease;
-    justify-content: center;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
-.sidebar a i {
-    font-size: 18px;
-    width: 25px;
+.sidebar a.menu-item i {
+    font-size: 16px;
+    width: 20px;
     text-align: center;
 }
 
-/* Sembunyikan teks saat collapsed */
-.sidebar.collapsed a span {
+/* Hover & Active State */
+.sidebar a.menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transform: translateX(3px);
+}
+
+.sidebar a.menu-item.active {
+    background: #ffffff;
+    color: #02406C;
+    font-weight: 700;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+/* --- 3. FOOTER (LOGOUT & TOGGLE) --- */
+.sidebar-footer {
+    padding: 10px; /* Lebih tipis */
+    background: rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.logout-item {
+    background: rgba(231, 76, 60, 0.1) !important;
+    color: #ffadad !important;
+    margin-bottom: 15px !important; /* Jarak fix ke tombol panah */
+    justify-content: center; /* Teks/Icon di tengah */
+    
+    /* Pastikan dia ngikut tinggi menu-item yg sudah dikunci (44px) */
+    flex-shrink: 0; 
+}
+.logout-item:hover {
+    background: #e74c3c !important;
+    color: white !important;
+}
+
+/* --- TOGGLE BUTTON --- */
+.sidebar-toggle-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.sidebar-toggle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.3s;
+    font-size: 12px;   
+}
+
+.sidebar-toggle:focus, 
+.sidebar-toggle:active {
+    outline: none;
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.3); /* Opsional: Biar pas diklik warnanya enak */
+}
+
+.sidebar-toggle:hover {
+    background: white;
+    color: #02406C;
+}
+
+/* ==================== COLLAPSED MODE ==================== */
+.sidebar.collapsed {
+    width: 65px;
+}
+
+.sidebar.collapsed .sidebar-title span,
+.sidebar.collapsed a.menu-item span {
     display: none;
 }
 
-/* Hover & Active */
-.sidebar a:hover,
-.sidebar a.active {
-    background: #012B49;
+.sidebar.collapsed .sidebar-header { 
+    padding: 0; /* Tetap 0 padding */
+    /* Height tetap 70px karena class .sidebar-header utama sudah dikunci */
+}
+.sidebar.collapsed .sidebar-title:after {
+    content: "AI"; 
+    display: block; 
+    font-size: 24px;   /* Ukuran font */
+    font-weight: 900;  /* Tebal */
+    
+    /* Trik biar posisinya presisi sama ikon menu di bawahnya */
+    width: 100%;       
+    text-align: center;
 }
 
-/* ==================== SB ADMIN STYLE TOGGLE BUTTON ==================== */
-
-/* wrapper untuk center tombol */
-.sidebar-toggle-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-/* tombol bulat */
-.sidebar-toggle {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    border: none;
-    background: #ffffff22;  /* putihan transparan */
-    color: #ecf0f1;
-    font-size: 18px;
-    cursor: pointer;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    transition: 0.25s ease;
-    outline: none;
-}
-
-/* hover lebih terang */
-.sidebar-toggle:hover {
-    background: #ffffff33;
-}
-
-/* animate rotate saat collapsed */
-.sidebar-toggle i {
-    transition: transform 0.3s ease; /* Animasi halus bolak-balik */
-}
-
-/* saat collapsed, center tombol tetap */
-.sidebar.collapsed .sidebar-toggle-wrapper {
+.sidebar.collapsed a.menu-item {
+    /* padding: 10px 0; */
     justify-content: center;
 }
-.sidebar.collapsed .sidebar-toggle i {
-    transform: rotate(180deg);
-}
-.sidebar-toggle .toggle-icon {
-    transition: transform 0.3s ease;
-}
-.sidebar.collapsed .sidebar-toggle .toggle-icon {
-    transform: rotate(180deg);
-}
-.sidebar.collapsed .sidebar-toggle svg {
-    transform: rotate(180deg) !important;
-}
-/* ==================== MAIN CONTENT ==================== */
+.sidebar.collapsed a.menu-item i { margin: 0; font-size: 18px; }
+
+/* Panah putar */
+.sidebar-toggle .toggle-icon { transition: transform 0.3s; }
+.sidebar.collapsed .sidebar-toggle .toggle-icon { transform: rotate(180deg); }
+
+
+/* ==================== MAIN CONTENT (WAJIB SAMA DENGAN SIDEBAR) ==================== */
 .main {
-    margin-left: 200px;
-    padding: 20px;
-    transition: 0.3s ease;
+    margin-left: 200px; /* <--- PENTING! Ini harus 200px biar gak ketutup */
+    padding: 25px;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .main.collapsed {
-    margin-left: 80px;
+    margin-left: 65px; /* Sesuaikan dengan sidebar collapsed */
 }

@@ -193,7 +193,8 @@ if (isset($pdo)) {
                     $badgeClass = $isHead ? 'role-badge-head' : 'role-badge';
 
                     // Logic Gambar
-                    $defaultImg = 'https://ui-avatars.com/api/?name=' . urlencode($nama) . '&background=02406C&color=fff&size=128&length=1';
+                    $defaultImg = 'https://ui-avatars.com/api/?name=' . urlencode($nama) . '&background=random&color=fff&size=128&length=1';
+
                     $imgSrc = $defaultImg;
                     if (!empty($row['gambar'])) {
                         $ext = pathinfo($row['gambar'], PATHINFO_EXTENSION);

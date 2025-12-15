@@ -17,71 +17,169 @@
             </div>
         </div>
     </section>
-    <?php
-    // Pastikan path koneksi benar
+<?php
     require_once __DIR__ . "/../../config/koneksi.php";
 
-    // Ambil data produk
-    $stmt = $pdo->prepare("SELECT * FROM produk ORDER BY id_produk ASC LIMIT 3");
+    // Ambil data produk terbaru (DESC)
+    $stmt = $pdo->prepare("SELECT * FROM produk ORDER BY id_produk DESC LIMIT 3");
     $stmt->execute();
     $produk = $stmt->fetchAll(PDO::FETCH_ASSOC);
     ?>
 
     <style>
-        .box-wrap {
-            height: 460px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding: 30px;
-            border-radius: 12px;
-            background: #f7f7f7;
-        }
+    /* 1. Wrapper LI */
+    .product-item-li {
+        /* Hapus width fixed 350px agar responsive mengikuti col-lg-4 */
+        /* width: 350px; <--- INI BIANG KEROKNYA (kadang bikin konflik) */
+        display: flex;       
+        justify-content: center;
+        width: 100%; /* Pastikan ambil full width dari kolom bootstrap */
+    }
+
+    /* 2. Kartu Pembungkus */
+    .product-card-style {
+        width: 100%; /* Wajib 100% dari kolom parent */
+        max-width: 400px; /* Batasi maksimal biar ga kegedean banget */
+        position: relative;
+    }
+
+    .product-link-item {
+        display: block; /* Wajib Block agar width 100% jalan */
+        text-decoration: none;
+        width: 100%;
+        position: relative;
+    }
+
+    /* 3. Wrapper Gambar (Fixed Size) */
+    .image-wrapper-product {
+        width: 100%;
+        height: 260px; /* Tinggi Fix */
+        overflow: hidden;
+        border-radius: 8px; /* Radius sudut (termasuk buat kotak abu-abu) */
+        position: relative;
+        background-color: #f1f5f9; /* Warna dasar kalau loading */
+    }
+
+    /* Style Gambar */
+    .image-wrapper-product img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    /* [PENTING] Style Kotak Abu-abu Placeholder */
+    .image-wrapper-product .no-image-placeholder {
+        width: 100%;  /* PAKSA LEBAR PENUH */
+        height: 100%; /* PAKSA TINGGI PENUH */
+        background-color: #f1f5f9; 
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-weight: 500;
+        font-size: 16px;
+    }
+
+    .image-wrapper-product .no-image-placeholder i {
+        font-size: 50px;
+        margin-bottom: 10px;
+        opacity: 0.8;
+    }
+
+    /* Efek Zoom saat Hover */
+    .product-link-item:hover .image-wrapper-product img {
+        transform: scale(1.1);
+    }
+
+    /* 4. Style Judul */
+    .product-info-text .title-product {
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+        line-height: 1.4;
+        transition: color 0.3s ease;
+    }
     </style>
 
-    <section class="w3l-features py-5" id="work">
+<?php
+    require_once __DIR__ . "/../../config/koneksi.php";
+
+    // Ambil data produk terbaru (DESC)
+    $stmt = $pdo->prepare("SELECT * FROM produk ORDER BY id_produk DESC LIMIT 3");
+    $stmt->execute();
+    $produk = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    ?>
+
+<section class="w3l-features py-5" id="work">
         <div class="container py-lg-5 py-md-4 py-2">
 
             <div class="title-content text-center mb-lg-3 mb-4">
                 <h6 class="title-subw3hny mb-1">Our Products</h6>
-                <h3 class="title-w3l">Innovative Solutions Developed by the Applied Informatics Laboratory</h3>
+                <h3 class="title-w3l">Innovative Solutions Developed By The Applied Informatics Laboratory</h3>
             </div>
 
             <div class="main-cont-wthree-2">
-                <div class="row justify-content-center">
+                <ul class="row justify-content-center gallery_agile" style="padding: 0; list-style: none;">
+
                     <?php if(count($produk) > 0): ?>
                         <?php foreach ($produk as $p): ?>
-                            <div class="col-lg-4 col-md-6 mt-lg-5 mt-4">
-                                <div class="grids-1 box-wrap">
-                                    <div class="icon">
-                                        <?php
-                                        $gambar = $p['gambar'];
-                                        $ext = pathinfo($gambar, PATHINFO_EXTENSION);
-                                        $base = pathinfo($gambar, PATHINFO_FILENAME);
-                                        $thumbName = $base . '-thumb.' . $ext;
-                                        $srcThumb = "uploads/thumb/produk-thumb/" . $thumbName;
-                                        $srcAsli  = "uploads/produk/" . $gambar;
-                                        ?>
-                                        <img src="<?php echo htmlspecialchars($srcThumb); ?>"
-                                            alt="<?php echo htmlspecialchars($p['nama']); ?>"
-                                            style="width: 180px; height: 120px; object-fit: contain; border-radius: 8px;"
-                                            onerror="this.onerror=null; this.src='<?php echo htmlspecialchars($srcAsli); ?>';">
-                                    </div>
-                                    <h4>
-                                        <a href="<?php echo htmlspecialchars($p['link_produk']); ?>" class="title-head mb-3" target="_blank">
-                                            <?php echo htmlspecialchars($p['nama']); ?>
-                                        </a>
-                                    </h4>
-                                    <p class="text-para">
-                                        <?php echo htmlspecialchars($p['deskripsi']); ?>
-                                    </p>
+                            
+                            <li class="col-lg-4 col-md-6 mt-lg-5 mt-4 product-item-li">
+                                <div class="product-card-style">
+
+                                    <a href="<?php echo htmlspecialchars($p['link_produk']); ?>" target="_blank" class="product-link-item">
+                                        
+                                        <div class="image-wrapper-product"> 
+                                            <?php
+                                            $gambar = $p['gambar'];
+                                            $hasImage = false;
+                                            $srcDisplay = "";
+                                            $srcBackup = "";
+
+                                            if (!empty($gambar)) {
+                                                $hasImage = true;
+                                                $ext = pathinfo($gambar, PATHINFO_EXTENSION);
+                                                $base = pathinfo($gambar, PATHINFO_FILENAME);
+                                                $thumbName = $base . '-thumb.' . $ext;
+                                                // $srcThumb = "uploads/thumb/produk-thumb/" . $thumbName;
+                                                $srcAsli  = "uploads/produk/" . $gambar;
+                                                
+                                                $srcDisplay = $srcAsli; 
+                                                $srcBackup = $srcAsli;
+                                            }
+                                            ?>
+
+                                            <?php if ($hasImage): ?>
+                                                <img src="<?php echo htmlspecialchars($srcDisplay); ?>"
+                                                     alt="<?php echo htmlspecialchars($p['nama']); ?>"
+                                                     class="img-fluid"
+                                                     onerror="this.onerror=null; this.src='<?php echo htmlspecialchars($srcBackup); ?>';">
+                                            <?php else: ?>
+                                                <div class="no-image-placeholder">
+                                                    <i class="fas fa-image"></i>
+                                                    <span>Tidak ada gambar</span>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <div class="product-info-text text-center mt-3">
+                                            <h4 class="title-product"><?php echo htmlspecialchars($p['nama']); ?></h4>
+                                        </div>
+                                    </a>
+
                                 </div>
-                            </div>
+                            </li>
+
                         <?php endforeach; ?>
                     <?php else: ?>
                         <div class="col-12 text-center"><p>Belum ada data produk.</p></div>
                     <?php endif; ?>
-                </div>
+
+                </ul>
+                
                 <div class="text-center mt-5">
                     <a href="index.php?page=product" class="btn btn-style btn-primary mt-lg-5 mt-4 me-2">
                         Read More <i class="fas fa-angle-double-right ms-2"></i>
@@ -90,7 +188,6 @@
             </div>
         </div>
     </section>
-
 
 <?php
     $activities = [];
@@ -106,7 +203,7 @@
     ?>
 
     <section class="w3l-gallery" id="gallery">
-        <div class="destionation-innf py-5">
+        
             <div class="container py-lg-5 py-md-4 py-2 HomePageGallery">
                 <div class="title-content text-center">
                     <h6 class="title-subw3hny text-center">Laboratory Activities</h6>
@@ -133,7 +230,7 @@
                                 $thumbPath = "uploads/thumb/activity-thumb/" . $baseName . "-thumb." . $ext;
                                 
                                 if(file_exists(__DIR__ . '/../../public/' . $thumbPath)) {
-                                    $displayImage = $thumbPath;
+                                    $displayImage = $imagePath;
                                 } else {
                                     $displayImage = $imagePath;
                                 }
@@ -174,7 +271,7 @@
                     ?>
                 </ul>
             </div>
-        </div>
+        
     </section>    
     <div id="imageModal" class="modal-gallery" style="display:none;">
         <span class="close-modal">&times;</span>
@@ -373,15 +470,29 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .latest-project-desc {
-            display: -webkit-box;
-            -webkit-line-clamp: 5;
-            line-clamp: 5;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-align: justify;
-        }
+.latest-project-desc {
+        /* 1. Sistem Line Clamp (Batas Baris) */
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        
+        /* 2. Paksa Turun Baris (Wrap) */
+        white-space: normal !important; 
+        
+        /* 3. Paksa Patahkan Kata (Word Break) - INI YANG KAMU MINTA */
+        overflow-wrap: break-word;  /* Standar Modern */
+        word-wrap: break-word;      /* Support Browser Lama */
+        word-break: break-word;     /* Supaya kata panjang dipotong paksa */
+        
+        /* 4. Estetika */
+        text-overflow: ellipsis;
+        text-align: justify;
+        line-height: 1.6;
+        margin-bottom: 0;
+        color: #555;
+    }
     </style>
 <?php
     // Ambil data Partner dari Database
@@ -410,75 +521,80 @@
     ?>
 
     <section class="w3l-testimonials" id="testimonials">
-        <div class="cusrtomer-layout py-5">
-            <div class="container py-lg-4 py-md-3 py-2 pb-lg-0">
-                <div class="title-content text-center">
-                    <h6 class="title-subw3hny">Our Partners</h6>
-                    <h3 class="title-w3l mb-5">Collaborative Partners</h3>
-                </div>
-
-                <div class="partners-carousel-wrapper pt-lg-4">
-                    <div class="carousel-partners-container">
-                        <button class="carousel-btn-partner btn-prev" id="prevBtnPartner">‹</button>
-
-                        <div class="carousel-track-wrapper">
-                            <div class="carousel-track-partner" id="carouselTrackPartner">
-                                
-                                <?php if(count($partners) > 0): ?>
-                                    <?php foreach($partners as $ptr): ?>
-                                        <?php 
-                                            // 1. Ambil nama file gambar
-                                            $logo = $ptr['gambar'];
-                                            
-                                            // 2. Default value
-                                            $pathLogo = "";
-                                            $thumbLogo = "";
-                                            $hasImage = false;
-
-                                            // 3. Cek apakah gambar ada isinya
-                                            if (!empty($logo)) {
-                                                $hasImage = true;
-                                                $pathLogo = "uploads/partner/" . $logo;
-                                                
-                                                // Proses pathinfo
-                                                $info = pathinfo($logo);
-                                                $ext = isset($info['extension']) ? $info['extension'] : 'jpg';
-                                                $filename = $info['filename'];
-                                                
-                                                $thumbLogo = "uploads/thumb/partner-thumb/" . $filename . "-thumb." . $ext;
-                                            }
-                                        ?>
-                                        
-                                        <div class="logo-card-partner">
-                                            <?php if ($hasImage): ?>
-                                                <img src="<?= htmlspecialchars($thumbLogo) ?>" 
-                                                     alt="<?= htmlspecialchars($ptr['nama']) ?>"
-                                                     loading="lazy"
-                                                     onerror="this.onerror=null; this.src='<?= htmlspecialchars($pathLogo) ?>';">
-                                            <?php else: ?>
-                                                <div class="partner-name-text" title="<?= htmlspecialchars($ptr['nama']) ?>">
-                                                    <?= htmlspecialchars($ptr['nama']) ?>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <div class="logo-card-partner" style="width:100%; text-align:center;">
-                                        <span>Belum ada partner</span>
-                                    </div>
-                                <?php endif; ?>
-
-                            </div>
-                        </div>
-
-                        <button class="carousel-btn-partner btn-next" id="nextBtnPartner">›</button>
-                    </div>
-                </div>
-
+    <div class="cusrtomer-layout py-5">
+        <div class="container py-lg-4 py-md-3 py-2 pb-lg-0">
+            <div class="title-content text-center">
+                <h6 class="title-subw3hny">Our Partners</h6>
+                <h3 class="title-w3l">Collaborative Partners</h3>
             </div>
-        </div>
-    </section>
+
+            <div class="partners-carousel-wrapper pt-lg-4">
+                <div class="carousel-partners-container">
+                    <button class="carousel-btn-partner btn-prev" id="prevBtnPartner">‹</button>
+
+                    <div class="carousel-track-wrapper">
+                        <div class="carousel-track-partner" id="carouselTrackPartner">
+                            
+                            <?php if(count($partners) > 0): ?>
+                                <?php foreach($partners as $ptr): ?>
+                                    <?php 
+                                        // 1. Ambil nama file gambar
+                                        $logo = $ptr['gambar'];
+                                        
+                                        // 2. Default value
+                                        $pathLogo = "";
+                                        $thumbLogo = "";
+                                        $hasImage = false;
+
+                                        // 3. Cek apakah gambar ada isinya
+                                        if (!empty($logo)) {
+                                            $hasImage = true;
+                                            $pathLogo = "uploads/partner/" . $logo;
+                                            
+                                            // Proses pathinfo
+                                            $info = pathinfo($logo);
+                                            $ext = isset($info['extension']) ? $info['extension'] : 'jpg';
+                                            $filename = $info['filename'];
+                                            
+                                            $thumbLogo = "uploads/thumb/partner-thumb/" . $filename . "-thumb." . $ext;
+                                        }
+                                    ?>
+                                    
+                                    <div class="logo-card-partner">
+                                        <?php if ($hasImage): ?>
+                                            <img src="<?= htmlspecialchars($thumbLogo) ?>" 
+                                                 alt="<?= htmlspecialchars($ptr['nama']) ?>"
+                                                 loading="lazy"
+                                                 onerror="this.onerror=null; this.src='<?= htmlspecialchars($pathLogo) ?>';">
+                                        <?php else: ?>
+                                            <div class="partner-name-text" title="<?= htmlspecialchars($ptr['nama']) ?>">
+                                                <?= htmlspecialchars($ptr['nama']) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="logo-card-partner" style="width:100%; text-align:center;">
+                                    <span>Belum ada partner</span>
+                                </div>
+                            <?php endif; ?>
+
+                        </div>
+                    </div>
+
+                    <button class="carousel-btn-partner btn-next" id="nextBtnPartner">›</button>
+                </div>
+            </div>
+
+            <div class="text-center mt-5 pt-4">
+                <a href="index.php?page=partner" class="btn btn-style btn-primary">
+                    Read more <i class="fas fa-angle-double-right ms-2"></i>
+                </a>
+            </div>
+            </div>
+    </div>
+</section>
 
 <style>
     /* WRAPPER UTAMA */
@@ -578,7 +694,7 @@
         border: 1px solid #ddd;
         border-radius: 50%;
         cursor: pointer;
-        z-index: 10;
+        z-index: 2;
         display: flex;
         align-items: center;
         justify-content: center;

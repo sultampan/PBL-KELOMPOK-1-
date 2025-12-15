@@ -108,6 +108,10 @@ include __DIR__ . '/layout/sidebar.php';     // <div class="sidebar">
             include __DIR__ . '/module/contact/index.php';
         break;
 
+        case 'social':
+            include __DIR__ . '/module/social/index.php';
+        break;
+
         default:
             echo "<h3>Halaman tidak ditemukan.</h3>";
             break;

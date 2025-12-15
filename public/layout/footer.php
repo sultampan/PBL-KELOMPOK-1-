@@ -1,9 +1,20 @@
+<?php
+// 1. Ambil Data Sosmed
+$activeSocials = [];
+try {
+    if (isset($pdo)) {
+        $stmtSoc = $pdo->prepare("SELECT * FROM social_media WHERE is_active = TRUE ORDER BY id_social ASC");
+        $stmtSoc->execute();
+        $activeSocials = $stmtSoc->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (Exception $e) {}
+?>
+
 <footer class="w3l-footer9">
-    <section class="footer-inner-main py-5">
-        <div class="container py-md-4">
+    <section class="footer-inner-main py-3">
+        <div class="container py-md-3">
             <div class="row align-items-start">
                 
-                <!-- LOGO LABORATORY (Kiri) -->
                 <div class="col-lg-3 col-md-6 mb-4">
                     <div class="footer-logo">
                         <a href="index.php?page=home">
@@ -12,286 +23,134 @@
                     </div>
                 </div>
 
-                <!-- LABORATORY (Lokasi) -->
                 <div class="col-lg-3 col-md-6 mb-4">
                     <h6 class="footer-title mb-3">Laboratory</h6>
                     <p class="footer-text mb-2">2nd Floor of the Postgraduate Building of Malang State Polytechnic</p>
                     <p class="footer-text mb-0">
-                        <a href="mailto:email@labai.polinema.ac.id" style="color: #aaa; text-decoration: none;">
+                        <a href="mailto:email@labai.polinema.ac.id" class="footer-link-text">
                             email@labai.polinema.ac.id
                         </a>
                     </p>
                 </div>
 
-                <!-- COMPANY -->
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h6 class="footer-title mb-3">Company</h6>
-                    <ul class="footer-list list-unstyled">
-                        <li class="mb-2">
-                            <a href="index.php?page=about" class="footer-link">About us</a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="index.php?page=contact" class="footer-link">Contact us</a>
-                        </li>
+                <div class="col-lg-2 col-md-6 mb-3">
+                    <h6 class="footer-title mb-2">Company</h6>
+                    <ul class="footer-list list-unstyled mb-0">
+                        <li class="mb-2"><a href="index.php?page=about" class="footer-link">About us</a></li>
+                        <li class="mb-2"><a href="index.php?page=contact" class="footer-link">Contact us</a></li>
                     </ul>
                 </div>
 
-                <!-- SOCIAL MEDIA -->
                 <div class="col-lg-4 col-md-6 mb-4">
                     <h6 class="footer-title mb-3">Social Media</h6>
-                    <ul class="social-media-list list-unstyled">
-                        <li class="d-flex align-items-center mb-3">
-                            <a href="https://instagram.com/sallysvsta" target="_blank" class="social-link d-flex align-items-center">
-                                <div class="social-icon-box">
-                                    <i class="fab fa-instagram"></i>
-                                </div>
-                                <span class="social-name ms-3">Instagram</span>
-                            </a>
-                        </li>
-                        <li class="d-flex align-items-center mb-3">
-                            <a href="https://facebook.com/your_facebook" target="_blank" class="social-link d-flex align-items-center">
-                                <div class="social-icon-box">
-                                    <i class="fab fa-facebook-f"></i>
-                                </div>
-                                <span class="social-name ms-3">Facebook</span>
-                            </a>
-                        </li>
-                        <li class="d-flex align-items-center mb-3">
-                            <a href="https://twitter.com/your_twitter" target="_blank" class="social-link d-flex align-items-center">
-                                <div class="social-icon-box">
-                                    <i class="fab fa-twitter"></i>
-                                </div>
-                                <span class="social-name ms-3">Twitter</span>
-                            </a>
-                        </li>
-                        <li class="d-flex align-items-center mb-3">
-                            <a href="https://github.com/sallysvsta" target="_blank" class="social-link d-flex align-items-center">
-                                <div class="social-icon-box">
-                                    <i class="fab fa-github"></i>
-                                </div>
-                                <span class="social-name ms-3">GitHub</span>
-                            </a>
-                        </li>
+                    <ul class="list-unstyled social-media-grid">
+                        <?php if (!empty($activeSocials)): ?>
+                            <?php foreach($activeSocials as $soc): ?>
+                                <li>
+                                    <a href="<?= htmlspecialchars($soc['link_url']) ?>" target="_blank" class="social-link d-flex align-items-center">
+                                        <div class="social-icon-box">
+                                            <i class="<?= htmlspecialchars($soc['icon_class']) ?>"></i>
+                                        </div>
+                                        <span class="social-name ms-3"><?= htmlspecialchars($soc['nama_platform']) ?></span>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <li style="color: #aaa; grid-column: span 2;">Sosial media belum diatur.</li>
+                        <?php endif; ?>
                     </ul>
                 </div>
 
             </div>
 
-            <!-- COPYRIGHT & TERMS -->
-            <div class="row mt-4 pt-4" style="border-top: 1px solid #333;">
-                <div class="col-md-12">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap">
-                        <p class="copyright-text mb-0" style="color: #aaa; font-size: 14px;">
-                            © 2025 Applied Informatics Laboratory. All rights reserved.
-                        </p>
-                     
-                    </div>
+            <div class="row mt-2 pt-4" style="border-top: 1px solid #333;">
+                <div class="col-md-12 text-center">
+                    <p class="copyright-text mb-0">
+                        © 2025 Applied Informatics Laboratory. All rights reserved.
+                    </p>
                 </div>
             </div>
-
         </div>
     </section>
 
-    <!-- Move to Top Button -->
     <button onclick="topFunction()" id="movetop" title="Go to top">
         <span class="fas fa-level-up-alt" aria-hidden="true"></span>
     </button>
-
-    <script>
-        // When the user scrolls down 20px from the top of the document, show the button
-        window.onscroll = function() {
-            scrollFunction()
-        };
-
-        function scrollFunction() {
-            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-                document.getElementById("movetop").style.display = "block";
-            } else {
-                document.getElementById("movetop").style.display = "none";
-            }
-        }
-
-        // When the user clicks on the button, scroll to the top of the document
-        function topFunction() {
-            document.body.scrollTop = 0;
-            document.documentElement.scrollTop = 0;
-        }
-    </script>
 </footer>
 
-<!-- CSS untuk Footer -->
 <style>
-/* Footer Background */
-.w3l-footer9 {
-    background-color: #1a1a1a;
-    color: #ffffff;
-}
-
-.footer-inner-main {
-    background-color: #1a1a1a;
-}
-
-/* Footer Title */
-.footer-title {
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Footer Text */
-.footer-text {
-    color: #aaa;
-    font-size: 14px;
-    line-height: 1.8;
-}
-
-/* Footer List */
-.footer-list li {
-    margin-bottom: 10px;
-}
-
-.footer-link {
-    color: #aaa;
-    font-size: 14px;
-    text-decoration: none;
-    transition: color 0.3s ease;
-    display: inline-block;
-}
-
-.footer-link:hover {
-    color: #ff9800;
-}
-
-
-/* 1. Logo lebih besar dan lebih kiri */
-.footer-logo img {
-    max-width: 260px !important; 
-    transform: translateX(-10px); 
-}
-
-/* 2. Social Media — title ditengah */
-.col-lg-4 .footer-title {
-    text-align: center;
-}
-
-/* 3. Social media list*/
-.social-media-list {
-    padding-left: 40px; 
-}
-
-/* 4. Besarkan ikon sosial (lebih mirip contoh putih) */
-.social-icon-box {
-    width: 50px;
-    height: 50px;
-}
-
-.social-icon-box i {
-    font-size: 22px;
-}
-
-.social-name {
-    font-size: 16px;
-    font-weight: 500;
-}
-
-/* 5. Atur jarak antar kolom biar lebih penuh */
-.footer-inner-main .row.align-items-start > div {
-    margin-bottom: 20px;
-}
-
-/* 6. Copyright ke tengah */
-.copyright-text {
-    width: 100%;
-    text-align: center;
-}
-
-/* 7. Sesuaikan */
-.footer-inner-main .container {
-    max-width: 1150px; /* agar komponennya tidak terlalu mepet */
-}
-
-
-/* Social Media Icons - ORANGE KOTAK */
-.social-icon-box {
-    width: 40px;
-    height: 40px;
-    background-color: #ff9800;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.social-icon-box i {
-    color: #ffffff;
-    font-size: 18px;
-}
-
-/* Social Media Link */
-.social-link {
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.social-link:hover .social-icon-box {
-    background-color: #ff9800; /* TETAP ORANGE saat hover */
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
-}
-
-.social-name {
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 500;
-}
-
-.social-link:hover .social-name {
-    color: #ff9800;
-}
-
-/* Copyright & Bottom Links */
-.copyright-text {
-    color: #888;
-}
-
-.footer-bottom-link {
-    color: #888;
-    transition: color 0.3s ease;
-}
-
-.footer-bottom-link:hover {
-    color: #ff9800;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .footer-logo img {
-        max-width: 150px;
+    /* Footer Global */
+    .w3l-footer9, .footer-inner-main { background-color: #1a1a1a; color: #ffffff; }
+    
+    /* JUDUL (Title) */
+    .footer-title { 
+        color: #ffffff; font-size: 16px; font-weight: 700; 
+        margin-bottom: 15px; 
+        text-transform: uppercase; letter-spacing: 0.5px; 
     }
     
-    .d-flex.justify-content-between {
-        flex-direction: column;
-        text-align: center;
+    /* TEKS BIASA (Laboratory) & LINK TEXT (Email) */
+    .footer-text, .footer-link-text { 
+        color: #aaa !important; 
+        font-size: 13px; 
+        line-height: 1.8; /* SPASI BARIS 1.8 */
+        text-decoration: none; 
+        transition: 0.3s; 
+    }
+    .footer-link-text:hover { color: #ff9800; }
+    
+    /* === LINK MENU (Company: About & Contact) === */
+    .footer-link { 
+        /* Pakai !important biar gak dipaksa putih sama template */
+        color: #aaa !important; 
+        
+        font-size: 13px; 
+        line-height: 1.8; 
+        text-decoration: none; 
+        transition: color 0.3s ease; 
+        display: block; 
     }
     
-    .footer-bottom-links {
-        margin-top: 10px;
+    /* Saat di-hover tetap jadi Orange */
+    .footer-link:hover { 
+        color: #ff9800 !important; 
     }
-}
+    
+    .footer-logo img { max-width: 100%; width: 180px; height: auto; }
+
+    /* === GRID LAYOUT (SUPER RAPAT) === */
+    .social-media-grid {
+        display: grid;
+        grid-template-columns: max-content max-content; 
+        gap: 8px 20px; 
+        padding-left: 0; margin: 0;
+    }
+
+    .social-icon-box { width: 36px; height: 36px; background-color: #ff9800; border-radius: 5px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; flex-shrink: 0; }
+    .social-icon-box i { color: #ffffff; font-size: 18px; }
+    
+    .social-link { text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; }
+    .social-link:hover .social-icon-box { background-color: #e68a00; transform: translateY(-2px); }
+    .social-link:hover .social-name { color: #ff9800; }
+    
+    .social-name { color: #ffffff; font-size: 13px; font-weight: 500; margin-left: 10px; white-space: nowrap; }
+    .copyright-text { color: #888; font-size: 13px; }
+    
+    @media (max-width: 768px) {
+        .footer-logo img { max-width: 150px; }
+        .footer-title { margin-top: 15px; margin-bottom: 10px; }
+    }
 </style>
 
-<!-- Template JavaScript -->
 <script src="assets/js/jquery-3.3.1.min.js"></script>
 <script src="assets/js/theme-change.js"></script>
 <script src="assets/js/modernizr.custom.js"></script>
 <script src="assets/js/classie.js"></script>
 <script src="assets/js/demo1.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
 
 <script>
+    // 1. Navbar Sticky & Toggle (INI YANG HILANG KEMARIN)
     $(window).on("scroll", function() {
         var scroll = $(window).scrollTop();
         if (scroll >= 80) {
@@ -321,9 +180,18 @@
             $('body').toggleClass('noscroll');
         })
     });
+
+    // 2. Tombol Move to Top
+    window.onscroll = function() { scrollFunction() };
+    function scrollFunction() {
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            document.getElementById("movetop").style.display = "block";
+        } else {
+            document.getElementById("movetop").style.display = "none";
+        }
+    }
+    function topFunction() {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    }
 </script>
-
-<script src="assets/js/bootstrap.min.js"></script>
-
-</body>
-</html>

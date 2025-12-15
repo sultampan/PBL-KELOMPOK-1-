@@ -19,5 +19,5 @@ $searchKeyword = $_GET['keyword'] ?? null;
 // [PENTING] Panggil fungsi tanpa Limit
 $list = getActivityAll($pdo, $searchKeyword);
 
-require_once "table.php";
+require_once __DIR__ . '/table.php';
 ?>

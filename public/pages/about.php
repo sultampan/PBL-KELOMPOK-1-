@@ -44,15 +44,6 @@
     </div>
 </section>
 
-<section class="w3l-about-breadcrumb">
-    <div class="breadcrumb-bg breadcrumb-bg-about py-sm-5 py-4">
-        <div class="container py-2">
-            <h2 class="title">About the Applied Informatics Laboratory</h2>
-            <p class="mt-2 text-white">Politeknik Negeri Malang</p>
-        </div>
-    </div>
-</section>
-
 <!-- ABOUT SECTION -->
 <section class="w3l-features py-5" id="about-lab">
     <div class="container py-md-5 py-4">
@@ -195,69 +186,6 @@
                 </div>
             </div>
 
-        </div>
-    </div>
-</section>
-
-
-<!-- TEAM -->
-<section class="w3l-team py-5" id="team">
-    <div class="container py-md-5 py-4">
-        <div class="title-content text-center mb-5">
-            <h6 class="title-subw3hny">Meet the Team</h6>
-            <h3 class="title-w3l">Our Laboratory Staff</h3>
-        </div>
-
-        <div class="row justify-content-center">
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="team-member text-center p-4 shadow radius-image">
-                    <img src="assets/images/tim1.jpg" class="img-fluid radius-image mb-3" alt="">
-                    <h5>Ir. Yan Watequlis Syaifudin, S.T., M.MT., Ph.D</h5>
-                    <p>Head of Laboratory</p>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="team-member text-center p-4 shadow radius-image">
-                    <img src="assets/images/tim2.jpg" class="img-fluid radius-image mb-3" alt="">
-                    <h5>Ir. Yan Watequlis Syaifudin, S.T., M.MT., Ph.D</h5>
-                    <p>Member Lab</p>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="team-member text-center p-4 shadow radius-image">
-                    <img src="assets/images/tim3.jpg" class="img-fluid radius-image mb-3" alt="">
-                    <h5>Ir. Yan Watequlis Syaifudin, S.T., M.MT., Ph.D</h5>
-                    <p>Member Lab</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- CONTACT -->
-<section class="w3l-join-main py-5">
-    <div class="container py-md-5">
-        <div class="row">
-            <div class="col-lg-6">
-                <h5 class="title-subw3hny mb-2">Contact Us</h5>
-                <h3 class="title-w3l mb-4">Stay Connected</h3>
-                <p>
-                    For collaboration, research opportunities, or inquiries about laboratory activities,
-                    feel free to reach out to us.
-                </p>
-                <ul class="list-unstyled mt-3">
-                    <li><strong>Email:</strong> lab.informatics@polinema.ac.id</li>
-                    <li><strong>Location:</strong> ICT Building, Politeknik Negeri Malang</li>
-                    <li><strong>Phone:</strong> +62 812-3456-7890</li>
-                </ul>
-            </div>
-
-            <div class="col-lg-6 mt-lg-0 mt-4">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3951.398494638768!2d112.613297!3d-7.958315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd628315cb1ffb7%3A0xdea9da6afdd1fb26!2sPoliteknik%20Negeri%20Malang!5e0!3m2!1sen!2sid!4v1632890177262!5m2!1sen!2sid"
-                    width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-            </div>
         </div>
     </div>
 </section>

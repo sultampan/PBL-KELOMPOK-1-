@@ -11,7 +11,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // 2. Pasang Listener Search (Enter Key)
     attachSearchListener();
     
-    // 3. Cek Scroll (jika habis reload)
+    // 3. Inisialisasi state button batal
+    updateBatalButtonState();
+    
+    // 4. Pasang listener untuk perubahan form
+    attachFormChangeListeners();
+    
+    // 5. Cek Scroll (jika habis reload)
     const scrollTarget = sessionStorage.getItem('scrollToCategory');
     if (scrollTarget) {
         setTimeout(() => {
@@ -23,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 100);
     }
 
-    // 4. Listener Submit Form Global
+    // 6. Listener Submit Form Global
     document.addEventListener("submit", function (e) {
         if (e.target && e.target.id === "activityForm") {
             handleActivitySubmit(e);
@@ -118,7 +124,7 @@ function renderPaginationControls(container, currentPage, totalPages, onPageClic
     // 1. TOMBOL PREV (<)
     html += `<a href="javascript:void(0)" class="${getClass('arrow', false, currentPage === 1)}" data-page="${currentPage - 1}" title="Sebelumnya">&lsaquo;</a>`;
 
-    // 2. TOMBOL FIRST PAGE (<<) - INI YANG KAMU MINTA
+    // 2. TOMBOL FIRST PAGE (<<)
     html += `<a href="javascript:void(0)" class="${getClass('arrow', false, currentPage === 1)}" data-page="1" title="Halaman Pertama">&laquo;</a>`;
 
     // 3. ANGKA HALAMAN
@@ -126,7 +132,7 @@ function renderPaginationControls(container, currentPage, totalPages, onPageClic
         html += `<a href="javascript:void(0)" class="${getClass('num', i === currentPage, false)}" data-page="${i}">${i}</a>`;
     }
 
-    // 4. TOMBOL LAST PAGE (>>) - INI YANG KAMU MINTA
+    // 4. TOMBOL LAST PAGE (>>)
     html += `<a href="javascript:void(0)" class="${getClass('arrow', false, currentPage === totalPages)}" data-page="${totalPages}" title="Halaman Terakhir">&raquo;</a>`;
 
     // 5. TOMBOL NEXT (>)
@@ -176,11 +182,13 @@ function previewActivityImage(event) {
         if (!ALLOWED_EXT.includes(fileExt)) {
             showFileError(input, previewBox, "Ekstensi file harus JPG, PNG, GIF, atau WEBP.");
             updateActivityFileName(input);
+            updateBatalButtonState();
             return;
         }
         if (file.size > MAX_FILE_SIZE) {
             showFileError(input, previewBox, "Ukuran file terlalu besar (Max 5MB).");
             updateActivityFileName(input);
+            updateBatalButtonState();
             return;
         }
 
@@ -195,6 +203,7 @@ function previewActivityImage(event) {
         if(previewBox) previewBox.style.display = "none";
     }
     updateActivityFileName(input);
+    updateBatalButtonState();
 }
 
 function showFileError(input, previewBox, msg) {
@@ -223,6 +232,8 @@ function removeActivityImage() {
 
     const removeExisting = document.getElementById("removeExistingImage");
     if (removeExisting) removeExisting.value = "1";
+    
+    updateBatalButtonState();
 }
 
 function updateActivityFileName(input) {
@@ -249,12 +260,24 @@ function addTeamRow() {
     if (container && template) {
         const clone = template.content.cloneNode(true);
         container.appendChild(clone);
+        
+        // Pasang listener untuk select yang baru ditambahkan
+        const newSelects = container.querySelectorAll('select[name="member_ids[]"]');
+        if (newSelects.length > 0) {
+            const lastSelect = newSelects[newSelects.length - 1];
+            lastSelect.addEventListener('change', updateBatalButtonState);
+        }
+        
+        updateBatalButtonState();
     }
 }
 
 function removeTeamRow(btn) {
     const row = btn.closest('.link-row');
-    if (row) row.remove();
+    if (row) {
+        row.remove();
+        updateBatalButtonState();
+    }
 }
 
 let memberSearchTimeout = null;
@@ -285,7 +308,103 @@ function filterMemberSelection() {
 
 
 /* =========================================
-   5. SEARCH & AJAX LOAD (Tanpa Reload)
+   5. BUTTON BATAL STATE MANAGEMENT
+   ========================================= */
+
+/**
+ * Fungsi untuk mengecek apakah form sudah terisi atau belum
+ * @returns {boolean} - true jika form sudah terisi, false jika masih kosong
+ */
+function isFormFilled() {
+    const form = document.getElementById('activityForm');
+    if (!form) return false;
+    
+    // Cek input text judul
+    const judulInput = form.querySelector('input[name="judul"]');
+    if (judulInput && judulInput.value.trim() !== '') return true;
+    
+    // Cek select kategori
+    const kategoriSelect = form.querySelector('select[name="kategori"]');
+    if (kategoriSelect && kategoriSelect.value !== '') return true;
+    
+    // Cek input tanggal
+    const tanggalInput = form.querySelector('input[name="tanggal_kegiatan"]');
+    if (tanggalInput && tanggalInput.value !== '') return true;
+    
+    // Cek textarea deskripsi
+    const deskripsiTextarea = form.querySelector('textarea[name="deskripsi"]');
+    if (deskripsiTextarea && deskripsiTextarea.value.trim() !== '') return true;
+    
+    // Cek apakah ada member yang dipilih (checkbox atau select)
+    const memberCheckboxes = form.querySelectorAll('input[name="member_ids[]"]:checked');
+    if (memberCheckboxes && memberCheckboxes.length > 0) return true;
+    
+    const memberSelects = form.querySelectorAll('select[name="member_ids[]"]');
+    if (memberSelects) {
+        for (let select of memberSelects) {
+            if (select.value !== '') return true;
+        }
+    }
+    
+    // Cek apakah ada file gambar yang dipilih
+    const gambarInput = form.querySelector('input[name="gambar"]');
+    if (gambarInput && gambarInput.files && gambarInput.files.length > 0) return true;
+    
+    // Cek apakah ada gambar lama (mode edit)
+    const gambarLamaInput = form.querySelector('input[name="gambar_lama"]');
+    if (gambarLamaInput && gambarLamaInput.value !== '') return true;
+    
+    return false;
+}
+
+/**
+ * Fungsi untuk update state button batal
+ */
+function updateBatalButtonState() {
+    const batalBtn = document.querySelector('.btn-secondary');
+    if (!batalBtn) return;
+    
+    if (isFormFilled()) {
+        batalBtn.disabled = false;
+        batalBtn.style.opacity = '1';
+        batalBtn.style.cursor = 'pointer';
+    } else {
+        batalBtn.disabled = true;
+        batalBtn.style.opacity = '0.5';
+        batalBtn.style.cursor = 'not-allowed';
+    }
+}
+
+/**
+ * Fungsi untuk pasang listener pada semua input form
+ */
+function attachFormChangeListeners() {
+    const form = document.getElementById('activityForm');
+    if (!form) return;
+    
+    // Listener untuk semua input text, date, textarea, dan select
+    const inputs = form.querySelectorAll('input[type="text"], input[type="date"], textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', updateBatalButtonState);
+        input.addEventListener('change', updateBatalButtonState);
+    });
+    
+    // Listener untuk checkbox member
+    const checkboxes = form.querySelectorAll('input[name="member_ids[]"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBatalButtonState);
+    });
+    
+    // Listener untuk file input
+    const fileInput = form.querySelector('input[name="gambar"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', updateBatalButtonState);
+    }
+}
+
+
+/* =========================================
+   6. SEARCH & AJAX LOAD (Tanpa Reload)
    ========================================= */
 
 function searchActivity() {
@@ -347,7 +466,7 @@ function loadActivityList() {
 
 
 /* =========================================
-   6. FORM HANDLERS (SAVE & DELETE)
+   7. FORM HANDLERS (SAVE & DELETE)
    ========================================= */
 
 function handleActivitySubmit(e) {
@@ -439,6 +558,11 @@ function cancelMemberForm() {
     .then(response => response.text())
     .then(html => {
         formContainer.innerHTML = html;
+        
+        // Re-attach form listeners setelah form di-reset
+        attachFormChangeListeners();
+        updateBatalButtonState();
+        
         document.querySelector('.card h2').scrollIntoView({ behavior: 'smooth' });
     });
 }

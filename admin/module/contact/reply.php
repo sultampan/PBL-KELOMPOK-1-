@@ -161,7 +161,7 @@ if ($data['status'] == 'pending') {
 
             <div class="button-group">
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-paper-plane"></i> Kirim Balasan
+                     Kirim Balasan
                 </button>
             </div>
         </form>

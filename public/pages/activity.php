@@ -47,7 +47,7 @@
         display: inline-block;
     }
 
-    /* --- CAROUSEL WRAPPER (Sama seperti Partner) --- */
+    /* --- CAROUSEL WRAPPER --- */
     .activity-carousel-wrapper {
         position: relative;
         width: 100%;
@@ -57,7 +57,7 @@
 
     .activity-track {
         display: flex;
-        gap: 25px; /* Jarak antar kartu */
+        gap: 25px;
         overflow-x: auto;
         scroll-behavior: smooth;
         padding: 15px 5px;
@@ -68,16 +68,16 @@
     
     .activity-track::-webkit-scrollbar { display: none; }
 
-    /* --- CARD STYLE (Diadaptasi agar masuk ke Carousel) --- */
+    /* --- CARD STYLE --- */
     .activity-card {
         background: white;
-        min-width: 320px; /* Lebar Fix agar rapi di carousel */
-        max-width: 320px;
+        min-width: 280px;
+        max-width: 280px;
+        height: 520px;
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        cursor: pointer;
         display: flex;
         flex-direction: column;
         border: 1px solid #f0f0f0;
@@ -92,7 +92,7 @@
     .activity-image-wrapper {
         position: relative;
         width: 100%;
-        height: 200px; /* Tinggi gambar fix */
+        height: 180px;
         overflow: hidden;
         background-color: #e0e0e0;
     }
@@ -106,7 +106,7 @@
 
     .activity-card:hover .activity-image { transform: scale(1.1); }
 
-    /* No Image Placeholder (Style Partner) */
+    /* No Image Placeholder */
     .no-image-placeholder {
         display: flex;
         flex-direction: column;
@@ -120,25 +120,13 @@
     .no-image-placeholder i { font-size: 40px; margin-bottom: 10px; opacity: 0.5; }
     .no-image-placeholder span { font-size: 14px; font-weight: 500; }
 
-    /* Overlay Title on Hover */
-    .activity-title-overlay {
-        position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7);
-        display: flex; align-items: center; justify-content: center;
-        opacity: 0; transition: opacity 0.3s ease; padding: 20px;
-    }
-    .activity-card:hover .activity-title-overlay { opacity: 1; }
-    
-    .activity-title-hover {
-        color: white; font-size: 1.1rem; font-weight: 600;
-        text-align: center; line-height: 1.3;
-    }
-
     /* Content Area */
     .activity-content {
         padding: 20px;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
+        height: 280px;
     }
 
     .activity-title-main {
@@ -147,35 +135,111 @@
         color: #333;
         margin-bottom: 10px;
         line-height: 1.4;
-        /* Batasi 2 baris judul */
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
+        height: 46px;
         overflow: hidden;
+        display: block;
     }
 
     .activity-date {
-        color: #888; font-size: 0.85rem; margin-bottom: 10px;
-        display: flex; align-items: center; gap: 5px;
+        color: #888; 
+        font-size: 0.85rem; 
+        margin-bottom: 10px;
+        display: flex; 
+        align-items: center; 
+        gap: 5px;
+        height: 24px;
     }
 
     .activity-description {
-        color: #666; font-size: 0.9rem; line-height: 1.6; margin-bottom: 15px;
-        /* Batasi 3 baris deskripsi */
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
-        -webkit-box-orient: vertical;
+        color: #666; 
+        font-size: 0.9rem; 
+        line-height: 1.6; 
+        margin-bottom: 15px;
+        height: 72px;
         overflow: hidden;
+        display: block;
     }
 
     /* Members Section */
     .activity-members {
-        font-size: 0.85rem; color: #333; font-weight: 600;
-        margin-top: auto; padding-top: 10px; border-top: 1px solid #eee;
+        font-size: 0.75rem;
+        color: #333;
+        font-weight: 600;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+        height: 70px;
     }
-    .activity-members span { font-weight: normal; color: #555; }
+
+    .activity-members-label {
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .activity-members-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-content: flex-start;
+    }
+
+    .member-tag {
+        display: inline-block;
+        padding: 5px 12px;
+        background: #e0f7fa;
+        color: #006064;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border: 1px solid #b2ebf2;
+        white-space: nowrap;
+    }
+
+    .member-more {
+        display: inline-block;
+        padding: 5px 12px;
+        background: #f5f5f5;
+        color: #666;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* View More Button (Style mirip member) */
+    .activity-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: 0 20px 20px;
+        margin-top: auto;
+    }
+
+    .view-more-btn {
+        background: none;
+        color: #01B5B8;
+        border: none;
+        padding: 0;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+    }
+
+    .view-more-btn:hover {
+        color: #008c8e;
+        transform: translateX(3px);
+    }
+
+    .view-more-btn i {
+        font-size: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .view-more-btn:hover i {
+        transform: translateX(3px);
+    }
 
     /* --- NAVIGATION BUTTONS (ARROWS) --- */
     .nav-btn {
@@ -199,32 +263,6 @@
     }
 
     .no-data { text-align: center; color: #888; padding: 20px; width: 100%; }
-
-    /* --- LIGHTBOX (Tetap ada) --- */
-    .lightbox-modal {
-        display: none; position: fixed; z-index: 9999; inset: 0;
-        background-color: rgba(0, 0, 0, 0.95);
-        align-items: center; justify-content: center; animation: fadeIn 0.3s ease;
-    }
-    .lightbox-modal.active { display: flex; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .lightbox-content { position: relative; max-width: 90%; max-height: 90vh; }
-    .lightbox-image {
-        max-width: 100%; max-height: 90vh; object-fit: contain;
-        border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        animation: zoomIn 0.3s ease;
-    }
-    @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .lightbox-close {
-        position: absolute; top: -40px; right: 0; color: white; font-size: 40px; font-weight: bold;
-        cursor: pointer; background: none; border: none; padding: 0; line-height: 1;
-    }
-    .lightbox-close:hover { color: #ffb400; }
-    .lightbox-info {
-        position: fixed; bottom: 30px; left: 0; right: 0; color: white; text-align: center; padding: 10px;
-    }
-    .lightbox-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 5px; }
-    .lightbox-date { font-size: 0.9rem; color: #ccc; }
 </style>
 
 <section class="inner-banner activity-banner">
@@ -259,7 +297,6 @@
 
         try {
             /* === 2. QUERY SEMUA ACTIVITY === */
-            // Mengambil semua activity, diurutkan tanggal terbaru
             $query = "
                 SELECT 
                     a.id_activity, a.judul, a.deskripsi, a.tanggal_kegiatan, a.gambar, a.kategori,
@@ -276,25 +313,18 @@
             $allActivities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // === 3. PENGELOMPOKAN DATA BERDASARKAN KATEGORI ===
-            // Kita inisialisasi array agar urutannya rapi
             $grouped = [
                 'Research' => [],
                 'Projects' => [],
                 'Activity' => []
-                // Hapus 'Other' jika tidak ada di ENUM
             ];
 
-            // B. Masukkan Data ke Group
             if (count($allActivities) > 0) {
                 foreach ($allActivities as $row) {
                     $cat = $row['kategori'];
-
-                    // Cek apakah kategori dari database ada di daftar $grouped kita
                     if (array_key_exists($cat, $grouped)) {
                         $grouped[$cat][] = $row;
-                    } 
-                    // Jika data punya kategori yang tidak dikenali (bukan salah satu dari 3 di atas),
-                    // data tersebut akan otomatis terabaikan/tidak tampil agar tidak merusak layout.
+                    }
                 }
             }
 
@@ -329,8 +359,7 @@
                                     $safe_desc  = htmlspecialchars($row['deskripsi'], ENT_QUOTES);
                                     $safe_date  = htmlspecialchars($formatted_date, ENT_QUOTES);
                                 ?>
-                                    <div class="activity-card" onclick="openLightbox('<?= $safe_image; ?>', '<?= $safe_title; ?>', '<?= $safe_date; ?>', '<?= $safe_desc; ?>')">
-                                        
+                                    <div class="activity-card">
                                         <div class="activity-image-wrapper">
                                             <?php if ($hasImage): ?>
                                                 <img src="<?= htmlspecialchars($image_path); ?>" 
@@ -341,43 +370,55 @@
                                             <?php else: ?>
                                                 <div class="no-image-placeholder">
                                                     <i class="fas fa-image"></i>
-                                                    <span>Tidak ada gambar</span>
+                                                    <span>No Image</span>
                                                 </div>
                                             <?php endif; ?>
-
-                                            <div class="activity-title-overlay">
-                                                <div class="activity-title-hover">Lihat Detail</div>
-                                            </div>
                                         </div>
 
                                         <div class="activity-content">
-                                            <div class="activity-title-main">
-                                                <?= htmlspecialchars($row['judul']); ?>
-                                            </div>
+                                                <div class="activity-title-main">
+                                                    <?= htmlspecialchars($row['judul']); ?>
+                                                </div>
 
-                                            <div class="activity-date">
-                                                <i class="far fa-calendar-alt"></i> <?= $formatted_date; ?>
-                                            </div>
+                                                <div class="activity-date">
+                                                    <i class="far fa-calendar-alt"></i> <?= $formatted_date; ?>
+                                                </div>
 
-                                            <div class="activity-description">
-                                                <?= mb_strimwidth(htmlspecialchars($row['deskripsi']), 0, 100, "..."); ?>
-                                            </div>
+                                                <div class="activity-description">
+                                                    <?= mb_strimwidth(htmlspecialchars($row['deskripsi']), 0, 100, "..."); ?>
+                                                </div>
 
-                                            <div class="activity-members">
-                                                Member: 
-                                                <?php 
-                                                if (!empty($row['members'])) {
-                                                    $members_array = explode(',', $row['members']);
-                                                    // Ambil 2 member pertama saja biar gak kepanjangan
-                                                    $display_members = array_slice($members_array, 0, 2);
-                                                    echo '<span>' . htmlspecialchars(implode(', ', $display_members));
-                                                    if(count($members_array) > 2) echo ', ...';
-                                                    echo '</span>';
-                                                } else {
-                                                    echo '<span>-</span>';
-                                                }
-                                                ?>
+                                                <div class="activity-members">
+                                                    <div class="activity-members-label">Member:</div>
+                                                    <div class="activity-members-tags">
+                                                        <?php 
+                                                        if (!empty($row['members'])) {
+                                                            $members_array = explode(',', $row['members']);
+                                                            $members_array = array_map('trim', $members_array);
+                                                            
+                                                            // Tampilkan maksimal 2 member
+                                                            $display_count = min(2, count($members_array));
+                                                            for ($i = 0; $i < $display_count; $i++) {
+                                                                echo '<span class="member-tag">' . htmlspecialchars($members_array[$i]) . '</span>';
+                                                            }
+                                                            
+                                                            // Jika ada lebih dari 2, tampilkan +X
+                                                            $remaining = count($members_array) - $display_count;
+                                                            if ($remaining > 0) {
+                                                                echo '<span class="member-more">+' . $remaining . '</span>';
+                                                            }
+                                                        } else {
+                                                            echo '<span class="member-tag" style="background: #f5f5f5; color: #888; border-color: #e0e0e0;">-</span>';
+                                                        }
+                                                        ?>
+                                                    </div>
+                                                </div>
                                             </div>
+                                        
+                                        <div class="activity-footer">
+                                            <a href="index.php?page=activity-detail&id=<?= $row['id_activity']; ?>" class="view-more-btn">
+                                                View More <i class="fas fa-arrow-right"></i>
+                                            </a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -402,19 +443,8 @@
     </div>
 </section>
 
-<div class="lightbox-modal" id="lightboxModal">
-    <div class="lightbox-content">
-        <button class="lightbox-close" id="lightboxClose">&times;</button>
-        <img src="" alt="" class="lightbox-image" id="lightboxImage">
-        <div class="lightbox-info">
-            <div class="lightbox-title" id="lightboxTitle"></div>
-            <div class="lightbox-date" id="lightboxDate"></div>
-        </div>
-    </div>
-</div>
-
 <script>
-// === 1. LOGIKA CAROUSEL SCROLL (Sama seperti Partner) ===
+// === LOGIKA CAROUSEL SCROLL ===
 document.addEventListener("DOMContentLoaded", function() {
     const carousels = document.querySelectorAll('.activity-carousel-wrapper');
 
@@ -422,7 +452,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const track = wrapper.querySelector('.activity-track');
         const prevBtn = wrapper.querySelector('.prev-btn');
         const nextBtn = wrapper.querySelector('.next-btn');
-        const scrollAmount = 340; // Sesuaikan dengan lebar kartu + gap
+        const scrollAmount = 300;
 
         const checkArrows = () => {
             const maxScrollLeft = track.scrollWidth - track.clientWidth - 1;
@@ -452,37 +482,5 @@ document.addEventListener("DOMContentLoaded", function() {
         checkArrows();
         window.addEventListener('resize', checkArrows);
     });
-});
-
-// === 2. LOGIKA LIGHTBOX ===
-function openLightbox(imageSrc, title, date, description) {
-    if(!imageSrc) return; // Jika tidak ada gambar, jangan buka
-
-    const modal = document.getElementById('lightboxModal');
-    const image = document.getElementById('lightboxImage');
-    const titleEl = document.getElementById('lightboxTitle');
-    const dateEl = document.getElementById('lightboxDate');
-    
-    image.src = imageSrc;
-    image.alt = title;
-    titleEl.textContent = title;
-    dateEl.textContent = date;
-    
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeLightbox() {
-    const modal = document.getElementById('lightboxModal');
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
-document.getElementById('lightboxModal').addEventListener('click', function(e) {
-    if (e.target.id === 'lightboxModal') closeLightbox();
-});
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeLightbox();
 });
 </script>
