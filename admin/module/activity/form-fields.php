@@ -22,7 +22,8 @@ $kategoriList = ['Research', 'Projects', 'Activity'];
     <div class="mb-3">
         <label class="form-label">Judul Activity</label>
         <input type="text" name="judul" class="form-control"
-               value="<?= $formData['judul'] ?? '' ?>" required>
+               value="<?= $formData['judul'] ?? '' ?>" maxlength="50" required>
+        <small class="form-text text-muted">Maksimal 50 karakter</small>
     </div>
 
     <div class="mb-3">

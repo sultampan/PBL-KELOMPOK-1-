@@ -22,7 +22,7 @@ $serverBase = $rootPath . '/public';
 $serverThumbPath = $serverBase . '/uploads/thumb/produk-thumb/';
 $serverImgPath   = $serverBase . '/uploads/produk/';
 
-// --- FUNGSI QUERY DATA (POSTGRESQL) ---
+// --- FUNGSI QUERY DATA (KHUSUS POSTGRESQL) ---
 function getProdukData($pdo, $keyword) {
     try {
         // [POSTGRESQL] Menggunakan STRING_AGG & ILIKE
@@ -39,7 +39,7 @@ function getProdukData($pdo, $keyword) {
           LEFT JOIN member m ON pm.id_member = m.id_member
         ";
 
-        // Filter
+        // Tambahkan Filter
         if (!empty($keyword)) {
             $sql .= " WHERE p.nama ILIKE :keyword OR p.deskripsi ILIKE :keyword";
         }
@@ -61,13 +61,11 @@ function getProdukData($pdo, $keyword) {
 // 2. HANDLER AJAX (LIVE SEARCH)
 // ==========================================
 if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
-    // Kita coba bersihkan buffer, tapi jika index.php sudah output header, ini tidak cukup.
-    // Makanya kita pakai JS Parser di bawah nanti.
     while (ob_get_level()) { ob_end_clean(); }
     
     $produkList = getProdukData($pdo, $searchKeyword);
     
-    // OUTPUT GRID SAJA
+    // --- OUTPUT GRID SAJA ---
     if (!empty($produkList)) {
         echo '<div class="activity-grid">';
         foreach ($produkList as $row) {
@@ -106,7 +104,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                   <h4 class="activity-title"><?= htmlspecialchars($row['nama']); ?></h4>
                   <div class="activity-description"><?= nl2br(htmlspecialchars($row['deskripsi'])); ?></div>
                   <div class="activity-footer">
-                    <span class="view-btn">Lihat Detail <i class="fas fa-arrow-right"></i></span>
+                    <span class="view-btn">Details <i class="fas fa-arrow-right"></i></span>
                   </div>
                 </div>
               </div>
@@ -137,7 +135,7 @@ $produkList = getProdukData($pdo, $searchKeyword);
         margin-bottom: 40px;
         padding: 0 15px;
         position: relative;
-        z-index: 5;
+        z-index: 2;
     }
 
     .search-facility-box {
@@ -186,17 +184,17 @@ $produkList = getProdukData($pdo, $searchKeyword);
         background-size: cover;
         position: relative;
         z-index: 0;
-        min-height: 280px; 
+        min-height: 350px; 
         display: grid;
         align-items: center;
-        padding-top: 80px; /* Padding untuk kompensasi navbar */
+        padding-top: 80px; 
     }
     .inner-banner.product-banner:before {
         content: ""; background: rgba(0,0,0,0.6);
         position: absolute; inset: 0; z-index: -1;
     }
     .inner-w3-title {
-        font-size: 3rem; font-weight: 700; color: #fff; margin-bottom: 10px;
+        font-size: 3rem; font-weight: 700; color: #fff; margin: 0;
     }
 
     /* CARD STYLE */
@@ -223,17 +221,31 @@ $produkList = getProdukData($pdo, $searchKeyword);
         border-color: #01B5B8;
     }
 
+    /* --- [FIX BAGIAN INI] AGAR GAMBAR TIDAK ZOOM --- */
     .activity-image-wrapper {
-        position: relative; width: 100%; height: 200px;
-        overflow: hidden; background-color: #f8f9fa;
-        display: flex; justify-content: center; align-items: center; 
+        position: relative; 
+        width: 100%; 
+        height: 250px; /* Tinggi ditambah sedikit biar lega */
+        overflow: hidden; 
+        background-color: #fff; /* Background putih bersih */
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
         border-bottom: 1px solid #eee;
+        padding: 15px; /* Tambah padding agar gambar tidak mepet pinggir */
     }
 
     .activity-image {
-        width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;
+        width: 100%; 
+        height: 100%; 
+        object-fit: contain; /* KUNCI UTAMA: Agar gambar tampil utuh (tidak dicrop) */
+        transition: transform 0.5s ease;
     }
-    .card-link-wrapper:hover .activity-image { transform: scale(1.05); }
+    
+    .card-link-wrapper:hover .activity-image { 
+        transform: scale(1.05); /* Zoom sedikit saat hover tetap ada biar keren */
+    }
+    /* ----------------------------------------------- */
 
     .activity-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
 
@@ -245,12 +257,12 @@ $produkList = getProdukData($pdo, $searchKeyword);
     .activity-title { 
         color: #02406C; font-size: 1.2rem; font-weight: 700;
         line-height: 1.3; margin-bottom: 10px;
-        display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
 
     .activity-description { 
         color: #666; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;
-        flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3;
+        flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; 
         -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
         word-wrap: break-word; overflow-wrap: anywhere; 
     }
@@ -301,7 +313,6 @@ $produkList = getProdukData($pdo, $searchKeyword);
             </form>
         </div>
     </div>
-
 
     <div id="product-results-container">
         <?php if (!empty($produkList)): ?>
@@ -368,7 +379,6 @@ $produkList = getProdukData($pdo, $searchKeyword);
         const staticIcon = document.getElementById('staticSearchIcon');
         const container = document.getElementById('product-results-container');
 
-        // Tampilkan loading
         spinner.style.display = 'block';
         staticIcon.style.opacity = '0';
         container.style.opacity = '0.5';
@@ -378,13 +388,9 @@ $produkList = getProdukData($pdo, $searchKeyword);
             fetch(`index.php?page=product&ajax=1&search=${encodeURIComponent(keyword)}`)
                 .then(res => res.text())
                 .then(html => {
-                    // [SOLUSI DOUBLE NAVBAR]
-                    // Kita gunakan DOMParser untuk mengambil HANYA bagian grid
-                    // Membuang Header/Navbar yang mungkin ikut terkirim oleh server
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
                     
-                    // Cari elemen grid atau no-activity di dalam HTML yang diterima
                     const newGrid = doc.querySelector('.activity-grid');
                     const noData = doc.querySelector('.no-activity');
 
@@ -393,11 +399,9 @@ $produkList = getProdukData($pdo, $searchKeyword);
                     } else if (noData) {
                         container.innerHTML = noData.outerHTML;
                     } else {
-                        // Fallback jika tidak ditemukan (misal error)
                         container.innerHTML = '<div class="no-activity"><p>Tidak ada hasil ditemukan.</p></div>';
                     }
 
-                    // Sembunyikan loading
                     spinner.style.display = 'none';
                     staticIcon.style.opacity = '1';
                     container.style.opacity = '1';

@@ -45,7 +45,8 @@ if (!empty($editData['gambar'])) {
         <div class="mb-3">
             <label class="form-label">Judul Activity <span style="color: red">*</span></label>
             <input type="text" name="judul" class="form-control" 
-                   value="<?= htmlspecialchars($editData['judul'] ?? '') ?>" required>
+                   value="<?= htmlspecialchars($editData['judul'] ?? '') ?>" maxlength="50" required>
+            <small class="form-text text-muted">Maksimal 50 karakter</small>
         </div>
 
         <div class="mb-3">

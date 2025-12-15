@@ -15,7 +15,7 @@ $webThumbDir = $basePath . '/public/uploads/thumb/activity-thumb/';
 
 $limit = 6; $page = (int)($_GET['p'] ?? 1); $offset = ($page - 1) * $limit;
 $searchKeyword = $_GET['keyword'] ?? null;
-$currentSortBy = $_GET['sort'] ?? 'id_activity'; $currentSortOrder = $_GET['order'] ?? 'ASC';
+$currentSortBy = $_GET['sort'] ?? 'id_activity'; $currentSortOrder = $_GET['order'] ?? 'DESC';
 
 $totalRecords = getTotalActivityCount($pdo, $searchKeyword);
 $totalPages = ceil($totalRecords / $limit);
