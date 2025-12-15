@@ -1,69 +1,101 @@
-<?php
-$isEdit = isset($editData);
-?>
+<?php $isEdit = isset($editData); ?>
+
+<div class="card-header">
+    <h3><?= $isEdit ? 'Edit Social Media' : 'Tambah Social Media'; ?></h3>
+</div>
 
 <div class="card-body">
-<form action="module/social_media/save.php" method="POST">
+    <form method="POST" action="module/social_media/save.php">
 
-<?php if ($isEdit): ?>
-    <input type="hidden" name="id" value="<?= $editData['id']; ?>">
-<?php endif; ?>
+        <?php if ($isEdit): ?>
+            <input type="hidden" name="id" value="<?= $editData['id_social_media']; ?>">
+        <?php endif; ?>
 
-<div class="form-grid">
+        <div class="mb-3">
+            <label class="form-label">Link Social Media *</label>
+            <input
+                type="url"
+                name="link"
+                id="linkInput"
+                class="form-control"
+                placeholder="https://instagram.com/username"
+                value="<?= htmlspecialchars($editData['link'] ?? '') ?>"
+                required
+            >
+        </div>
 
-    <div>
-        <label>Nama Sosmed *</label>
-        <input type="text" name="name" class="form-control"
-               value="<?= $editData['name'] ?? ''; ?>" required>
-    </div>
-
-    <div>
-        <label>Icon (FontAwesome)</label>
-        <input type="text" name="icon" class="form-control"
-               value="<?= $editData['icon'] ?? ''; ?>">
-    </div>
-
-    <div>
-        <label>Link *</label>
-        <input type="url" name="link" class="form-control"
-               value="<?= $editData['link'] ?? ''; ?>" required>
-    </div>
-
-    <div>
-        <label>Urutan</label>
-        <input type="number" name="sort_order" class="form-control"
-               value="<?= $editData['sort_order'] ?? 0; ?>">
-    </div>
-
-    <div>
-        <label>Status</label>
-        <select name="is_active" class="form-control">
-            <option value="1" <?= (!isset($editData) || $editData['is_active']) ? 'selected' : ''; ?>>
-                Aktif
-            </option>
-            <option value="0" <?= (isset($editData) && !$editData['is_active']) ? 'selected' : ''; ?>>
-                Nonaktif
-            </option>
-        </select>
-    </div>
-
-    <!-- 🔥 BUTTON GROUP (INI YANG BIKIN MIRIP PARTNER) -->
-    <div class="button-group">
-        <button type="button"
+        <div class="form-buttons">
+            <button
+                type="button"
+                id="btnBatal"
+                class="btn btn-batal"
+                disabled
                 onclick="window.location.href='index.php?page=social_media'"
-                class="btn-secondary">
-            Batal
-        </button>
+            >
+                Batal
+            </button>
 
-        <button type="submit" class="btn-primary">
-            <?= $isEdit ? 'Update' : 'Simpan'; ?>
-        </button>
-    </div>
-
-</div>
-</form>
-</div>
-
-
+            <button
+                type="submit"
+                id="btnSimpan"
+                class="btn btn-simpan"
+                disabled
+            >
+                <?= $isEdit ? 'Update' : 'Simpan'; ?>
+            </button>
+        </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const linkInput = document.getElementById('linkInput');
+    const btnSimpan = document.getElementById('btnSimpan');
+    const btnBatal  = document.getElementById('btnBatal');
+
+    function toggleButtons() {
+        const filled = linkInput.value.trim() !== '';
+        btnSimpan.disabled = !filled;
+        btnBatal.disabled  = !filled;
+    }
+
+    // cek saat load (edit mode)
+    toggleButtons();
+
+    // cek saat ngetik
+    linkInput.addEventListener('input', toggleButtons);
+});
+</script>
+
+<style>
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-batal {
+    background: #95a5a6;
+    color: white;
+    flex: 1;
+}
+
+.btn-simpan {
+    background: #1abc9c;
+    color: white;
+    flex: 1;
+}
+</style>
