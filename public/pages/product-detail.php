@@ -1,16 +1,16 @@
 <?php
 // ==========================================
-// 1. KONEKSI & LOGIKA DATA
+// 1. CONNECTION & DATA LOGIC
 // ==========================================
 $rootPath = dirname(dirname(__DIR__)); 
 $koneksiPath = $rootPath . '/config/koneksi.php';
 if (file_exists($koneksiPath)) require_once $koneksiPath;
 
-// Helper Path (Sesuaikan dengan struktur folder Anda)
-$webImgPathProd   = 'uploads/produk/';
-$serverImgPathProd = $rootPath . '/public/uploads/produk/';
+// Helper Path
+$webImgPathProd     = 'uploads/produk/';
+$serverImgPathProd  = $rootPath . '/public/uploads/produk/';
 
-$webImgPathMember = 'uploads/member/';
+$webImgPathMember   = 'uploads/member/';
 $serverImgPathMember = $rootPath . '/public/uploads/member/';
 
 $id_produk = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -19,16 +19,16 @@ $teamMembers = [];
 
 if ($id_produk > 0 && isset($pdo)) {
     try {
-        // A. Ambil Data Produk
+        // A. Fetch Product Data
         $stmt = $pdo->prepare("SELECT * FROM produk WHERE id_produk = ?");
         $stmt->execute([$id_produk]);
         $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($product) {
-            // B. Ambil Tim Pengembang (Join Member & Produk_Member)
-            // Kita ambil Foto, Nama, dan Role
+            // B. Fetch Development Team
+            // [UPDATE] Menambahkan m.id_member agar bisa dilink
             $stmtTeam = $pdo->prepare("
-                SELECT m.nama_member, m.gambar, pm.role 
+                SELECT m.id_member, m.nama_member, m.gambar, pm.role 
                 FROM produk_member pm
                 JOIN member m ON pm.id_member = m.id_member
                 WHERE pm.id_produk = ?
@@ -40,16 +40,22 @@ if ($id_produk > 0 && isset($pdo)) {
     } catch (Exception $e) { }
 }
 
-// Redirect jika produk tidak ditemukan
+// Redirect if not found
 if (!$product) {
-    echo "<script>window.location='index.php?page=produk';</script>";
+    echo "<script>window.location='index.php?page=product';</script>";
     exit;
 }
 ?>
 
 <style>
-    /* --- REUSING HEADER STYLE (Sama seperti Member) --- */
-    .inner-banner.facility-banner {
+    /* --- [FIX] NAVBAR AGAR SELALU DI ATAS --- */
+    #site-header, .fixed-top {
+        z-index: 9999 !important;
+        position: fixed;
+    }
+
+    /* --- HEADER BANNER --- */
+    .inner-banner.product-banner {
         background: url('assets/images/header-facility.jpeg') no-repeat center;
         background-size: cover;
         position: relative;
@@ -58,249 +64,262 @@ if (!$product) {
         display: grid;
         align-items: center;
     }
-    .inner-banner.facility-banner:before {
+    .inner-banner.product-banner:before {
         content: ""; background: rgba(0, 0, 0, 0.6);
         position: absolute; inset: 0; z-index: -1;
     }
+    .inner-w3-title { font-size: 3rem; font-weight: 700; color: #fff; margin: 0; }
 
-    /* --- LAYOUT UTAMA --- */
-    .profile-header {
-        background: white; border-radius: 12px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        padding: 40px; margin-top: -50px;
-        position: relative; z-index: 2;
-        border: 1px solid #eee;
-        
-        /* [FIX] Mencegah container utama melar keluar layar */
-        max-width: 100%;
-        overflow: hidden; 
-    }
-    
-    .profile-layout {
-        display: grid; 
-        grid-template-columns: 300px 1fr; 
-        gap: 40px;
-        /* [FIX] Memastikan grid tidak memaksakan lebar jika konten terlalu besar */
-        max-width: 100%;
+    /* --- PRODUCT DETAIL LAYOUT --- */
+    .pd-container {
+        max-width: 1100px;
+        margin: 50px auto; 
+        position: relative;
+        z-index: 1; 
+        padding-bottom: 50px;
     }
 
-    /* --- SIDEBAR (GAMBAR PRODUK) --- */
-    .profile-sidebar { 
-        text-align: center; 
-        min-width: 0; /* [FIX] Mencegah sidebar melar flex item */
-    }
-    
-    .product-main-image {
-        width: 100%; 
-        height: auto; 
-        max-height: 250px;
-        border-radius: 10px; 
-        object-fit: cover;
-        border: 1px solid #eee; 
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        margin-bottom: 20px; 
+    .pd-card {
         background: #fff;
-    }
-    
-    .link-btn {
-        display: flex; align-items: center; justify-content: center; gap: 8px;
-        padding: 12px; background: #01B5B8; border-radius: 8px;
-        color: #fff; text-decoration: none; font-weight: 600; font-size: 14px;
-        transition: 0.2s; border: 1px solid #01B5B8;
-        box-shadow: 0 4px 10px rgba(1, 181, 184, 0.2);
-    }
-    .link-btn:hover { background: #008c8e; border-color: #008c8e; color: white; transform: translateY(-2px); }
-
-    /* --- KONTEN KANAN --- */
-    .profile-content {
-        /* [FIX PENTING] min-width: 0 memaksa grid item untuk shrink jika teks kepanjangan */
-        min-width: 0; 
-    }
-
-    .profile-content h2 { 
-        font-size: 2.2rem; color: #02406C; font-weight: 700; margin-bottom: 20px; line-height: 1.2;
-        /* [FIX] Judul juga harus dipotong jika terlalu panjang */
-        word-wrap: break-word;
-    }
-    
-    .content-section { margin-bottom: 35px; }
-    .section-title {
-        font-size: 16px; font-weight: 700; color: #333; text-transform: uppercase;
-        border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 15px;
-        letter-spacing: 0.5px;
-    }
-
-    /* [FIX UTAMA] Style untuk Deskripsi Panjang */
-    .description-text {
-        line-height: 1.8; 
-        color: #555; 
-        font-size: 1rem;
-        
-        /* Properti Ajaib untuk memotong teks panjang tanpa spasi */
-        word-wrap: break-word;      /* Standar lama */
-        overflow-wrap: break-word;  /* Standar baru */
-        word-break: break-word;     /* Memastikan kata dipotong jika perlu */
-        
-        /* Tambahan untuk teks yang benar-benar tanpa spasi (seperti "AAAAA...") */
-        overflow-wrap: anywhere;   
-    }
-
-    /* --- TEAM LIST STYLING (Roles) --- */
-    .team-list {
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        padding: 40px;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 15px;
+        grid-template-columns: 350px 1fr;
+        gap: 50px;
+        border: 1px solid #eee;
     }
 
-    .team-card {
-        display: flex; align-items: center; gap: 12px;
-        background: #fff; border: 1px solid #eee; 
-        padding: 12px; border-radius: 8px;
-        transition: transform 0.2s;
-        /* [FIX] Agar kartu tim tidak melar */
-        max-width: 100%;
-        overflow: hidden;
-    }
-    .team-card:hover { transform: translateY(-3px); border-color: #ddd; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-
-    .team-avatar {
-        width: 50px; height: 50px; border-radius: 50%; object-fit: cover;
-        background: #f0f0f0; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        flex-shrink: 0; /* Mencegah foto gepeng */
+    /* --- LEFT SIDE (IMAGE & LINK) --- */
+    .pd-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
     }
 
-    .team-info { 
-        display: flex; flex-direction: column; gap: 3px; 
-        min-width: 0; /* [FIX] Agar teks nama panjang terpotong rapi */
-    }
-    .team-name { 
-        font-weight: 700; color: #333; font-size: 14px; 
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* Nama panjang jadi ... */
-    }
-    
-    .team-role { 
-        display: inline-block;
-        background-color: #fce4ec; 
-        color: #ad1457; 
-        font-size: 11px; 
-        font-weight: 600; 
-        padding: 2px 8px; 
+    .pd-image-wrapper {
+        width: 100%;
         border-radius: 12px;
-        align-self: flex-start;
+        overflow: hidden;
+        border: 1px solid #eee;
+        background: #fafafa;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
 
-    @media (max-width: 768px) {
-        .profile-layout { grid-template-columns: 1fr; }
-        .product-main-image { max-height: 300px; }
-        .profile-content h2 { text-align: center; font-size: 1.8rem; }
+    .pd-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: contain;
+    }
+
+    /* Styles for NO IMAGE state */
+    .pd-no-image {
+        width: 100%;
+        height: 250px;
+        background-color: #f0f2f5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        text-align: center;
+    }
+    .pd-no-image i { font-size: 48px; margin-bottom: 10px; color: #ccc; }
+    .pd-no-image span { font-size: 14px; font-weight: 600; }
+
+    .pd-link-btn {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        padding: 15px; background: #01B5B8; color: #fff;
+        border-radius: 8px; font-weight: 600; text-decoration: none;
+        transition: 0.3s; box-shadow: 0 4px 10px rgba(1, 181, 184, 0.25);
+    }
+    .pd-link-btn:hover {
+        background: #008c8e; transform: translateY(-3px); color: #fff;
+    }
+    .pd-link-btn.disabled {
+        background: #e0e0e0; color: #999; cursor: not-allowed; box-shadow: none;
+    }
+
+    /* --- RIGHT SIDE (CONTENT) --- */
+    .pd-content { display: flex; flex-direction: column; }
+
+    .pd-title {
+        font-size: 2.5rem; font-weight: 800; color: #02406C;
+        margin-bottom: 20px; line-height: 1.2;
+    }
+
+    .pd-section-label {
+        font-size: 14px; font-weight: 700; color: #999; text-transform: uppercase;
+        letter-spacing: 1px; margin-bottom: 10px; border-bottom: 1px solid #eee;
+        padding-bottom: 5px; margin-top: 10px;
+    }
+
+    .pd-description {
+        font-size: 16px; line-height: 1.8; color: #555; margin-bottom: 30px;
+        white-space: pre-line; /* Keeps paragraphs neat */
+    }
+
+    /* --- TEAM GRID --- */
+    .pd-team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 15px; margin-bottom: 30px;
+    }
+
+    /* [UPDATE] Ubah style agar terlihat bisa diklik */
+    .pd-team-card {
+        display: flex; align-items: center; gap: 12px;
+        background: #fff; border: 1px solid #eee;
+        padding: 12px; border-radius: 10px;
+        transition: 0.2s;
+        text-decoration: none; /* Hilangkan garis bawah link */
+        color: inherit; /* Warisi warna teks */
+        cursor: pointer;
+    }
+    .pd-team-card:hover {
+        border-color: #01B5B8; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        transform: translateY(-3px); /* Efek naik dikit */
+    }
+
+    .pd-team-img {
+        width: 45px; height: 45px; border-radius: 50%;
+        object-fit: cover; border: 2px solid #f9f9f9;
+        flex-shrink: 0;
+    }
+
+    .pd-team-info { display: flex; flex-direction: column; overflow: hidden; }
+    .pd-team-name {
+        font-size: 14px; font-weight: 700; color: #333;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        transition: color 0.2s;
+    }
+    /* Saat card dihover, nama jadi hijau teal */
+    .pd-team-card:hover .pd-team-name {
+        color: #01B5B8;
+    }
+
+    .pd-team-role {
+        font-size: 11px; color: #01B5B8; font-weight: 600;
+        background: #e0f7fa; align-self: flex-start;
+        padding: 2px 8px; border-radius: 20px; margin-top: 2px;
+    }
+
+    .back-btn-wrapper { margin-top: auto; padding-top: 20px; border-top: 1px solid #f0f0f0; }
+    
+    .btn-back {
+        background: transparent; color: #666; font-weight: 600;
+        padding: 8px 0; display: inline-flex; align-items: center; gap: 8px;
+        transition: 0.2s; text-decoration: none;
+    }
+    .btn-back:hover { 
+        color: #FE7C11; 
+        transform: translateX(-5px); 
+    }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 991px) {
+        .pd-card { grid-template-columns: 1fr; gap: 30px; padding: 30px; }
+        .pd-image-wrapper { max-width: 400px; margin: 0 auto; }
+        .pd-title { text-align: center; font-size: 2rem; }
     }
 </style>
 
-<div class="inner-banner facility-banner" style="min-height: 250px;">
+<div class="inner-banner product-banner">
     <section class="w3l-breadcrumb text-center">
         <div class="container">
-            <div class="w3breadcrumb-gids">
-                <div class="w3breadcrumb-left text-center">
-                    <h2 class="inner-w3-title" style="font-size: 2rem;">Product Detail</h2>
-                </div>
-                <div class="w3breadcrumb-right">
-                    <ul class="breadcrumbs-custom-path">
-                        <li><a href="index.php?page=produk">Product</a></li>
-                        <li class="active"><span class="fas fa-angle-double-right mx-2"></span> Detail</li>
-                    </ul>
-                </div>
-            </div>
+            <h2 class="inner-w3-title">Product Details</h2>
+            <ul class="breadcrumbs-custom-path">
+                <li><a href="index.php?page=home">Home</a></li>
+                <li><a href="index.php?page=product"><span class="fas fa-angle-right mx-2"></span> Product</a></li>
+                <li class="active"><span class="fas fa-angle-right mx-2"></span> Detail</li>
+            </ul>
         </div>
     </section>
 </div>
 
-<section class="w3l-gallery pb-5" style="background-color: #f9f9f9;">
-    <div class="container">
+<div class="container pd-container">
+    <div class="pd-card">
         
-        <?php
-            // Logic Gambar Produk
-            $imgSrc = 'https://via.placeholder.com/400x300?text=No+Image'; // Fallback
-            if (!empty($product['gambar'])) {
-                if (file_exists($serverImgPathProd . $product['gambar'])) {
-                    $imgSrc = $webImgPathProd . $product['gambar'];
+        <div class="pd-sidebar">
+            <?php
+                $hasImage = false;
+                $imgDisplay = '';
+
+                if (!empty($product['gambar']) && file_exists($serverImgPathProd . $product['gambar'])) {
+                    $hasImage = true;
+                    $imgDisplay = $webImgPathProd . $product['gambar'];
                 }
-            }
-
-            // Logic Link
-            $linkProduk = $product['link_produk'];
-            $hasLink = !empty($linkProduk);
-            if ($hasLink) {
-                // Pastikan ada http/https
-                if (!preg_match("~^(?:f|ht)tps?://~i", $linkProduk)) {
-                    $linkProduk = "https://" . $linkProduk;
-                }
-            }
-        ?>
-
-        <div class="profile-header">
-            <div class="profile-layout">
-                
-                <div class="profile-sidebar">
-                    <img src="<?= $imgSrc ?>" alt="<?= htmlspecialchars($product['nama']) ?>" class="product-main-image">
-                    
-                    <?php if ($hasLink): ?>
-                        <a href="<?= htmlspecialchars($linkProduk) ?>" target="_blank" class="link-btn">
-                            <i class="fas fa-external-link-alt"></i> Visit Product
-                        </a>
-                    <?php else: ?>
-                        <button class="link-btn" style="background:#ccc; border-color:#ccc; cursor:not-allowed;">
-                            <i class="fas fa-ban"></i> No Link Available
-                        </button>
-                    <?php endif; ?>
-                </div>
-
-                <div class="profile-content">
-                    <h2><?= htmlspecialchars($product['nama']) ?></h2>
-
-                    <div class="content-section">
-                        <div class="section-title">About This Product</div>
-                        <div class="description-text">
-                            <?= $product['deskripsi'] ? nl2br(htmlspecialchars($product['deskripsi'])) : 'Belum ada deskripsi untuk produk ini.' ?>
-                        </div>
+            ?>
+            
+            <div class="pd-image-wrapper">
+                <?php if ($hasImage): ?>
+                    <img src="<?= htmlspecialchars($imgDisplay) ?>" alt="<?= htmlspecialchars($product['nama']) ?>" class="pd-image">
+                <?php else: ?>
+                    <div class="pd-no-image">
+                        <i class="fas fa-image"></i>
+                        <span>No Image Available</span>
                     </div>
+                <?php endif; ?>
+            </div>
 
-                    <div class="content-section">
-                        <div class="section-title">Development Team</div>
-                        
-                        <?php if (!empty($teamMembers)): ?>
-                            <div class="team-list">
-                                <?php foreach ($teamMembers as $tm): 
-                                    // Logic Gambar Member
-                                    $memberImg = 'https://ui-avatars.com/api/?name=' . urlencode($tm['nama_member']) . '&background=random&color=fff&size=64';
-                                    if (!empty($tm['gambar']) && file_exists($serverImgPathMember . $tm['gambar'])) {
-                                        $memberImg = $webImgPathMember . $tm['gambar'];
-                                    }
-                                ?>
-                                <div class="team-card">
-                                    <img src="<?= $memberImg ?>" alt="<?= htmlspecialchars($tm['nama_member']) ?>" class="team-avatar">
-                                    <div class="team-info">
-                                        <span class="team-name"><?= htmlspecialchars($tm['nama_member']) ?></span>
-                                        <span class="team-role">
-                                            <?= htmlspecialchars($tm['role'] ?? 'Contributor') ?>
-                                        </span>
-                                    </div>
-                                </div>
-                                <?php endforeach; ?>
+            <?php 
+                $linkUrl = $product['link_produk'];
+                if ($linkUrl) {
+                    if (!preg_match("~^(?:f|ht)tps?://~i", $linkUrl)) {
+                        $linkUrl = "https://" . $linkUrl;
+                    }
+                ?>
+                    <a href="<?= htmlspecialchars($linkUrl) ?>" target="_blank" class="pd-link-btn">
+                        Visit Product <i class="fas fa-external-link-alt"></i>
+                    </a>
+                <?php } else { ?>
+                    <div class="pd-link-btn disabled">
+                        Link Unavailable <i class="fas fa-ban"></i>
+                    </div>
+                <?php } ?>
+        </div>
+
+        <div class="pd-content">
+            <h1 class="pd-title"><?= htmlspecialchars($product['nama']) ?></h1>
+            
+            <div class="pd-section-label">Description</div>
+            <div class="pd-description">
+                <?= $product['deskripsi'] ? nl2br(htmlspecialchars($product['deskripsi'])) : 'No description available for this product.' ?>
+            </div>
+
+            <div class="pd-section-label">Development Team</div>
+            <div class="pd-team-list-wrapper">
+                <?php if (!empty($teamMembers)): ?>
+                    <div class="pd-team-grid">
+                        <?php foreach ($teamMembers as $tm): 
+                            // Member Image Logic
+                            $memImg = 'https://ui-avatars.com/api/?name=' . urlencode($tm['nama_member']) . '&background=random&color=fff&size=128&length=1';
+                            if (!empty($tm['gambar']) && file_exists($serverImgPathMember . $tm['gambar'])) {
+                                $memImg = $webImgPathMember . $tm['gambar'];
+                            }
+                        ?>
+                        <a href="index.php?page=member-detail&id=<?= $tm['id_member']; ?>" class="pd-team-card">
+                            <img src="<?= $memImg ?>" alt="Member" class="pd-team-img">
+                            <div class="pd-team-info">
+                                <span class="pd-team-name"><?= htmlspecialchars($tm['nama_member']) ?></span>
+                                <span class="pd-team-role"><?= htmlspecialchars($tm['role'] ?? 'Contributor') ?></span>
                             </div>
-                        <?php else: ?>
-                            <p style="color:#999; font-style:italic;">Data tim pengembang belum ditambahkan.</p>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div style="margin-top: 40px;">
-                        <a href="index.php?page=product" class="btn btn-style btn-primary" style="padding: 10px 20px; font-size: 14px;">
-                            <i class="fas fa-arrow-left"></i> Back to Products
                         </a>
+                        <?php endforeach; ?>
                     </div>
+                <?php else: ?>
+                    <p class="text-muted"><i class="fas fa-info-circle"></i> No development team assigned.</p>
+                <?php endif; ?>
+            </div>
 
-                </div>
+            <div class="back-btn-wrapper">
+                <a href="index.php?page=product" class="btn-back">
+                    <i class="fas fa-long-arrow-alt-left"></i> Back to Products
+                </a>
             </div>
         </div>
-        
+
     </div>
-</section>
+</div>

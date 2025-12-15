@@ -84,7 +84,7 @@ $currentSortOrder = $_GET['order'] ?? 'ASC';
 $searchKeyword = $_GET['keyword'] ?? null;
 
 // 1. PENGATURAN PAGINASI
-$limit = 10; // Jumlah item per halaman (BISA DIUBAH)
+$limit = 6; // Jumlah item per halaman (BISA DIUBAH)
 $page = (int) ($_GET['p'] ?? 1); // Halaman saat ini, default 1
 $page = max(1, $page); // Pastikan halaman tidak kurang dari 1
 

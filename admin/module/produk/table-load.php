@@ -14,7 +14,7 @@ $serverThumbDir = $projectRoot . 'public/uploads/thumb/produk-thumb/';
 $webUploadDir = $basePath . '/public/uploads/produk/'; 
 $webThumbDir = $basePath . '/public/uploads/thumb/produk-thumb/';
 
-$limit = 10; $page = (int)($_GET['p'] ?? 1); $offset = ($page - 1) * $limit;
+$limit = 6; $page = (int)($_GET['p'] ?? 1); $offset = ($page - 1) * $limit;
 $searchKeyword = $_GET['keyword'] ?? null;
 $currentSortBy = $_GET['sort'] ?? 'id_produk'; $currentSortOrder = $_GET['order'] ?? 'ASC';
 
