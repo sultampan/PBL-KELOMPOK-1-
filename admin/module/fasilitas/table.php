@@ -1,12 +1,18 @@
 <?php
 // admin/module/fasilitas/table.php
 
-// Pastikan variabel tersedia (jika dipanggil langsung/ajax)
+// [FIX PENTING] Bongkar array paginationData agar variabel $currentPage terbaca
+if (isset($paginationData) && is_array($paginationData)) {
+    extract($paginationData);
+}
+
+// Fallback jika variabel belum ada (misal dipanggil manual tanpa array)
 if (!isset($list)) $list = [];
 if (!isset($currentPage)) $currentPage = 1;
 if (!isset($totalPages)) $totalPages = 1;
 if (!isset($searchKeyword)) $searchKeyword = '';
 
+// Helper URL
 if (!function_exists('buildFasilitasUrl')) {
     function buildFasilitasUrl($p, $keyword) {
         $qs = '?page=fasilitas&p=' . $p;
@@ -23,7 +29,6 @@ if (!function_exists('buildFasilitasUrl')) {
             $uploadPath = '../public/uploads/fasilitas/';
             
             if (!empty($row['gambar'])) {
-                // Gunakan gambar asli
                 $imgSrc = $uploadPath . $row['gambar'];
             }
         ?>
@@ -63,10 +68,17 @@ if (!function_exists('buildFasilitasUrl')) {
 
 <?php if ($totalPages > 1): ?>
     <div class="pagination">
+
         <?php if ($currentPage > 1): ?>
-            <a href="<?= buildFasilitasUrl($currentPage - 1, $searchKeyword) ?>" class="page-link page-arrow">&lsaquo;</a>
+            <a href="<?= buildFasilitasUrl($currentPage - 1, $searchKeyword) ?>" class="page-link page-arrow" title="Sebelumnya">&lsaquo;</a>
         <?php else: ?>
             <span class="page-link page-arrow disabled">&lsaquo;</span>
+        <?php endif; ?>
+
+        <?php if ($currentPage > 1): ?>
+            <a href="<?= buildFasilitasUrl(1, $searchKeyword) ?>" class="page-link page-arrow" title="Ke Awal">&laquo;</a>
+        <?php else: ?>
+            <span class="page-link page-arrow disabled">&laquo;</span>
         <?php endif; ?>
 
         <?php
@@ -87,15 +99,23 @@ if (!function_exists('buildFasilitasUrl')) {
 
         for ($i = $start_page; $i <= $end_page; $i++):
             if ($i <= 0 || $i > $totalPages) continue;
+            // Di sini kuncinya: $i == $currentPage (sekarang $currentPage sudah benar isinya 2)
             $isActive = ($i == $currentPage) ? 'active' : '';
         ?>
             <a href="<?= buildFasilitasUrl($i, $searchKeyword) ?>" class="page-link page-num <?= $isActive ?>"><?= $i ?></a>
         <?php endfor; ?>
 
         <?php if ($currentPage < $totalPages): ?>
-            <a href="<?= buildFasilitasUrl($currentPage + 1, $searchKeyword) ?>" class="page-link page-arrow">&rsaquo;</a>
+            <a href="<?= buildFasilitasUrl($totalPages, $searchKeyword) ?>" class="page-link page-arrow" title="Ke Akhir">&raquo;</a>
+        <?php else: ?>
+            <span class="page-link page-arrow disabled">&raquo;</span>
+        <?php endif; ?>
+
+        <?php if ($currentPage < $totalPages): ?>
+            <a href="<?= buildFasilitasUrl($currentPage + 1, $searchKeyword) ?>" class="page-link page-arrow" title="Berikutnya">&rsaquo;</a>
         <?php else: ?>
             <span class="page-link page-arrow disabled">&rsaquo;</span>
         <?php endif; ?>
+
     </div>
 <?php endif; ?>

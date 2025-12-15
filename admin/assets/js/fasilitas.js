@@ -3,17 +3,16 @@
 // =========================================================
 // 1. REAL-TIME SEARCH (Live Typing)
 // =========================================================
-
 let searchTimeout = null;
 
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'searchFasilitasInput') {
         clearTimeout(searchTimeout);
-        // Delay 100ms agar terasa instan
+        // Delay 300ms (Debounce standard)
         searchTimeout = setTimeout(() => {
             const keyword = e.target.value.trim();
             executeSearch(keyword);
-        }, 100); 
+        }, 300); 
     }
 });
 
@@ -27,7 +26,6 @@ function executeSearch(keyword) {
     currentUrl.searchParams.set('p', 1); // Reset ke hal 1
     window.history.pushState(null, "", currentUrl);
     
-    // Panggil fungsi AJAX
     loadFasilitasList(); 
 }
 
@@ -38,13 +36,17 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// 2. LOAD TABLE AJAX (Targetnya Khusus Konten Data)
+// =========================================================
+// 2. LOAD TABLE AJAX & PAGINATION
+// =========================================================
+
 function loadFasilitasList() {
-  // PENTING: Targetkan ke div konten, bukan container utama
   const listContainer = document.getElementById("fasilitas-data-content");
   if (!listContainer) return;
   
-  const url = "module/fasilitas/table-load.php" + window.location.search;
+  // Tambahkan timestamp untuk mencegah cache browser
+  const url = "module/fasilitas/table-load.php" + window.location.search + "&_t=" + new Date().getTime();
+  
   listContainer.style.opacity = "0.5";
 
   fetch(url)
@@ -55,21 +57,33 @@ function loadFasilitasList() {
   })
   .catch((error) => {
       console.error("Error:", error);
+      listContainer.style.opacity = "1";
   });
 }
 
 // Handle Pagination Klik
 document.addEventListener('click', function(e) {
+    // Cek apakah klik pada elemen page-link
     if (e.target && e.target.classList.contains('page-link')) {
         e.preventDefault();
+        
         const href = e.target.getAttribute('href');
+        
+        // Pastikan href valid dan bukan tombol disabled
         if (href && !e.target.classList.contains('disabled')) {
             window.history.pushState(null, "", href);
+            
+            // Muat data baru
             loadFasilitasList();
+            
+            // Scroll halus ke bagian atas list
+            const header = document.querySelector('.toolbar-header');
+            if(header) {
+                header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
     }
 });
-
 
 // =========================================================
 // 3. VALIDASI FORM & LOGIKA TOMBOL (SIMPAN/BATAL)
@@ -169,7 +183,6 @@ function setupFormValidation() {
   }
 }
 
-
 // =========================================================
 // 4. IMAGE HANDLING
 // =========================================================
@@ -249,7 +262,6 @@ function removeFasilitasImage() {
   validateFormState();
 }
 
-
 // =========================================================
 // 5. CRUD ACTION HANDLERS
 // =========================================================
@@ -273,7 +285,6 @@ function cancelFasilitasForm() {
               setupFormValidation();
               const judulInput = document.querySelector('#fasilitasForm input[name="judul"]');
               if (judulInput) setTimeout(() => { judulInput.focus(); }, 50);
-              // Scroll ke form
               const card = document.querySelector('.card');
               if(card) card.scrollIntoView({ behavior: 'smooth' });
           });
@@ -291,7 +302,8 @@ function loadEmptyFasilitasForm(successMessage) {
   const formContainer = document.getElementById("form-content-wrapper"); 
   if (!formContainer) return;
 
-  const url = "module/fasilitas/form-load.php?success_msg=" + encodeURIComponent(successMessage);
+  // Tambahkan timestamp di request form juga
+  const url = "module/fasilitas/form-load.php?success_msg=" + encodeURIComponent(successMessage) + "&_t=" + new Date().getTime();
   displayAlert(successMessage, "success");
 
   fetch(url)
@@ -348,6 +360,11 @@ function displayAlert(message, type) {
 // STARTUP
 document.addEventListener("DOMContentLoaded", function () {
   setupFormValidation();
+
+  // Handle Back/Forward Browser
+  window.addEventListener('popstate', function(event) {
+    loadFasilitasList();
+  });
 
   // Handle Submit Form
   document.addEventListener("submit", function (e) {

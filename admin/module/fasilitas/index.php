@@ -10,7 +10,7 @@ $limit = 6;
 $offset = ($page - 1) * $limit;
 $searchKeyword = $_GET['keyword'] ?? null;
 $currentSortBy = $_GET['sort'] ?? 'id_fasilitas';
-$currentSortOrder = $_GET['order'] ?? 'ASC';
+$currentSortOrder = $_GET['order'] ?? 'DESC';
 
 // B. Ambil Data
 $totalRecords = getTotalFasilitasCount($pdo, $searchKeyword);
