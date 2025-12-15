@@ -20945,15 +20945,3 @@ ul.gallery_agile {
     .facility-img-wrap { height: 250px !important; }
     .page-btn { min-width: 35px; height: 35px; font-size: 14px; border-radius: 6px; }
 }
-
-/* 7. SEARCH BOX GLOBAL */
-.search-wrapper-center { display: flex; justify-content: center; width: 100%; margin-top: 15px; margin-bottom: 40px; padding: 0 15px; }
-.search-facility-box { width: 100%; max-width: 600px; position: relative; }
-.search-facility-box input {
-    width: 100%; border: 1px solid #ccc; border-radius: 50px; padding: 15px 60px 15px 30px;
-    background-color: #fff; color: #333; font-size: 18px; outline: none; transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05); 
-}
-.search-facility-box input:focus { border-color: var(--primary-color, #007bff); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
-.search-icon-static { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 22px; pointer-events: none; }
-.search-loading { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 22px; display: none; }
