@@ -1,37 +1,19 @@
 // admin/assets/js/produk.js
 
-// --- 1. FUNGSI DINAMIS TIM (MEMBER + ROLE) ---
-function addTeamRow() {
-    const container = document.getElementById('team-container');
-    const template = document.getElementById('teamRowTemplate');
-    
-    if (container && template) {
-        // Clone isi template
-        const clone = template.content.cloneNode(true);
-        container.appendChild(clone);
-        
-        // Trigger validasi biar tombol simpan nyala (karena ada baris baru)
-        validateFormState();
-    }
-}
-
-function removeTeamRow(btn) {
-    // Hapus elemen parent (div.link-row)
-    btn.parentElement.remove();
-    // Trigger validasi
-    validateFormState();
-}
-
-
-// --- 2. FUNGSI GAMBAR (PREVIEW & REMOVE) ---
-function previewImage(event) {
+/* =========================================
+   1. FUNGSI GAMBAR & FILE UPLOAD
+   ========================================= */
+   function previewProductImage(event) {
     const input = event.target;
     const imgPreview = document.getElementById("imgPreview");
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; 
-    const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp']; 
-    const errorContainer = document.getElementById("fileError");
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-    if (errorContainer) { errorContainer.textContent = ""; errorContainer.style.display = "none"; }
+    const errorContainer = document.getElementById("fileError");
+    if (errorContainer) {
+        errorContainer.textContent = "";
+        errorContainer.style.display = "none";
+    }
 
     if (input.files && input.files[0]) {
         const file = input.files[0];
@@ -39,19 +21,19 @@ function previewImage(event) {
         const fileExt = fileName.split('.').pop().toLowerCase();
 
         if (!ALLOWED_EXT.includes(fileExt)) {
-            errorContainer.textContent = `Ekstensi tidak diizinkan.`; 
+            errorContainer.textContent = `Ekstensi tidak diizinkan.`;
             errorContainer.style.display = "block";
-            input.value = ""; 
-            imgPreview.style.display = "none"; 
-            updateFileName(input); 
+            input.value = "";
+            imgPreview.style.display = "none";
+            updateProductFileName(input);
             return;
         }
         if (file.size > MAX_FILE_SIZE) {
-            errorContainer.textContent = "File terlalu besar (Max 5MB)."; 
+            errorContainer.textContent = "File terlalu besar (Max 5MB).";
             errorContainer.style.display = "block";
-            input.value = ""; 
-            imgPreview.style.display = "none"; 
-            updateFileName(input); 
+            input.value = "";
+            imgPreview.style.display = "none";
+            updateProductFileName(input);
             return;
         }
 
@@ -59,38 +41,35 @@ function previewImage(event) {
         reader.onload = function (e) {
             imgPreview.src = e.target.result;
             imgPreview.style.display = "block";
-            validateFormState(); // Cek tombol simpan
         };
-        reader.readAsDataURL(file); 
-
+        reader.readAsDataURL(file);
     } else {
         imgPreview.src = "";
         imgPreview.style.display = "none";
-        validateFormState();
     }
 }
 
-function removeImage() {
+function removeProductImage() {
     const input = document.getElementById("inputGambar");
     const img = document.getElementById("imgPreview");
     const removeBtn = document.getElementById("removeImageBtn");
     const fileNameText = document.getElementById("fileNameText");
-    const removeExisting = document.getElementById("removeExistingImage");
 
     if (input) input.value = "";
-    if (img) { img.src = ""; img.style.display = "none"; }
+    if (img) {
+        img.src = "";
+        img.style.display = "none";
+    }
     if (fileNameText) fileNameText.textContent = "Tidak ada file yang dipilih...";
     if (removeBtn) removeBtn.style.display = "none";
-    if (removeExisting) removeExisting.value = "1";
 
-    validateFormState(); // Cek tombol simpan
+    const removeExisting = document.getElementById("removeExistingImage");
+    if (removeExisting) removeExisting.value = "1";
 }
 
-function updateFileName(input) {
+function updateProductFileName(input) {
     const fileNameText = document.getElementById("fileNameText");
     const removeBtn = document.getElementById("removeImageBtn");
-    const removeExisting = document.getElementById("removeExistingImage");
-
     if (input.files && input.files.length > 0) {
         fileNameText.textContent = input.files[0].name;
         if (removeBtn) removeBtn.style.display = "block";
@@ -98,133 +77,80 @@ function updateFileName(input) {
         fileNameText.textContent = "Tidak ada file yang dipilih...";
         if (removeBtn) removeBtn.style.display = "none";
     }
-    if (removeExisting) removeExisting.value = "0"; // Reset flag hapus
-    
-    validateFormState();
+    const removeExisting = document.getElementById("removeExistingImage");
+    if (removeExisting) removeExisting.value = "0";
 }
 
+/* =========================================
+   2. FUNGSI DYNAMIC ROW (TEAM - MEMBER + ROLE)
+   ========================================= */
+function addTeamToTable() {
+    const select = document.getElementById("memberSelect");
+    const roleInput = document.getElementById("roleInput");
+    const tableBody = document.querySelector("#teamTable tbody");
 
-// --- 3. VALIDASI FORM & STATE CHECK (SNAPSHOT) ---
+    const memberId = select.value;
+    const memberName = select.options[select.selectedIndex].text;
+    const role = roleInput.value.trim();
 
-// Menyimpan kondisi awal form untuk dibandingkan nanti
-let initialFormString = ""; 
+    if (!memberId) { alert("Pilih member terlebih dahulu!"); return; }
+    if (role === "") { alert("Role tidak boleh kosong!"); return; }
 
-function getFormString() {
-    const form = document.getElementById("productForm"); // Pastikan ID form benar
-    if (!form) return "";
-    
-    const formData = new FormData(form);
-    // Hapus input file dari string (karena file object tidak bisa dibanding string)
-    formData.delete("gambar"); 
-    
-    // Trik: Convert ke URLSearchParams biar jadi string rapi
-    // Ini otomatis menghandle array seperti member_ids[] dan member_roles[]
-    return new URLSearchParams(formData).toString();
+    // Cek duplikasi di tabel
+    const existingInputs = tableBody.querySelectorAll('input[name="member_ids[]"]');
+    for (let input of existingInputs) {
+        if (input.value === memberId) {
+            alert("Member ini sudah ada di daftar!");
+            return;
+        }
+    }
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td>${memberName}<input type="hidden" name="member_ids[]" value="${memberId}"></td>
+        <td>${role}<input type="hidden" name="member_roles[]" value="${role}"></td>
+        <td style="text-align:center;"><button type="button" class="btn btn-danger btn-sm" onclick="removeTeamRowTable(this)">✕</button></td>
+    `;
+    tableBody.appendChild(row);
+    select.value = ""; roleInput.value = "";
 }
 
-function captureInitialState() {
-    initialFormString = getFormString();
+function removeTeamRowTable(btn) {
+    btn.closest("tr").remove();
 }
 
-function validateFormState() {
-    const btnSimpan = document.getElementById("submitBtn");
-    const btnBatal = document.querySelector(".button-group .btn-secondary");
-    if (!btnSimpan) return;
-
-    // 1. Ambil Input Wajib (Nama & Deskripsi)
-    const nama = document.querySelector('input[name="nama"]').value.trim();
-    const deskripsi = document.querySelector('textarea[name="deskripsi"]').value.trim();
-
-    // 2. Cek Mode (Edit atau Tambah)
-    const idInput = document.querySelector('input[name="id_produk"]');
-    const isEditMode = idInput && idInput.value !== "";
-
-    // 3. Deteksi Perubahan (Dirty Check)
-    let hasChanges = false;
-    
-    if (isEditMode) {
-        // Mode Edit: Cek Gambar & Teks
-        const fileInput = document.getElementById('inputGambar');
-        if (fileInput && fileInput.files.length > 0) hasChanges = true;
+/* =========================================
+   3. FUNGSI SEARCH (PENCARIAN)
+   ========================================= */
+function searchProduct() {
+    const input = document.getElementById('searchProductInput');
+    if (input) {
+        const keyword = input.value;
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('p', '1');
         
-        const removeExisting = document.getElementById("removeExistingImage");
-        if (removeExisting && removeExisting.value === "1") hasChanges = true;
+        if (keyword) currentUrl.searchParams.set('keyword', keyword);
+        else currentUrl.searchParams.delete('keyword');
 
-        if (!hasChanges) {
-            if (getFormString() !== initialFormString) hasChanges = true;
-        }
-    } else {
-        // Mode Tambah: Dianggap berubah kalau field wajib diisi
-        hasChanges = true; 
+        // Menggunakan pushState agar tidak reload halaman (AJAX Search)
+        window.history.pushState(null, "", currentUrl.toString());
+        loadProductList();
     }
+}
 
-    // 4. Atur Tombol Simpan
-    const isRequiredFilled = (nama !== "" && deskripsi !== "");
+function resetSearchProduct() {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.delete('keyword');
+    currentUrl.searchParams.set('p', '1');
     
-    if (isRequiredFilled && hasChanges) {
-        btnSimpan.disabled = false;
-        btnSimpan.style.opacity = "1";
-        btnSimpan.style.cursor = "pointer";
-        btnSimpan.textContent = isEditMode ? "Update" : "Simpan";
-    } else {
-        btnSimpan.disabled = true;
-        btnSimpan.style.opacity = "0.6";
-        btnSimpan.style.cursor = "not-allowed";
-        if (isEditMode && !hasChanges) btnSimpan.textContent = "Tidak ada perubahan";
-    }
-
-    // 5. Atur Tombol Batal (Opsional)
-    if (btnBatal) {
-        if (isEditMode) {
-            btnBatal.disabled = false;
-            btnBatal.style.opacity = "1";
-            btnBatal.style.cursor = "pointer";
-        } else {
-            const isDirty = (nama || deskripsi);
-            if (isDirty) {
-                btnBatal.disabled = false;
-                btnBatal.style.opacity = "1";
-                btnBatal.style.cursor = "pointer";
-            } else {
-                btnBatal.disabled = true;
-                btnBatal.style.opacity = "0.6";
-                btnBatal.style.cursor = "not-allowed";
-            }
-        }
-    }
+    // Menggunakan pushState agar tidak reload halaman
+    window.history.pushState(null, "", currentUrl.toString());
+    loadProductList();
 }
 
-// Fungsi Debounce (Biar gak berat saat ngetik)
-function debounce(func, delay) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), delay);
-    };
-}
-
-function setupFormValidation() {
-    const inputs = document.querySelectorAll('#productForm input, #productForm textarea, #productForm select');
-    
-    if(inputs.length > 0) {
-        captureInitialState();
-        validateFormState();
-
-        const validateSabar = debounce(validateFormState, 200);
-
-        inputs.forEach(input => {
-            if (input.type === 'text' || input.tagName === 'TEXTAREA') {
-                input.addEventListener('input', validateSabar);
-            } else {
-                input.addEventListener('change', validateFormState);
-            }
-        });
-    }
-}
-
-
-// --- 4. CORE LOGIC (LOAD, SUBMIT, DELETE) ---
-
+/* =========================================
+   4. FUNGSI ALERT & UTILITY
+   ========================================= */
 function displayAlert(message, type) {
     let toastContainer = document.getElementById("toast-container");
     if (!toastContainer) {
@@ -238,51 +164,56 @@ function displayAlert(message, type) {
     toast.innerHTML = message;
     toastContainer.appendChild(toast);
     setTimeout(() => {
-        toast.classList.add('hide'); 
+        toast.classList.add('hide');
         setTimeout(() => {
             toast.remove();
             if (toastContainer.children.length === 0) toastContainer.remove();
-        }, 300); 
-    }, 4000); 
+        }, 300);
+    }, 4000);
 }
 
+/* =========================================
+   5. FUNGSI CRUD AJAX (LOAD, DELETE, SAVE)
+   ========================================= */
 function loadProductList() {
     const listContainer = document.getElementById("product-list-container");
     if (!listContainer) return;
+    
+    // Tambahkan timestamp (&_t) untuk anti-cache
+    const url = "module/produk/table-load.php" + window.location.search + "&_t=" + new Date().getTime();
 
-    const url = "module/produk/table-load.php" + window.location.search;
-    listContainer.style.opacity = "0.5"; 
+    listContainer.style.opacity = "0.6"; // Efek loading
 
-    fetch(url)
-        .then((response) => response.text())
-        .then((html) => {
-            // Teknik ganti isi tanpa kedip
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newContent = doc.getElementById('product-list-container');
-            
-            if (newContent) listContainer.innerHTML = newContent.innerHTML;
-            else listContainer.innerHTML = html;
-            
-            listContainer.style.opacity = "1";
-        })
-        .catch((error) => {
-            console.error("Error loading table:", error);
-            listContainer.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat tabel.</div>';
-            listContainer.style.opacity = "1";
-        });
+    fetch(url).then((response) => response.text()).then((html) => {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = html;
+        const listContent = tempDiv.querySelector("#product-list-container");
+        
+        // Ambil isi baru, atau fallback ke full html jika selector ga ketemu
+        listContainer.innerHTML = listContent ? listContent.innerHTML : html;
+        listContainer.style.opacity = "1";
+        
+        attachSearchListener(); // Pasang ulang listener Enter
+    }).catch((error) => {
+        console.error("Error loading table:", error);
+        listContainer.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat tabel.</div>';
+        listContainer.style.opacity = "1";
+    });
 }
 
-function loadEmptyForm(successMessage) {
-    const formContainer = document.getElementById("form-content-wrapper"); 
+function loadEmptyProductForm(successMessage) {
+    const formContainer = document.getElementById("form-content-wrapper");
     if (!formContainer) return;
+    
+    // Tambahkan timestamp agar form benar-benar baru
+    const url = "module/produk/form-load.php?_t=" + new Date().getTime();
 
-    const url = "module/produk/form-load.php?success_msg=" + encodeURIComponent(successMessage);
-    displayAlert(successMessage, "success");
+    if(successMessage) displayAlert(successMessage, "success");
 
     fetch(url).then((response) => response.text()).then((html) => {
         formContainer.innerHTML = html;
-        setupFormValidation(); 
+    }).catch((error) => {
+        console.error("Error loading form:", error);
     });
 }
 
@@ -293,35 +224,93 @@ function cancelProductForm() {
 
     fetch("module/produk/form-load.php").then((response) => response.text()).then((html) => {
         formContainer.innerHTML = html;
+        
+        // Hapus parameter edit dari URL tanpa reload
         const currentUrl = new URL(window.location);
-        currentUrl.searchParams.delete('edit'); 
+        currentUrl.searchParams.delete('edit');
         window.history.pushState({}, '', currentUrl);
-        setupFormValidation();
+
+        document.querySelector('.card h2').scrollIntoView({ behavior: 'smooth' });
+    }).catch((error) => {
+        console.error("Error resetting form:", error);
     });
 }
 
-function deleteProduct(productId) {
+function deleteProduct(id) {
     if (!confirm("Anda yakin ingin menghapus produk ini?")) return;
     const url = "module/produk/delete.php";
     const formData = new FormData();
-    formData.append("id", productId); 
-    displayAlert("Menghapus produk...", "warning");
+    formData.append("id", id);
 
     fetch(url, { method: "POST", body: formData })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.status === "success") loadProductList(); 
-            else displayAlert(data.message, "error");
+        .then((response) => response.json()).then((data) => {
+            if (data.status === "success") {
+                loadProductList(); // Refresh list tanpa reload
+                displayAlert(data.message, "success");
+            } else {
+                displayAlert(data.message, "error");
+            }
+        }).catch((error) => {
+            displayAlert("Terjadi kesalahan jaringan.", "error");
         });
 }
 
-// --- 5. INITIALIZATION ---
+function attachSearchListener() {
+    const searchInput = document.getElementById('searchProductInput');
+    if (searchInput) {
+        // Clone untuk menghapus listener lama agar tidak double
+        const newInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newInput, searchInput);
+        newInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchProduct();
+        });
+        // Jangan auto focus di sini karena bisa mengganggu UX jika user sedang klik lain
+        // newInput.focus(); 
+    }
+}
+
+/* =========================================
+   6. HANDLE PAGINATION CLICKS (AJAX) - BARU!
+   ========================================= */
+document.addEventListener('click', function(e) {
+    // Cek jika elemen yang diklik memiliki class 'page-link'
+    if (e.target && e.target.classList.contains('page-link')) {
+        e.preventDefault(); // Stop reload halaman
+        
+        const href = e.target.getAttribute('href'); // Ambil URL target (?page=produk&p=2)
+        
+        // Jika URL valid dan tombol tidak disabled
+        if (href && !e.target.classList.contains('disabled')) {
+            // Update URL browser
+            window.history.pushState(null, "", href);
+            
+            // Panggil fungsi load AJAX
+            loadProductList();
+            
+            // Scroll halus ke atas daftar produk
+            const listContainer = document.getElementById("product-list-container");
+            if(listContainer) {
+                listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+});
+
+/* =========================================
+   7. EVENT LISTENER UTAMA
+   ========================================= */
 document.addEventListener("DOMContentLoaded", function () {
-    setupFormValidation();
+    attachSearchListener();
+
+    // Handle Back/Forward Browser Button
+    window.addEventListener('popstate', function(event) {
+        loadProductList();
+    });
 
     document.addEventListener("submit", function (e) {
+        // ID Form HARUS 'productForm'
         if (e.target && e.target.id === "productForm") {
-            e.preventDefault(); 
+            e.preventDefault();
             const form = e.target;
             const formData = new FormData(form);
             const url = "module/produk/save.php";
@@ -334,23 +323,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then((response) => response.json())
                 .then((data) => {
                     if (data.status === "success") {
+                        
+                        // 1. REFRESH TABEL (AJAX)
+                        loadProductList(); 
 
-                        // 🔥 CHECK REDIRECT
-                        if (data.redirect) {
-                            window.location.href = data.redirect;
-                            return;
-                        }
+                        // 2. CEK APAKAH UPDATE ATAU INSERT
+                        const isUpdate = formData.get("id_produk"); 
+                        
+                        // 3. RESET FORM
+                        loadEmptyProductForm(data.message);
 
-                        loadProductList();
-                                        
-                        const isUpdate = formData.get("id_produk");
+                        // 4. JIKA UPDATE, BERSIHKAN URL (HILANGKAN ?edit=...)
                         if (isUpdate) {
-                            alert("Data berhasil diperbarui!");
-                            updateFileName(document.getElementById('inputGambar'));
-                            captureInitialState();
-                            validateFormState();
-                        } else {
-                            loadEmptyForm(data.message);
+                            const cleanUrl = window.location.pathname + "?page=produk";
+                            window.history.pushState({}, document.title, cleanUrl);
                         }
 
                     } else {
@@ -359,96 +345,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
                 .catch((error) => {
                     console.error("AJAX Error:", error);
-                    displayAlert("Terjadi kesalahan sistem.", "error");
+                    displayAlert("Terjadi kesalahan jaringan/server.", "error");
                 })
                 .finally(() => {
-                    validateFormState();
+                    const finalBtn = document.getElementById("submitBtn");
+                    if (finalBtn) {
+                        finalBtn.disabled = false;
+                        finalBtn.textContent = "Simpan"; 
+                    }
                 });
         }
     });
 });
-
-// ... (Kode lama biarkan) ...
-
-// --- FUNGSI TAMBAHAN UNTUK TIM ---
-function addTeamRow() {
-    const container = document.getElementById('team-container');
-    const template = document.getElementById('teamRowTemplate');
-    
-    if (container && template) {
-        const clone = template.content.cloneNode(true);
-        container.appendChild(clone);
-        // Validasi form agar tombol simpan aktif jika ada perubahan
-        if (typeof validateFormState === 'function') validateFormState();
-    }
-}
-
-function removeTeamRow(btn) {
-    btn.parentElement.remove();
-    // Validasi form agar tombol simpan aktif
-    if (typeof validateFormState === 'function') validateFormState();
-}
-
-// ... (Update juga fungsi getFormString di validateFormState) ...
-
-function getFormString() {
-    const form = document.getElementById("productForm");
-    if (!form) return "";
-    
-    const formData = new FormData(form);
-    formData.delete("gambar"); 
-    
-    // FormData otomatis menghandle array member_ids[] dan member_roles[]
-    // Jadi kalau ada perubahan dropdown/role, string ini akan berubah
-    return new URLSearchParams(formData).toString();
-}
-
-function addTeamToTable() {
-    const select = document.getElementById("memberSelect");
-    const roleInput = document.getElementById("roleInput");
-    const tableBody = document.querySelector("#teamTable tbody");
-
-    const memberId = select.value;
-    const memberName = select.options[select.selectedIndex].text;
-    const role = roleInput.value.trim();
-
-    if (!memberId) {
-        alert("Pilih member terlebih dahulu!");
-        return;
-    }
-    if (role === "") {
-        alert("Role tidak boleh kosong!");
-        return;
-    }
-
-    // Tambahkan baris ke tabel
-    const row = document.createElement("tr");
-    row.innerHTML = `
-        <td>
-            ${memberName}
-            <input type="hidden" name="member_ids[]" value="${memberId}">
-        </td>
-        <td>
-            ${role}
-            <input type="hidden" name="member_roles[]" value="${role}">
-        </td>
-        <td style="text-align:center;">
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeTeamRowTable(this)">✕</button>
-        </td>
-    `;
-
-    tableBody.appendChild(row);
-
-    // Reset input
-    select.value = "";
-    roleInput.value = "";
-
-    // Supaya tombol simpan aktif
-    if (typeof validateFormState === "function") validateFormState();
-}
-
-function removeTeamRowTable(btn) {
-    btn.closest("tr").remove();
-
-    if (typeof validateFormState === "function") validateFormState();
-}

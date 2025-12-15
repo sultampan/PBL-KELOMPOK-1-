@@ -16,7 +16,7 @@ require_once "model.php";
 
 // A. Paginasi & Pencarian
 $page = (int)($_GET['p'] ?? 1);
-$limit = 10;
+$limit = 6;
 $offset = ($page - 1) * $limit;
 $searchKeyword = $_GET['keyword'] ?? null;
 $currentSortBy = $_GET['sort'] ?? 'id_galery'; // Default sort ID

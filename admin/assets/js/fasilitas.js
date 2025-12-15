@@ -227,20 +227,29 @@ function removeFasilitasImage() {
 
 
 // =========================================================
-// 4. ACTION HANDLERS (LOAD, CANCEL, DELETE, SUBMIT)
+// 4. ACTION HANDLERS
 // =========================================================
 
-// Handle Klik Pagination
-document.addEventListener('click', function(e) {
-  if (e.target && e.target.classList.contains('page-link')) {
-      e.preventDefault();
-      const href = e.target.getAttribute('href');
-      if (href) {
-          window.history.pushState(null, "", href);
-          loadFasilitasList();
-      }
-  }
-});
+// Handle Klik Pagination (.page-link)
+    document.addEventListener('click', function(e) {
+    // Cek apakah yang diklik adalah elemen pagination atau anaknya
+    if (e.target && e.target.classList.contains('page-link')) {
+        e.preventDefault();
+        
+        // Ambil href dari tombol
+        const href = e.target.getAttribute('href');
+        
+        // Jika href valid dan bukan disabled
+        if (href && !e.target.classList.contains('disabled')) {
+            window.history.pushState(null, "", href);
+            loadFasilitasList();
+            
+            // Scroll sedikit ke atas agar user sadar halaman berubah
+            const gridContainer = document.querySelector('.fasilitas-grid-container');
+            if(gridContainer) gridContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+  });
 
 function loadFasilitasList() {
   const listContainer = document.getElementById("fasilitas-list-container");

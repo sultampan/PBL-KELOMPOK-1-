@@ -244,3 +244,65 @@
         justify-content: center;
     }
 }
+/* --- PAGINATION STYLE (Menyamakan dengan Member/Components) --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    gap: 8px; /* Jarak antar kotak */
+}
+
+.page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;  /* Lebar kotak sama dengan Member */
+    height: 42px;     /* Tinggi kotak sama dengan Member */
+    padding: 0 5px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px; /* Sudut melengkung */
+    color: #02406C;
+    text-decoration: none !important;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+/* Hover State */
+.page-link:hover:not(.active):not(.disabled) {
+    background-color: #02406C;
+    border-color: #02406C;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* Tombol Aktif */
+.page-link.active {
+    background-color: #02406C;
+    border-color: #02406C;
+    color: #fff;
+    cursor: default;
+    pointer-events: none;
+    box-shadow: 0 4px 10px rgba(2, 64, 108, 0.2);
+}
+
+/* Tombol Disabled (Arrow mentok) */
+.page-link.disabled {
+    background-color: #f8f9fa;
+    color: #d1d1d1;
+    border-color: #eee;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Khusus Panah agar font lebih besar sedikit dan pas di tengah */
+.page-link.page-arrow {
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1;
+    padding-bottom: 2px;
+}

@@ -1,131 +1,147 @@
 <div id="fasilitas-list-container">
     
-    <?php
-    global $webUploadDir, $webThumbDir, $serverUploadDir, $serverThumbDir;
-    
-    if (isset($paginationData) && is_array($paginationData)) {
-        extract($paginationData);
-    } else {
-        $currentPage = 1; $totalPages = 1; $searchKeyword = null; $limit = 10;
-        $list = [];
-    }
-    ?>
-
-    <div class="fasilitas-wrapper">
-
+    <div class="fasilitas-grid-container">
+        
         <div class="toolbar-header">
-            <div class="header-title">
-                Daftar Fasilitas
-            </div>
-            
+            <h3 class="header-title">Daftar Fasilitas</h3>
+
             <div class="search-form">
+                <?php
+                    // --- DEFINISI VARIABEL PAGINATION ---
+                    // Pastikan variabel ini tersedia dari table-load.php
+                    if (isset($paginationData) && is_array($paginationData)) extract($paginationData);
+                    else {
+                        $currentPage = 1; $totalPages = 1; $searchKeyword = null; $limit = 6;
+                    }
+
+                    // FUNGSI HELPER PEMBUAT URL (Khusus Fasilitas)
+                    if (!function_exists('buildFasilitasUrl')) {
+                        function buildFasilitasUrl($p, $keyword) {
+                            $qs = '?page=fasilitas&p=' . $p;
+                            if ($keyword) $qs .= '&keyword=' . urlencode($keyword);
+                            return $qs;
+                        }
+                    }
+                ?>
+                
                 <div class="search-group">
                     <input type="text" id="searchFasilitasInput" class="search-input" 
-                           placeholder="Cari Nama atau Deskripsi..." 
+                           placeholder="Cari fasilitas..." 
                            value="<?= htmlspecialchars($searchKeyword ?? '') ?>">
-                    
                     <button type="button" onclick="searchFasilitas()" class="btn-cari">
-                        <i class="fa fa-search"></i> Cari
+                        <i class="fas fa-search"></i> Cari
                     </button>
+                    <?php if($searchKeyword): ?>
+                        <button type="button" onclick="window.location.href='?page=fasilitas'" 
+                                class="btn-cari" style="background-color:#95a5a6; padding:0 15px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-
-        <div class="fasilitas-grid-container">
-            <div class="fasilitas-grid">
-                <?php if ($list): ?>
-                    <?php foreach ($list as $row): ?>
+        
+        <div class="fasilitas-grid">
+            <?php if (!empty($list)): ?>
+                <?php foreach ($list as $row): 
+                    $imgSrc = 'assets/img/no-image.png'; 
+                    // Path gambar (pastikan path ini sesuai struktur folder Anda)
+                    // Menggunakan logic yang sama dengan Member untuk thumbnail
+                    $uploadPath = '../public/uploads/fasilitas/';
+                    $thumbPath  = '../public/uploads/thumb/fasilitas-thumb/';
+                    
+                    if (!empty($row['gambar'])) {
+                        $thumbName = pathinfo($row['gambar'], PATHINFO_FILENAME) . '-thumb.' . pathinfo($row['gambar'], PATHINFO_EXTENSION);
                         
-                        <div class="fasilitas-card">
-                            <div class="fasilitas-img-wrapper">
-                                <?php 
-                                    $image_path = '';
-                                    if ($row['gambar']) {
-                                        $original_filename = $row['gambar'];
-                                        $ext = pathinfo($original_filename, PATHINFO_EXTENSION);
-                                        $base_name = pathinfo($original_filename, PATHINFO_FILENAME);
-                                        $thumbnail_filename = $base_name . '-thumb.' . $ext;
-
-                                        $server_thumb_path = $serverThumbDir . $thumbnail_filename;
-                                        $server_original_path = $serverUploadDir . $original_filename;
-
-                                        if (is_file($server_thumb_path)) {
-                                            $image_path = $webThumbDir . $thumbnail_filename;
-                                            $path_for_mtime = $server_thumb_path;
-                                        } elseif (is_file($server_original_path)) {
-                                            $image_path = $webUploadDir . $original_filename;
-                                            $path_for_mtime = $server_original_path;
-                                        }
-
-                                        if (!empty($image_path) && is_file($path_for_mtime)) {
-                                            $image_path .= '?' . filemtime($path_for_mtime); 
-                                        }
-                                    }
-                                ?>
-
-                                <?php if (!empty($image_path)): ?>
-                                    <img src="<?= $image_path ?>" alt="<?= htmlspecialchars($row['judul']) ?>" loading="lazy">
-                                <?php else: ?>
-                                    <div class="no-image-placeholder">
-                                        <i class="fa fa-image" style="font-size:24px; margin-right:5px;"></i> Tidak ada gambar
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-
-                            <div class="fasilitas-content">
-                                <div class="fasilitas-title">
-                                    <?= htmlspecialchars($row['judul']) ?>
-                                </div>
-                                <div class="fasilitas-desc" title="<?= htmlspecialchars($row['deskripsi']) ?>">
-                                    <?= htmlspecialchars($row['deskripsi']) ?>
-                                </div>
-                            </div>
-
-                            <div class="card-action-buttons">
-                                <a href="?page=fasilitas&edit=<?= $row['id_fasilitas'] ?>" class="btn-card btn-card-edit">
-                                    Edit
-                                </a>
-                                <button type="button" onclick="deleteFasilitas(<?= (int)$row['id_fasilitas'] ?>)" class="btn-card btn-card-delete">
-                                    Hapus
-                                </button>
-                            </div>
-                        </div>
-
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 50px; background: #f9f9f9; border-radius: 8px; border: 1px dashed #ccc;">
-                        <h4 style="color: #999;">Belum ada data fasilitas.</h4>
-                        <p style="color: #aaa;">Silakan tambahkan data baru melalui form di atas.</p>
+                        // Cek fisik file (PHP side check - optional, or just direct link)
+                        // Disini kita asumsi file ada agar performa cepat
+                        $imgSrc = $uploadPath . $row['gambar'];
+                        
+                        // Jika ingin pakai thumb (jika file thumb pasti ada)
+                        // $imgSrc = $thumbPath . $thumbName; 
+                    }
+                ?>
+                <div class="fasilitas-card">
+                    <div class="fasilitas-img-wrapper">
+                        <?php if(!empty($row['gambar'])): ?>
+                            <img src="<?= $imgSrc ?>" alt="<?= htmlspecialchars($row['judul']) ?>" loading="lazy">
+                        <?php else: ?>
+                            <div class="no-image-placeholder">No Image</div>
+                        <?php endif; ?>
                     </div>
-                <?php endif; ?>
-            </div>
-        </div> 
-        </div> 
-    <?php if ($totalPages > 1): ?>
-        <div class="pagination">
-            <?php 
-                function getPageLink($pageNum, $keyword) {
-                    $link = "?page=fasilitas&p=" . $pageNum;
-                    if ($keyword) $link .= "&keyword=" . urlencode($keyword);
-                    return $link;
-                }
-            ?>
-
-            <?php if ($currentPage > 1): ?>
-                <a href="<?= getPageLink($currentPage - 1, $searchKeyword) ?>" class="page-link page-arrow">&laquo;</a>
-            <?php endif; ?>
-
-            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                <a href="<?= getPageLink($i, $searchKeyword) ?>" 
-                   class="page-link page-num <?= ($i == $currentPage) ? 'active' : '' ?>">
-                    <?= $i ?>
-                </a>
-            <?php endfor; ?>
-
-            <?php if ($currentPage < $totalPages): ?>
-                <a href="<?= getPageLink($currentPage + 1, $searchKeyword) ?>" class="page-link page-arrow">&raquo;</a>
+                    
+                    <div class="fasilitas-content">
+                        <h4 class="fasilitas-title"><?= htmlspecialchars($row['judul']) ?></h4>
+                        <div class="fasilitas-desc">
+                            <?= nl2br(htmlspecialchars($row['deskripsi'])) ?>
+                        </div>
+                    </div>
+                    
+                    <div class="card-action-buttons">
+                        <a href="?page=fasilitas&edit=<?= $row['id_fasilitas'] ?>" class="btn-card btn-card-edit">Edit</a>
+                        <a href="javascript:void(0)" onclick="deleteFasilitas(<?= $row['id_fasilitas'] ?>)" class="btn-card btn-card-delete">Hapus</a>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #777;">
+                    <i class="fas fa-box-open" style="font-size: 40px; margin-bottom: 10px; opacity: 0.5;"></i><br>
+                    Data fasilitas tidak ditemukan.
+                </div>
             <?php endif; ?>
         </div>
-    <?php endif; ?>
 
+        <?php if ($totalPages > 1): ?>
+            <div class="pagination">
+
+                <?php if ($currentPage > 1): ?>
+                    <a href="<?= buildFasilitasUrl($currentPage - 1, $searchKeyword) ?>" class="page-link page-arrow" title="Sebelumnya">&lsaquo;</a>
+                <?php else: ?>
+                    <span class="page-link page-arrow disabled">&lsaquo;</span>
+                <?php endif; ?>
+
+                <?php if ($currentPage > 1): ?>
+                    <a href="<?= buildFasilitasUrl(1, $searchKeyword) ?>" class="page-link page-arrow" title="Ke Awal">&laquo;</a>
+                <?php else: ?>
+                    <span class="page-link page-arrow disabled">&laquo;</span>
+                <?php endif; ?>
+
+                <?php
+                $max_buttons = 5;
+                $half = floor($max_buttons / 2);
+                $start_page = $currentPage - $half;
+                $end_page   = $currentPage + $half;
+
+                if ($start_page < 1) { 
+                    $start_page = 1; 
+                    $end_page = $start_page + $max_buttons - 1; 
+                }
+                if ($end_page > $totalPages) { 
+                    $end_page = $totalPages; 
+                    $start_page = $end_page - $max_buttons + 1; 
+                    if ($start_page < 1) $start_page = 1; 
+                }
+
+                for ($i = $start_page; $i <= $end_page; $i++):
+                    $isActive = ($i == $currentPage) ? 'active' : '';
+                ?>
+                    <a href="<?= buildFasilitasUrl($i, $searchKeyword) ?>" class="page-link page-num <?= $isActive ?>"><?= $i ?></a>
+                <?php endfor; ?>
+
+                <?php if ($currentPage < $totalPages): ?>
+                    <a href="<?= buildFasilitasUrl($totalPages, $searchKeyword) ?>" class="page-link page-arrow" title="Ke Akhir">&raquo;</a>
+                <?php else: ?>
+                    <span class="page-link page-arrow disabled">&raquo;</span>
+                <?php endif; ?>
+
+                <?php if ($currentPage < $totalPages): ?>
+                    <a href="<?= buildFasilitasUrl($currentPage + 1, $searchKeyword) ?>" class="page-link page-arrow" title="Berikutnya">&rsaquo;</a>
+                <?php else: ?>
+                    <span class="page-link page-arrow disabled">&rsaquo;</span>
+                <?php endif; ?>
+
+            </div>
+        <?php endif; ?>
+
+    </div>
 </div>

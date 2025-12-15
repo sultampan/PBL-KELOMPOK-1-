@@ -18,7 +18,7 @@ $webUploadDir = $basePath . '/public/uploads/fasilitas/';
 $webThumbDir = $basePath . '/public/uploads/thumb/fasilitas-thumb/';
 // --- END PATH ---
 
-$limit = 10;
+$limit = 6;
 $page = (int)($_GET['p'] ?? 1);
 $offset = ($page - 1) * $limit;
 $searchKeyword = $_GET['keyword'] ?? null;

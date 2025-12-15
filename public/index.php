@@ -3,6 +3,7 @@ $page = $_GET['page'] ?? 'home';
 include 'layout/header.php';
 include 'layout/navbar.php';
 
+
 if (file_exists("pages/$page.php")) {
     include "pages/$page.php";
 } else {

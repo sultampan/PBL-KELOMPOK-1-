@@ -132,17 +132,19 @@ try {
         }
     }
 
-    // ========================================================================
-    // COMMIT
-    // ========================================================================
-    $pdo->commit();
-    sendJson('success', $msg, [
-    'redirect' => 'index.php?page=produk'
-    ]);
+// ========================================================================
+// COMMIT & RESPON JSON (SAMA DENGAN ACTIVITY)
+// ========================================================================
+$pdo->commit();
+
+// 🔥 Perubahan: Hapus logika $extra['redirect'] 🔥
+// Kirim respons JSON TANPA instruksi redirect
+sendJson('success', $msg); 
 
 
 } catch (Exception $e) {
-
+    // ... (Logika error tetap sama, tapi HAPUS SEMUA LOGIKA REDIRECT DI SINI) ...
+    
     if ($pdo->inTransaction()) $pdo->rollBack();
     sendJson('error', "Terjadi kesalahan: " . $e->getMessage());
 }
