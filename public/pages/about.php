@@ -1,3 +1,11 @@
+ <?php
+$rootPath = dirname(dirname(__DIR__)); 
+$koneksiPath = $rootPath . '/config/koneksi.php';
+
+if (file_exists($koneksiPath)) {
+    require_once $koneksiPath;
+}
+?>
  <style> 
         /* --- BANNER ACTIVITY --- */
     .inner-banner.activity-banner {
@@ -147,42 +155,6 @@
                     <i class="fas fa-database fa-3x mb-3"></i>
                     <h5>Data Science</h5>
                     <p>Data analytics, visualization, and applied statistical modeling.</p>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</section>
-
-
-<!-- FACILITIES -->
-<section class="w3l-features py-5" id="facilities">
-    <div class="container py-md-5 py-4">
-        <div class="title-content text-center mb-5">
-            <h6 class="title-subw3hny">Our Facilities</h6>
-            <h3 class="title-w3l">Supporting Your Innovation</h3>
-        </div>
-
-        <div class="row align-items-stretch">
-
-            <div class="col-lg-4 col-md-6 mb-4 d-flex">
-                <div class="feature-box p-4 shadow radius-image h-100 d-flex flex-column">
-                    <h5>High-Performance Workstations</h5>
-                    <p>Powerful computers equipped for AI training, security testing, and development work.</p>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 d-flex">
-                <div class="feature-box p-4 shadow radius-image h-100 d-flex flex-column">
-                    <h5>AI & IoT Development Kits</h5>
-                    <p>Tools and devices for machine learning, robotics, and smart agriculture projects.</p>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 d-flex">
-                <div class="feature-box p-4 shadow radius-image h-100 d-flex flex-column">
-                    <h5>Collaboration & Meeting Space</h5>
-                    <p>Comfortable shared area for teamwork, presentations, and industry discussions.</p>
                 </div>
             </div>
 

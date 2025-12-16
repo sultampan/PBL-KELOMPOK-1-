@@ -10,7 +10,7 @@ if (file_exists($koneksiPath)) {
 }
 
 // --- CONFIG ---
-$limit = 6; 
+$limit = 5; 
 $page = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
 if ($page < 1) $page = 1;
 $offset = ($page - 1) * $limit;
@@ -18,7 +18,7 @@ $searchKeyword = isset($_GET['search']) ? trim($_GET['search']) : '';
 
 // --- PATH DEFINITIONS ---
 $webThumbPath = 'uploads/thumb/fasilitas-thumb/';
-$webImgPath   = 'uploads/fasilitas/';
+$webImgPath   = 'uploads/fasilitas/'; // Path gambar asli (HD)
 $serverBase   = $rootPath . '/public'; 
 $serverThumbPath = $serverBase . '/uploads/thumb/fasilitas-thumb/';
 $serverImgPath   = $serverBase . '/uploads/fasilitas/';
@@ -35,56 +35,58 @@ function renderFacilityGrid($dataList, $serverThumbPath, $webThumbPath, $serverI
                 </div>';
     }
 
-    $html = '<ul class="gallery_agile">';
+    $html = '<div class="facility-list-container">';
     
     foreach ($dataList as $row) {
         $gambar = $row['gambar'];
         $hasImage = false; 
-        $srcThumb = ''; 
-        $srcFull  = '';
+        $displayImage = ''; // Variabel untuk menampung gambar yang akan ditampilkan
 
         if (!empty($gambar)) {
             $ext = pathinfo($gambar, PATHINFO_EXTENSION);
             $filename = pathinfo($gambar, PATHINFO_FILENAME);
             $thumbName = $filename . '-thumb.' . $ext;
             
-            if (file_exists($serverThumbPath . $thumbName)) {
-                $srcThumb = $webThumbPath . $thumbName;
+            // LOGIKA PERBAIKAN HD:
+            // Cek gambar asli (Full Size) dulu agar tajam/HD
+            if (file_exists($serverImgPath . $gambar)) {
+                $displayImage = $webImgPath . $gambar;
                 $hasImage = true;
-            } elseif (file_exists($serverImgPath . $gambar)) {
-                $srcThumb = $webImgPath . $gambar;
+            } 
+            // Jika gambar asli rusak/hilang, baru pakai thumbnail sebagai cadangan
+            elseif (file_exists($serverThumbPath . $thumbName)) {
+                $displayImage = $webThumbPath . $thumbName;
                 $hasImage = true;
             }
-            
-            $srcFull = (file_exists($serverImgPath . $gambar)) ? $webImgPath . $gambar : $srcThumb;
         }
 
-        $html .= '<li class="facility-card">';
+        // ROW WRAPPER
+        $html .= '<div class="facility-row">';
         
-        $html .= '<div class="facility-img-wrap">';
-        
+        // BAGIAN GAMBAR (KIRI)
+        $html .= '<div class="facility-img-col">';
         if ($hasImage) {
-            // Class 'chocolat-image' adalah trigger
-            $html .= '<a href="'.$srcFull.'" class="chocolat-image" title="'.htmlspecialchars($row['judul']).'">
-                        <img src="'.$srcThumb.'" alt="'.htmlspecialchars($row['judul']).'" />
-                      </a>';
+            // Tampilkan Gambar HD, Tanpa Link, Tanpa Zoom
+            $html .= '<img src="'.$displayImage.'" alt="'.htmlspecialchars($row['judul']).'" />';
         } else {
             $html .= '<div class="no-image-box">
                         <i class="fa fa-image"></i>
-                        <span>Tidak ada gambar</span>
+                        <span>No Image</span>
                       </div>';
         }
         $html .= '</div>'; 
 
-        $html .= '<div class="facility-text">
-                    <div class="facility-title">'.htmlspecialchars($row['judul']).'</div>
-                    <div class="facility-desc">'.nl2br(htmlspecialchars($row['deskripsi'])).'</div>
+        // BAGIAN TEXT (KANAN)
+        $html .= '<div class="facility-text-col">
+                    <h3 class="facility-list-title">'.htmlspecialchars($row['judul']).'</h3>
+                    <div class="title-line"></div>
+                    <div class="facility-list-desc">'.nl2br(htmlspecialchars($row['deskripsi'])).'</div>
                   </div>';
         
-        $html .= '</li>';
+        $html .= '</div>'; 
     }
     
-    $html .= '</ul>';
+    $html .= '</div>'; 
     return $html;
 }
 
@@ -177,140 +179,196 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     exit;
 }
 
+// --- INITIAL DATA ---
 $fasilitasList = getFasilitasData($pdo, $searchKeyword, $limit, $offset);
 $totalData = countTotalFasilitas($pdo, $searchKeyword);
 $totalPages = ceil($totalData / $limit);
 ?>
 
 <style>
-    /* CSS UTAMA */
-    header, .w3l-header, .w3l-header-fixed, .main-header, .navbar { z-index: 99 !important; position: relative; }
-    .inner-banner, .w3l-gallery, .search-wrapper-center { z-index: 1; position: relative; }
+    /* 1. LAYOUT & Z-INDEX */
+    header, .w3l-header, .w3l-header-fixed, .main-header, .navbar {
+        z-index: 9999 !important; position: relative;
+    }
+    .inner-banner, .w3l-gallery, .search-wrapper-center {
+        z-index: 1; position: relative;
+    }
 
+    /* 2. HEADER BANNER */
     .inner-banner.facility-banner {
         background: url('assets/images/header-facility.jpeg') no-repeat center;
-        background-size: cover; position: relative; min-height: 350px; display: grid; align-items: center;
+        background-size: cover; position: relative;
+        min-height: 350px; display: grid; align-items: center;
     }
     .inner-banner.facility-banner:before {
         content: ""; background: rgba(0, 0, 0, 0.6); position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: -1;
     }
 
-    .search-wrapper-center { display: flex; justify-content: center; width: 100%; margin-top: 15px; margin-bottom: 40px; padding: 0 15px; }
-    .search-facility-box { width: 100%; max-width: 600px; position: relative; }
+    /* ======================================================== */
+    /* 3. SEARCH BAR (STYLE ASLI - UKURAN DIPERKECIL)           */
+    /* ======================================================== */
+    .search-wrapper-center { 
+        display: flex; justify-content: center; width: 100%; 
+        margin-top: 20px; margin-bottom: 50px; 
+        padding: 0 15px; 
+    }
+    .search-facility-box { 
+        width: 100%; 
+        max-width: 450px; /* Ukuran search diperkecil */ 
+        position: relative; 
+    }
     .search-facility-box input {
-        width: 100%; border: 1px solid #ccc; border-radius: 50px; padding: 15px 60px 15px 30px;
-        background-color: #fff; color: #333; font-size: 18px; outline: none; transition: all 0.3s ease;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05); 
-    }
-    .search-facility-box input:focus { border-color: var(--primary-color, #007bff); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
-    .search-icon-static { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 22px; pointer-events: none; }
-    .search-loading { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 22px; display: none; }
-
-    .facility-section-bg { background-color: var(--bg-color); }
-    ul.gallery_agile {
-        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; 
-        padding: 0 !important; margin: 0 !important; list-style: none !important; width: 100%; align-items: stretch;
-    }
-    .facility-card {
-        width: 100%; margin-bottom: 30px; box-sizing: border-box; overflow: hidden;
-        display: flex; flex-direction: column; height: 100%; text-align: left !important;
-    }
-    .facility-img-wrap {
-        width: 100%; height: 250px !important; border-radius: var(--border-radius); 
-        overflow: hidden; margin-bottom: 20px; position: relative; background-color: var(--bg-grey); 
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05); flex-shrink: 0;
-    }
-    .facility-img-wrap img {
-        width: 100% !important; height: 100% !important; object-fit: cover; object-position: center; 
-        display: block; transition: transform 0.5s ease;
-    }
-    .facility-img-wrap:hover img { transform: scale(1.05); }
-
-    .no-image-box {
-        width: 100%; height: 100%; background-color: var(--bg-lightgrey);
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        color: var(--font-color); text-align: center !important; border: 1px solid #dee2e6;
-    }
-    .no-image-box i { font-size: 42px; margin-bottom: 8px; color: #ced4da; }
-    
-    .facility-text { padding: 0 5px; width: 100%; text-align: left !important; flex-grow: 1; }
-    .facility-title {
-        font-size: 22px; font-weight: 800; text-transform: uppercase; color: var(--heading-color); 
-        margin-bottom: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; 
-        -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; 
-        height: auto !important; text-align: left !important;
-    }
-    .facility-desc {
-        font-size: 16px; color: var(--font-color); line-height: 1.6; display: -webkit-box; 
-        -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; 
-        height: auto !important; text-align: left !important;
-    }
-
-    .pagination-wrapper { margin-top: 50px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-    .page-btn {
-        min-width: 42px; height: 42px; padding: 0 12px; display: flex; align-items: center; justify-content: center;
-        background-color: #fff; border: 1px solid #e1e1e1; border-radius: 8px;
-        color: #333; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s;
-    }
-    .page-btn:hover:not(.disabled):not(.active) { background-color: #f1f1f1; }
-    .page-btn.active { background-color: #ff9800; color: #fff; border-color: #ff9800; cursor: default; }
-    .page-btn.disabled { background-color: #fafafa; color: #e0e0e0; cursor: not-allowed; }
-
-    @media (max-width: 992px) { ul.gallery_agile { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 768px) { ul.gallery_agile { grid-template-columns: 1fr; } }
-
-    /* ========================================= */
-    /* CSS WAJIB TOMBOL CLOSE & OVERLAY */
-    /* ========================================= */
-    .chocolat-overlay {
-        z-index: 100000 !important; /* Di atas segalanya */
-        background-color: rgba(0, 0, 0, 0.9) !important;
-    }
-    .chocolat-wrapper {
-        z-index: 100001 !important;
-    }
-    .chocolat-image {
-        z-index: 100002 !important;
-    }
-    body.chocolat-open {
-        overflow: hidden !important;
-    }
-
-    /* TOMBOL CLOSE MANUAL KITA */
-    #globalCloseBtn {
-        display: none; /* Default hidden, muncul lewat JS */
-        position: fixed;
-        top: 30px;
-        right: 30px;
-        width: 50px;
-        height: 50px;
-        background-color: rgba(255, 255, 255, 0.2);
-        border: 2px solid #fff;
-        border-radius: 50%;
-        z-index: 2147483647 !important; /* Max Z-Index */
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
+        width: 100%; 
+        border: 1px solid #ccc; 
+        border-radius: 50px; 
+        padding: 10px 45px 10px 20px; 
+        background-color: #fff; 
+        color: #333; 
+        font-size: 15px;
+        outline: none; 
         transition: all 0.3s ease;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.05); 
+        height: 45px;
+    }
+    .search-facility-box input:focus { 
+        border-color: var(--primary-color, #007bff); 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+    }
+    .search-icon-static { 
+        position: absolute; right: 18px; top: 50%; transform: translateY(-50%); 
+        color: #aaa; font-size: 16px; pointer-events: none; 
+    }
+    .search-loading { 
+        position: absolute; right: 18px; top: 50%; transform: translateY(-50%); 
+        color: #aaa; font-size: 16px; display: none; 
     }
 
-    #globalCloseBtn:hover {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        transform: rotate(90deg);
+    /* ======================================================== */
+    /* 4. MODERN LIST LAYOUT (STATIC IMAGE - NO ZOOM)           */
+    /* ======================================================== */
+    .facility-section-bg { background-color: #fff; } 
+    
+    .facility-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 50px;
+        max-width: 960px;
+        margin: 0 auto;
     }
 
-    /* Ikon X menggunakan CSS murni agar ringan */
-    #globalCloseBtn::before, #globalCloseBtn::after {
-        content: '';
-        position: absolute;
-        width: 24px;
-        height: 3px;
-        background-color: #fff;
+    .facility-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 40px;
+        padding-bottom: 40px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .facility-row:last-child {
+        border-bottom: none;
+    }
+
+    /* BAGIAN GAMBAR (KIRI) */
+    .facility-img-col {
+        width: 380px; /* Lebar fix */
+        height: 250px; /* Tinggi fix */
+        flex-shrink: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        background-color: #f4f4f4;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        cursor: default; /* Cursor biasa, bukan pointer link */
+    }
+
+    .facility-img-col img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        /* TRANSISI & TRANSFORM DIHAPUS agar tidak ada efek zoom */
+        display: block;
+    }
+
+    /* No Image Placeholder */
+    .no-image-box {
+        width: 100%; height: 100%;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        background-color: #f8f9fa; color: #ced4da;
+    }
+    .no-image-box i { font-size: 40px; margin-bottom: 5px; }
+
+    /* BAGIAN TEKS (KANAN) */
+    .facility-text-col {
+        flex-grow: 1;
+        padding-top: 5px;
+        text-align: left;
+    }
+
+    .facility-list-title {
+        font-size: 26px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #222;
+        margin-bottom: 12px;
+        line-height: 1.3;
+        letter-spacing: -0.5px;
+    }
+
+    .title-line {
+        width: 60px;
+        height: 4px;
+        background-color: #ff9800;
+        margin-bottom: 20px;
         border-radius: 2px;
     }
-    #globalCloseBtn::before { transform: rotate(45deg); }
-    #globalCloseBtn::after { transform: rotate(-45deg); }
+
+    .facility-list-desc {
+        font-size: 16px;
+        line-height: 1.8;
+        color: #666;
+        font-family: 'Source Sans Pro', sans-serif;
+    }
+
+    /* ======================================================== */
+    /* 5. PAGINATION (STYLE ASLI)                               */
+    /* ======================================================== */
+    .pagination-wrapper { margin-top: 50px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    
+    .page-btn {
+        min-width: 42px; height: 42px; padding: 0 12px; 
+        display: flex; align-items: center; justify-content: center;
+        background-color: #fff; border: 1px solid #e1e1e1; border-radius: 8px;
+        color: #333; font-weight: 600; font-size: 15px; font-family: sans-serif;
+        cursor: pointer; transition: all 0.2s ease-in-out;
+    }
+    
+    .page-btn:hover:not(.disabled):not(.active) { background-color: #f1f1f1; border-color: #ccc; }
+    
+    .page-btn.active { 
+        background-color: #ff9800; 
+        color: #ffffff; border-color: #ff9800; cursor: default; 
+    }
+    
+    .page-btn.disabled { 
+        background-color: #fafafa; color: #e0e0e0; border-color: #f0f0f0; cursor: not-allowed; 
+    }
+    
+    .page-btn i { font-size: 12px; }
+
+    /* RESPONSIVE */
+    @media (max-width: 992px) {
+        .facility-img-col { width: 320px; height: 220px; }
+        .facility-list-title { font-size: 22px; }
+    }
+
+    @media (max-width: 768px) {
+        .facility-row { flex-direction: column; gap: 20px; text-align: left; }
+        .facility-img-col { width: 100%; height: 240px; }
+        .facility-text-col { width: 100%; padding-top: 0; }
+        .title-line { margin-bottom: 15px; }
+        
+        .search-facility-box input { padding: 10px 40px 10px 20px; font-size: 14px; height: 40px; }
+        .page-btn { min-width: 35px; height: 35px; font-size: 14px; border-radius: 6px; }
+    }
 </style>
 
 <div class="inner-banner facility-banner">
@@ -333,6 +391,9 @@ $totalPages = ceil($totalData / $limit);
 
 <section class="w3l-gallery facility-section-bg pb-5 pt-4">
     <div class="container pb-md-5 pt-3">
+        <div class="title-content text-center mb-2">
+        </div>
+
         <div class="search-wrapper-center">
             <div class="search-facility-box">
                 <form action="#" method="GET" onsubmit="return false;">
@@ -351,82 +412,21 @@ $totalPages = ceil($totalData / $limit);
     </div>
 </section>
 
-<div id="globalCloseBtn" onclick="closeChocolatManual()"></div>
-
 <script>
-    let chocolatInstance = null;
-
-    function initChocolat() {
-        if (typeof $ !== 'undefined' && $.fn.Chocolat) {
-            // Bersihkan instance lama
-            if ($('.chocolat-image').data('chocolat')) {
-                $('.chocolat-image').data('chocolat').destroy();
-            }
-
-            // Init Baru
-            const api = $('.chocolat-image').Chocolat({
-                imageSize: 'contain',
-                loop: true,
-                overlayOpacity: 0.9,
-                closeImg: '', // Biarkan kosong, kita pakai tombol sendiri
-            }).data('chocolat');
-
-            // SIMPAN API INSTANCE
-            chocolatInstance = api.api();
-
-            // EVENT LISTENER OPEN
-            // Saat terbuka, kita paksa tombol close kita muncul
-            api.api().open = (function(orig) {
-                return function() {
-                    orig.apply(this, arguments);
-                    $('#globalCloseBtn').fadeIn(200).css('display', 'flex');
-                };
-            })(api.api().open);
-
-            // EVENT LISTENER CLOSE
-            // Saat tertutup, sembunyikan tombol close kita
-            api.api().close = (function(orig) {
-                return function() {
-                    orig.apply(this, arguments);
-                    $('#globalCloseBtn').fadeOut(200);
-                };
-            })(api.api().close);
-        }
-    }
-
-    // FUNGSI TUTUP PAKSA
-    function closeChocolatManual() {
-        if (chocolatInstance) {
-            chocolatInstance.close();
-        } else {
-            // Fallback kasar jika instance hilang
-            $('.chocolat-overlay, .chocolat-wrapper').remove();
-            $('body').removeClass('chocolat-open');
-            $('#globalCloseBtn').fadeOut();
-        }
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        initChocolat();
-
-        // 1. ESC Key -> Tutup
-        $(document).on('keydown', function(e) {
-            if (e.key === "Escape" || e.keyCode === 27) {
-                closeChocolatManual();
-            }
-        });
-
-        // 2. Klik Overlay -> Tutup
-        $('body').on('click', '.chocolat-overlay', function() {
-            closeChocolatManual();
-        });
-    });
+    // FUNGSI CHOCOLAT (POPUP) HAPUS SAJA KARENA TIDAK DIPAKAI
+    // TAPI TETAP SAYA BIARKAN KOSONG AGAR TIDAK ERROR JIKA ADA SISA JS LAIN
+    function initChocolat() { }
 
     let searchTimeout;
     function goToPage(pageNum) {
         const keyword = document.getElementById('searchInput').value;
         performLiveSearch(keyword, pageNum);
-        $('html, body').animate({ scrollTop: $(".facility-section-bg").offset().top - 100 }, 500);
+        
+        if (typeof $ !== 'undefined' && $(".facility-section-bg").length) {
+            $('html, body').animate({ scrollTop: $(".facility-section-bg").offset().top - 100 }, 500);
+        } else {
+            window.scrollTo({ top: document.querySelector(".facility-section-bg").offsetTop - 100, behavior: 'smooth' });
+        }
     }
 
     function performLiveSearch(keyword, pageNum = 1) {
@@ -454,11 +454,16 @@ $totalPages = ceil($totalData / $limit);
                 .then(html => {
                     if(container) {
                         container.innerHTML = html;
-                        initChocolat(); 
                         container.style.opacity = '1';
                     }
                     if(spinner) spinner.style.display = 'none';
                     if(staticIcon) staticIcon.style.opacity = '1';
+                })
+                .catch(err => {
+                    console.error(err);
+                    if(spinner) spinner.style.display = 'none';
+                    if(staticIcon) staticIcon.style.opacity = '1';
+                    if(container) container.style.opacity = '1';
                 });
         }, 300);
     }

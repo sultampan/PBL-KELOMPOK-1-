@@ -1,7 +1,14 @@
+<?php
+$rootPath = dirname(dirname(__DIR__)); 
+$koneksiPath = $rootPath . '/config/koneksi.php';
+
+if (file_exists($koneksiPath)) {
+    require_once $koneksiPath;
+}
+?>
 <style>
-    /* --- CSS UNTUK BANNER CONTACT (Sama seperti Facility) --- */
+    /* --- CSS BANNER CONTACT --- */
     .inner-banner.contact-banner {
-        /* Menggunakan gambar yang sama dengan facility */
         background: url('assets/images/header-facility.jpeg') no-repeat center;
         background-size: cover;
         position: relative;
