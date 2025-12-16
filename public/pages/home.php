@@ -126,54 +126,62 @@
 
                     <?php if(count($produk) > 0): ?>
                         <?php foreach ($produk as $p): ?>
-                            
-                            <li class="col-lg-4 col-md-6 mt-lg-5 mt-4 product-item-li">
-                                <div class="product-card-style">
+    
+    <li class="col-lg-4 col-md-6 mt-lg-5 mt-4 product-item-li">
+        <div class="product-card-style">
 
-                                    <a href="<?php echo htmlspecialchars($p['link_produk']); ?>" target="_blank" class="product-link-item">
-                                        
-                                        <div class="image-wrapper-product"> 
-                                            <?php
-                                            $gambar = $p['gambar'];
-                                            $hasImage = false;
-                                            $srcDisplay = "";
-                                            $srcBackup = "";
+            <?php 
+                // --- LOGIKA PERBAIKAN LINK ---
+                $rawLink = $p['link_produk'];
+                
+                // Cek apakah link dimulai dengan http:// atau https://
+                // Kalau TIDAK ada, kita paksa tambahkan https:// di depannya
+                if (!preg_match("~^(?:f|ht)tps?://~i", $rawLink)) {
+                    $finalLink = "https://" . $rawLink;
+                } else {
+                    $finalLink = $rawLink;
+                }
+            ?>
 
-                                            if (!empty($gambar)) {
-                                                $hasImage = true;
-                                                $ext = pathinfo($gambar, PATHINFO_EXTENSION);
-                                                $base = pathinfo($gambar, PATHINFO_FILENAME);
-                                                $thumbName = $base . '-thumb.' . $ext;
-                                                // $srcThumb = "uploads/thumb/produk-thumb/" . $thumbName;
-                                                $srcAsli  = "uploads/produk/" . $gambar;
-                                                
-                                                $srcDisplay = $srcAsli; 
-                                                $srcBackup = $srcAsli;
-                                            }
-                                            ?>
+            <a href="<?php echo htmlspecialchars($finalLink); ?>" target="_blank" class="product-link-item">
+                
+                <div class="image-wrapper-product"> 
+                    <?php
+                    $gambar = $p['gambar'];
+                    $hasImage = false;
+                    $srcDisplay = "";
+                    $srcBackup = "";
 
-                                            <?php if ($hasImage): ?>
-                                                <img src="<?php echo htmlspecialchars($srcDisplay); ?>"
-                                                     alt="<?php echo htmlspecialchars($p['nama']); ?>"
-                                                     class="img-fluid"
-                                                     onerror="this.onerror=null; this.src='<?php echo htmlspecialchars($srcBackup); ?>';">
-                                            <?php else: ?>
-                                                <div class="no-image-placeholder">
-                                                    <i class="fas fa-image"></i>
-                                                    <span>Tidak ada gambar</span>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
+                    if (!empty($gambar)) {
+                        $hasImage = true;
+                        $srcAsli  = "uploads/produk/" . $gambar;
+                        $srcDisplay = $srcAsli; 
+                        $srcBackup = $srcAsli;
+                    }
+                    ?>
 
-                                        <div class="product-info-text text-center mt-3">
-                                            <h4 class="title-product"><?php echo htmlspecialchars($p['nama']); ?></h4>
-                                        </div>
-                                    </a>
+                    <?php if ($hasImage): ?>
+                        <img src="<?php echo htmlspecialchars($srcDisplay); ?>"
+                             alt="<?php echo htmlspecialchars($p['nama']); ?>"
+                             class="img-fluid"
+                             onerror="this.onerror=null; this.src='<?php echo htmlspecialchars($srcBackup); ?>';">
+                    <?php else: ?>
+                        <div class="no-image-placeholder">
+                            <i class="fas fa-image"></i>
+                            <span>Tidak ada gambar</span>
+                        </div>
+                    <?php endif; ?>
+                </div>
 
-                                </div>
-                            </li>
+                <div class="product-info-text text-center mt-3">
+                    <h4 class="title-product"><?php echo htmlspecialchars($p['nama']); ?></h4>
+                </div>
+            </a>
 
-                        <?php endforeach; ?>
+        </div>
+    </li>
+
+<?php endforeach; ?>
                     <?php else: ?>
                         <div class="col-12 text-center"><p>Belum ada data produk.</p></div>
                     <?php endif; ?>
