@@ -26,7 +26,6 @@ if ($id_produk > 0 && isset($pdo)) {
 
         if ($product) {
             // B. Fetch Development Team
-            // [UPDATE] Menambahkan m.id_member agar bisa dilink
             $stmtTeam = $pdo->prepare("
                 SELECT m.id_member, m.nama_member, m.gambar, pm.role 
                 FROM produk_member pm
@@ -77,6 +76,9 @@ if (!$product) {
         position: relative;
         z-index: 1; 
         padding-bottom: 50px;
+        /* [FIX] Mencegah container keluar dari layar hp */
+        padding-left: 15px;
+        padding-right: 15px;
     }
 
     .pd-card {
@@ -85,9 +87,12 @@ if (!$product) {
         box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         padding: 40px;
         display: grid;
-        grid-template-columns: 350px 1fr;
+        grid-template-columns: 350px 1fr; /* Kolom kiri fix, kanan sisa */
         gap: 50px;
         border: 1px solid #eee;
+        /* [FIX] Pastikan card tidak melar melebihi container */
+        max-width: 100%;
+        overflow: hidden; 
     }
 
     /* --- LEFT SIDE (IMAGE & LINK) --- */
@@ -95,6 +100,8 @@ if (!$product) {
         display: flex;
         flex-direction: column;
         gap: 20px;
+        /* [FIX] Mencegah sidebar mengecil terlalu ekstrem */
+        min-width: 250px;
     }
 
     .pd-image-wrapper {
@@ -142,11 +149,18 @@ if (!$product) {
     }
 
     /* --- RIGHT SIDE (CONTENT) --- */
-    .pd-content { display: flex; flex-direction: column; }
+    .pd-content { 
+        display: flex; 
+        flex-direction: column; 
+        /* [FIX PENTING] min-width: 0 memaksa browser memotong konten jika kepanjangan */
+        min-width: 0; 
+    }
 
     .pd-title {
         font-size: 2.5rem; font-weight: 800; color: #02406C;
         margin-bottom: 20px; line-height: 1.2;
+        /* [FIX] Agar judul panjang turun ke bawah */
+        word-wrap: break-word;
     }
 
     .pd-section-label {
@@ -157,7 +171,13 @@ if (!$product) {
 
     .pd-description {
         font-size: 16px; line-height: 1.8; color: #555; margin-bottom: 30px;
-        white-space: pre-line; /* Keeps paragraphs neat */
+        white-space: pre-line;
+        
+        /* [FIX PENTING] Properti ini memaksa teks panjang tanpa spasi (seperti 'dsajkd...') untuk dipotong ke baris baru */
+        word-wrap: break-word;       /* Standar lama */
+        overflow-wrap: break-word;   /* Standar baru */
+        word-break: break-word;      /* Paksa potong jika perlu */
+        max-width: 100%;             /* Pastikan tidak melebihi container */
     }
 
     /* --- TEAM GRID --- */
@@ -167,20 +187,22 @@ if (!$product) {
         gap: 15px; margin-bottom: 30px;
     }
 
-    /* [UPDATE] Ubah style agar terlihat bisa diklik */
     .pd-team-card {
         display: flex; align-items: center; gap: 12px;
         background: #fff; border: 1px solid #eee;
         padding: 12px; border-radius: 10px;
         transition: 0.2s;
-        text-decoration: none; /* Hilangkan garis bawah link */
-        color: inherit; /* Warisi warna teks */
+        text-decoration: none; 
+        color: inherit; 
         cursor: pointer;
+        /* [FIX] Agar kartu tim tidak melebar aneh */
+        max-width: 100%;
+        overflow: hidden; 
     }
     .pd-team-card:hover {
         border-color: #01B5B8; 
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        transform: translateY(-3px); /* Efek naik dikit */
+        transform: translateY(-3px); 
     }
 
     .pd-team-img {
@@ -189,16 +211,16 @@ if (!$product) {
         flex-shrink: 0;
     }
 
-    .pd-team-info { display: flex; flex-direction: column; overflow: hidden; }
+    .pd-team-info { 
+        display: flex; flex-direction: column; 
+        overflow: hidden; /* Potong teks jika kepanjangan */
+    }
     .pd-team-name {
         font-size: 14px; font-weight: 700; color: #333;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         transition: color 0.2s;
     }
-    /* Saat card dihover, nama jadi hijau teal */
-    .pd-team-card:hover .pd-team-name {
-        color: #01B5B8;
-    }
+    .pd-team-card:hover .pd-team-name { color: #01B5B8; }
 
     .pd-team-role {
         font-size: 11px; color: #01B5B8; font-weight: 600;
@@ -223,6 +245,7 @@ if (!$product) {
         .pd-card { grid-template-columns: 1fr; gap: 30px; padding: 30px; }
         .pd-image-wrapper { max-width: 400px; margin: 0 auto; }
         .pd-title { text-align: center; font-size: 2rem; }
+        .pd-sidebar { min-width: auto; }
     }
 </style>
 
@@ -295,7 +318,7 @@ if (!$product) {
                     <div class="pd-team-grid">
                         <?php foreach ($teamMembers as $tm): 
                             // Member Image Logic
-                            $memImg = 'https://ui-avatars.com/api/?name=' . urlencode($tm['nama_member']) . '&background=random&color=fff&size=128&length=1';
+                            $memImg = 'https://ui-avatars.com/api/?name=' . urlencode($tm['nama_member']) . '&background=random&color=fff&size=64';
                             if (!empty($tm['gambar']) && file_exists($serverImgPathMember . $tm['gambar'])) {
                                 $memImg = $webImgPathMember . $tm['gambar'];
                             }
@@ -320,6 +343,5 @@ if (!$product) {
                 </a>
             </div>
         </div>
-
     </div>
 </div>

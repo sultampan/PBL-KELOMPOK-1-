@@ -17,29 +17,33 @@ $member = null;
 
 if ($id_member > 0 && isset($pdo)) {
     try {
-        // A. Data Utama
+        // A. Data Utama Member
         $stmt = $pdo->prepare("SELECT * FROM member WHERE id_member = ?");
         $stmt->execute([$id_member]);
         $member = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($member) {
-            // B. Links
+            // B. Social Links
             $stmtLink = $pdo->prepare("SELECT * FROM member_link WHERE id_member = ?");
             $stmtLink->execute([$id_member]);
             $member['links'] = $stmtLink->fetchAll(PDO::FETCH_ASSOC);
 
-            // C. Produk/Project
+            // C. Produk/Project (AMBIL ID UNTUK LINK)
             $stmtProd = $pdo->prepare("
-                SELECT p.nama, p.link_produk, p.gambar FROM produk p 
+                SELECT p.id_produk, p.nama 
+                FROM produk p 
                 JOIN produk_member pm ON p.id_produk = pm.id_produk 
                 WHERE pm.id_member = ?
             ");
             $stmtProd->execute([$id_member]);
             $member['products'] = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
 
-            // D. Activity
+            // D. Activity (AMBIL ID UNTUK LINK)
+            // Asumsi tabel 'activity' punya primary key 'id_activity'
+            // Jika nama kolom primary key beda, sesuaikan di sini (misal: id_kegiatan)
             $stmtAct = $pdo->prepare("
-                SELECT a.judul, a.tanggal_kegiatan FROM activity a 
+                SELECT a.id_activity, a.judul, a.tanggal_kegiatan 
+                FROM activity a 
                 JOIN activity_member am ON a.id_activity = am.id_activity 
                 WHERE am.id_member = ?
                 ORDER BY a.tanggal_kegiatan DESC
@@ -127,25 +131,69 @@ if (!$member) {
         border: 1px solid #b2ebf2;
     }
 
-    /* List Project & Activity */
-    .involve-list { list-style: none; padding: 0; }
-    .involve-item {
-        display: flex; align-items: center; gap: 12px; padding: 10px;
-        background: #fff; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px;
-        transition: 0.2s;
+    /* --- [UPDATE] LIST PROJECT & ACTIVITY LINK --- */
+    .involve-list { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 10px; 
+        margin-top: 15px;
     }
-    .involve-item:hover { transform: translateX(5px); border-color: #01B5B8; }
+
+    /* Ubah item menjadi link style */
+    .involve-item-link {
+        display: flex; align-items: center; gap: 15px; padding: 15px;
+        background: #fff; border: 1px solid #eee; border-radius: 10px;
+        text-decoration: none; color: inherit; /* Warisi warna teks */
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .involve-item-link:hover { 
+        transform: translateY(-3px); 
+        border-color: #01B5B8; 
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
     .involve-icon {
-        width: 36px; height: 36px; background: #f0f0f0; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center; color: #555;
+        width: 40px; height: 40px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; flex-shrink: 0;
     }
-    .involve-text { font-size: 14px; color: #333; font-weight: 500; }
-    .involve-date { font-size: 12px; color: #999; margin-left: auto; }
+
+    /* Warna Icon Project */
+    .icon-project { background-color: #e3f2fd; color: #1976d2; }
+    /* Warna Icon Activity */
+    .icon-activity { background-color: #e8f5e9; color: #388e3c; }
+
+    .involve-content { flex-grow: 1; }
+    
+    .involve-label {
+        font-size: 11px; text-transform: uppercase; color: #999; 
+        font-weight: 700; margin-bottom: 2px; display: block;
+    }
+    
+    .involve-title {
+        font-size: 15px; font-weight: 600; color: #333;
+        display: block; transition: color 0.2s;
+    }
+    
+    .involve-item-link:hover .involve-title { color: #01B5B8; }
+
+    .involve-date { font-size: 12px; color: #999; margin-left: auto; white-space: nowrap; }
+
+    /* Tombol Back Orange */
+    .btn-back-orange {
+        background-color: #FE7C11; color: white; padding: 12px 25px; 
+        border-radius: 5px; font-weight: 600; border: none; 
+        display: inline-flex; align-items: center; gap: 8px;
+        transition: 0.3s; text-decoration: none;
+    }
+    .btn-back-orange:hover { background-color: #e66b00; color: white; transform: translateY(-2px); }
 
     @media (max-width: 768px) {
         .profile-layout { grid-template-columns: 1fr; text-align: center; }
         .profile-content h2, .profile-nidn { text-align: center; }
-        .involve-item { text-align: left; }
+        .involve-item-link { text-align: left; }
     }
 </style>
 
@@ -173,8 +221,6 @@ if (!$member) {
         <?php
             // Setup Gambar Profile
             $nama = $member['nama_member'];
-            
-            // [FIX] Mengembalikan ke RANDOM & SIZE 128 agar warna sama dengan depan
             $defaultImg = 'https://ui-avatars.com/api/?name=' . urlencode($nama) . '&background=random&color=fff&size=128&length=1';
             
             $imgSrc = $defaultImg;
@@ -239,8 +285,7 @@ if (!$member) {
 
                     <div class="content-section">
                         <div class="section-title">Biography</div>
-                        
-                        <p style="line-height: 1.8; color: #555; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
+                        <p style="line-height: 1.8; color: #555; word-wrap: break-word;">
                             <?= $member['deskripsi'] ? nl2br(htmlspecialchars($member['deskripsi'])) : 'Belum ada deskripsi.' ?>
                         </p>
                     </div>
@@ -249,37 +294,42 @@ if (!$member) {
                     <div class="content-section">
                         <div class="section-title">Laboratory Involvement</div>
                         
-                        <ul class="involve-list">
+                        <div class="involve-list">
+                            
                             <?php foreach ($member['products'] as $prod): ?>
-                                <li class="involve-item">
-                                    <div class="involve-icon" style="background:#e3f2fd; color:#1565c0;">
+                                <a href="index.php?page=product-detail&id=<?= $prod['id_produk'] ?>" class="involve-item-link">
+                                    <div class="involve-icon icon-project">
                                         <i class="fas fa-box-open"></i>
                                     </div>
-                                    <div class="involve-text">
-                                        Project: <strong><?= htmlspecialchars($prod['nama']) ?></strong>
+                                    <div class="involve-content">
+                                        <span class="involve-label">Project</span>
+                                        <span class="involve-title"><?= htmlspecialchars($prod['nama']) ?></span>
                                     </div>
-                                </li>
+                                    <i class="fas fa-chevron-right" style="color:#ddd; font-size:12px;"></i>
+                                </a>
                             <?php endforeach; ?>
 
                             <?php foreach ($member['activities'] as $act): 
                                 $date = date('d M Y', strtotime($act['tanggal_kegiatan']));
                             ?>
-                                <li class="involve-item">
-                                    <div class="involve-icon" style="background:#e8f5e9; color:#2e7d32;">
+                                <a href="index.php?page=activity-detail&id=<?= $act['id_activity'] ?>" class="involve-item-link">
+                                    <div class="involve-icon icon-activity">
                                         <i class="fas fa-calendar-check"></i>
                                     </div>
-                                    <div class="involve-text">
-                                        Activity: <strong><?= htmlspecialchars($act['judul']) ?></strong>
+                                    <div class="involve-content">
+                                        <span class="involve-label">Activity</span>
+                                        <span class="involve-title"><?= htmlspecialchars($act['judul']) ?></span>
                                     </div>
                                     <div class="involve-date"><?= $date ?></div>
-                                </li>
+                                </a>
                             <?php endforeach; ?>
-                        </ul>
+
+                        </div>
                     </div>
                     <?php endif; ?>
                     
                     <div style="margin-top: 40px;">
-                        <a href="index.php?page=member" class="btn btn-style btn-primary">
+                        <a href="index.php?page=member" class="btn-back-orange">
                             <i class="fas fa-arrow-left"></i> Back to Members
                         </a>
                     </div>
