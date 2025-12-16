@@ -1,5 +1,4 @@
-</div> </div> <script src="assets/js/produk.js"></script>
-
+</div> </div> 
 <div style="font-size: 12px; padding: 10px; text-align: center; color: #7f8c8d; background: #ecf0f1; margin-top: 15px;">
     <?php
     $end_time = microtime(true);
